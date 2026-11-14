@@ -6,8 +6,8 @@ y una nueva orden antes de iniciar la siguiente. Estado al 2026-11-14.
 | Etapa | Entrega | Estado |
 | --- | --- | --- |
 | 00 | Base Flutter, inicio, arquitectura, pruebas y documentación | Validada; continuación a 01 autorizada por el usuario |
-| 01 | Tablero configurable, coordenadas, selección, zoom y desplazamiento | Implementada; 52 tests, 5 renders, APK y recorrido Android verificados; revisión pendiente |
-| 02 | Figuras genéricas, equipos y ocupación | Pendiente |
+| 01 | Tablero configurable, coordenadas, selección, zoom y desplazamiento | Validada; continuación a 02 autorizada por el usuario |
+| 02 | Figuras genéricas, equipos y ocupación | Implementada; 77 tests, 8 renders, APK y recorrido Android parcial verificados; revisión pendiente |
 | 03 | Terreno, muros y capas de edición | Pendiente |
 | 04 | Persistencia local, JSON/PNG y deshacer/rehacer | Pendiente |
 | 05 | Geometría exacta de segmentos e intersecciones | Pendiente |

@@ -1,7 +1,7 @@
 # HeroClix Simulator & Trainer
 
-Aplicación Android Flutter/Dart, offline y en español. Versión inicial
-`0.2.0+2`. Se desarrolla por etapas en este mismo repositorio.
+Aplicación Android Flutter/Dart, offline y en español. Versión actual
+`0.3.0+3`. Se desarrolla por etapas en este mismo repositorio.
 
 ## Repositorio
 
@@ -13,8 +13,8 @@ git clone https://github.com/Schrei01/heroclix-simulator-trainer.git
 cd heroclix-simulator-trainer
 ```
 
-La entrega 01 está en `codex/prompt-01` para revisión. Después de clonar, usa
-`git switch codex/prompt-01` para trabajar con esa entrega.
+La entrega 02 está en `codex/prompt-02` para revisión. Después de clonar, usa
+`git switch codex/prompt-02` para trabajar con esa entrega.
 
 ## Qué existe
 
@@ -23,8 +23,11 @@ independientes de 2 a 40, selección A1…AN40, zoom con pinza/botones,
 desplazamiento, centrar/ajustar y opciones de cuadrícula/coordenadas. Las celdas
 son cuadradas. En horizontal las herramientas están a la izquierda.
 
-Solo **Seleccionar** está activa. Personajes, terrenos, muros, visión, distancia,
-movimiento y borrar son futuros. **Simulador**, **Entrenador** y **Árbitro**
+La etapa 02 habilita **Personajes**: fichas A, B, C… con ID estable, nombre,
+equipo, posición, base, velocidad y alcance editables. Dos equipos iniciales y
+creación de otros con código, color y patrón. Terrenos, muros, visión, distancia
+y los análisis de movimiento son futuros. La herramienta Borrar por capas sigue
+deshabilitada; las figuras se eliminan desde su ficha. **Simulador**, **Entrenador** y **Árbitro**
 permanecen deshabilitados. No hay reglas del juego, guardado ni ejercicios.
 
 El tablero se conserva al girar o volver al inicio durante la misma sesión.
@@ -32,8 +35,9 @@ Cerrar la aplicación pierde esa sesión; persistencia e historial corresponden 
 El informe de 00 se conserva en [ENTREGA_00.md](docs/ENTREGA_00.md).
 Consultar [estado real y verificación](docs/ESTADO.md) para los resultados actuales.
 
-Validación de 01: **52 pruebas**, análisis estático y cinco renders correctos;
-APK debug generado, firmado e instalado en Android 17. Se comprobó offline
+El informe histórico de 01 se conserva en [ENTREGA_01.md](docs/ENTREGA_01.md).
+Validación actual y APK: véase [ESTADO.md](docs/ESTADO.md). En 01 se verificaron
+el APK debug y la instalación en Android 17, offline:
 selección, navegación, giro y configuración hasta 40×40.
 
 ## Uso del Editor
@@ -47,6 +51,18 @@ selección, navegación, giro y configuración hasta 40×40.
 4. **Centrar** mantiene el zoom; **Ajustar** restablece la vista del tablero completo.
 5. El menú de opciones muestra/oculta cuadrícula y coordenadas o limpia selección.
    Cambiar dimensiones con una selección requiere confirmación y permite cancelar.
+
+6. Pulsa **Personajes** y toca una casilla vacía para crear una ficha. El equipo
+   se identifica por código (T1, T2…), color y patrón. La letra de ficha es
+   independiente de su coordenada.
+7. Selecciona la ficha y pulsa el lápiz inferior para editarla, cambiar equipo,
+   duplicar o eliminar. La lista de figuras superior permite abrir cualquier ficha.
+8. Mantén pulsada una figura y arrastra: ✓ indica destino libre, × explica
+   el rechazo. Soltar un destino inválido conserva la posición anterior.
+   También puedes mover escribiendo la coordenada en la ficha.
+9. Las bases 2×2 ocupan cuatro celdas, con anclaje arriba a la izquierda.
+   Son representación de posición, no legalidad reglamentaria. Velocidad y alcance
+   admiten enteros de 0 a 99 como datos, sin evaluar acciones.
 
 En un borde compartido se selecciona derecha/abajo; el borde exterior derecho o
 inferior queda fuera. En mapas grandes, amplía para leer rótulos y tocar con precisión.
@@ -110,9 +126,9 @@ compilación durante el desarrollo sí puede requerir internet.
 - [REGLAS](docs/REGLAS.md): fuentes oficiales y método de validación futuro.
 - [ANDROID](docs/ANDROID.md): herramientas, APK y firma.
 
-Ninguna regla oficial está implementada en 01. Se usarán explicaciones propias,
+Ninguna regla oficial está implementada en 02. Se usarán explicaciones propias,
 fuentes verificadas y «No evaluado» ante casos no soportados. El producto será
 una herramienta de apoyo, no una decisión oficial de torneo.
 
-La siguiente etapa es 02, figuras y equipos; requiere revisión de 01 y nueva
+La siguiente etapa es 03, terreno y muros; requiere revisión de 02 y nueva
 orden. No se inicia automáticamente.

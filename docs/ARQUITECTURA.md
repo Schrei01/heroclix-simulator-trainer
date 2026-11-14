@@ -18,7 +18,8 @@ no importa Flutter, infraestructura ni plataforma.
 | `test/` | Contratos de dominio y pruebas de widgets |
 
 `domain/board` contiene BoardDimensions, CellCoordinate, BoardGeometry,
-BoardCamera y ViewportSize. Los módulos characters, terrain, geometry (intersecciones
+BoardCamera y ViewportSize. characters implementa figuras, equipos y ocupación.
+Los módulos terrain, geometry (intersecciones
 de visión), rules, movement y training conservan documentación de alcance sin
 implementar todavía sus funciones.
 
@@ -26,7 +27,7 @@ implementar todavía sus funciones.
 
 El inicio usa un catálogo inmutable; solo Editor está disponible. `BoardSession`
 es la única fuente de verdad del tablero: dimensiones, selección, cámara,
-viewport y opciones de visualización. Es inmutable y no importa Flutter.
+viewport, opciones de visualización, figuras y equipos. Es inmutable y no importa Flutter.
 
 `EditorController` es un ValueNotifier de presentación que adapta cambios de
 sesión a widgets. HeroClixApp lo posee y lo destruye al salir de la app: la sesión
@@ -58,7 +59,8 @@ que supera el umbral táctil no produce selección; un gesto con varios punteros
 queda bloqueado para selección hasta un nuevo toque. Es independiente del zoom.
 
 Capas previstas, aún sin datos ni lógica: casillas/terreno, bordes/muros,
-entidades ocupantes y superposiciones. La cuadrícula y su selección actuales no
+superposiciones reglamentarias. Las figuras se implementan en 02.
+La cuadrícula y su selección no
 se almacenan como si fueran terreno ni figuras.
 
 ## Motor futuro
@@ -73,3 +75,16 @@ consumirán los mismos servicios. Las condiciones no soportadas devolverán
 Solo se genera Android. No se bloquean orientaciones. El diseño usa restricciones
 de ancho, ajuste del texto y desplazamiento vertical. No hay clientes HTTP,
 cuentas, telemetría, fuentes remotas ni assets descargados en runtime.
+
+## Figuras y ocupación en 02
+
+BoardSession incluye CharacterRepository, equipos y selección por ID. El repositorio
+solo devuelve nuevas colecciones después de validar, y mantiene ocupación derivada
+para todas las celdas de cada Footprint. CharacterDraft separa datos editables de la
+identidad/etiqueta estable de Character. No importa Flutter.
+
+La presentación recoge formularios y llama al controlador; nunca decide ocupación.
+El arrastre conserva el mundo hasta soltar: FigureDragPreview vive únicamente en
+BoardCanvas, usa validatePlacement y se pinta como superposición. Se revalida el
+movimiento al confirmar. Las figuras se pintan tras cuadrícula/coordenadas, con
+código de equipo, patrón y resaltado de selección. Terreno/muros siguen reservados.

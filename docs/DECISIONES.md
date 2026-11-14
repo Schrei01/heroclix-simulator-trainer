@@ -123,3 +123,34 @@ verificado ni implementado ninguna regla del juego.
   firmado. En Android 17 se comprobó el recorrido offline hasta 40×40/AA20,
   giro y conservación al volver al inicio. El detalle, hash y límites del entorno
   constan en ESTADO.md. Se deja la rama de 01 para revisión, sin iniciar 02.
+
+## Etapa 02 — 2026-11-14
+
+- La orden del usuario autoriza continuar desde 01. Rama `codex/prompt-02`, app 0.3.0+3.
+- BoardSession posee figuras, equipos y contadores monotónicos locales. IDs `figure-N`
+  y etiquetas A…Z, AA… no se reciclan al borrar; editar conserva ambos. Nombres repetidos
+  son válidos. La identidad no depende del índice de una lista.
+- CharacterRepository inmutable deriva su índice de ocupación. Una sola función
+  valida toda la huella y los límites, excluyendo el propio ID al mover/editar.
+  Operaciones fallidas dejan el snapshot completo intacto.
+- Bases 1×1 y 2×2 en UI; Footprint admite rectángulos extensibles en dominio.
+  La 2×2 se ancla arriba a la izquierda y es representación de posición, no legalidad
+  reglamentaria. No se modelan todavía reglas especiales de bases (08).
+- Velocidad/alcance: enteros 0–99 como límite de entrada del producto, sin afirmar
+  que todo valor sea una característica reglamentaria válida. Nombre: 1–80 caracteres.
+- Azul/T1 liso y Rojo/T2 rayado iniciales. Equipos adicionales: nombre 1–40,
+  código estable T3…, paleta opaca y patrón seleccionables; nombres de equipo únicos
+  ignorando mayúsculas. El texto de código distingue equipos además del color.
+- Toque selecciona; Personajes crea en vacío mediante formulario. Pulsación larga
+  inicia arrastre de figura; pan rápido y pinza conservan la navegación. Preview
+  transitoria en canvas, ✓/× y explicación; commit único al soltar con revalidación.
+  Cancelar o añadir otro dedo descarta preview. Se conserva el desfase al tomar una
+  celda secundaria de una base 2×2.
+- Edición de posición y lista de figuras ofrecen alternativas accesibles al arrastre.
+  Duplicar asigna identidad nueva al guardar; cancelar no crea una figura. Un equipo
+  creado explícitamente permanece en la sesión aunque se cancele la ficha.
+- Eliminar exige confirmación; historial/deshacer queda para 04. Los snapshots
+  inmutables preparan esa etapa sin implementar un historial anticipadamente.
+- Reducir dimensiones se rechaza si una base quedaría fuera; ampliar conserva todas
+  las figuras. No se borran ni reubican silenciosamente.
+- Sin dependencias nuevas, red en runtime, ataques, reglas ni funciones de 03.

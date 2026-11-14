@@ -1,153 +1,147 @@
-# Estado actual — etapa 01
+# Estado actual — etapa 02
 
-2026-11-14 (America/Bogota). App **0.2.0+2**.
+2026-11-14 (America/Bogota). App **0.3.0+3**.
 Repositorio: https://github.com/Schrei01/heroclix-simulator-trainer.
-Rama: `codex/prompt-01`, desde la entrega 00 (`c5d3413`).
+Rama: `codex/prompt-02`, sobre la entrega 01 (`6618597`).
 
-**01 implementada; análisis, 52 pruebas, 5 renders, build debug e interacción
-en emulador Android verificados. Pendiente revisión del usuario. No se inició 02.**
-
-El informe anterior se conserva en [ENTREGA_00.md](ENTREGA_00.md).
+**02 implementada y verificada: análisis limpio, 77 pruebas, 8 renders, APK
+debug firmado y recorrido parcial instalado en Android. Pendiente revisión del usuario.**
+Informes anteriores: [ENTREGA_00.md](ENTREGA_00.md), [ENTREGA_01.md](ENTREGA_01.md).
 
 ## A. Operativo frente a preparado
 
-| Función | Estado real |
-| --- | --- |
-| Inicio y navegación al Editor | Operativos; los otros tres modos son futuros |
-| Tablero 4×4 inicial | Operativo; 16 casillas cuadradas |
-| Filas/columnas independientes 2–40 | Operativo; validación de vacío, enteros y límites |
-| Coordenadas A1…AN40 | Operativas; índices cero-base y conversión bidireccional |
-| Selección/deselección | Táctiles, con borde/marcador y coordenada visible |
-| Zoom, pinza y pan | Operativos; gestos no producen selección accidental |
-| Centrar y ajustar | Operativos, independientes de la selección |
-| Cuadrícula/coordenadas y limpiar selección | Controles operativos |
-| Cambiar tamaño con selección | Confirmación; cancelar conserva la sesión |
-| Giro y vuelta al inicio | Conservan sesión; giro mantiene zoom y centro lógico |
-| Herramientas | Solo Seleccionar activa; otras siete deshabilitadas |
-| Capas futuras | Separación documentada; sin terreno, muros ni ocupantes |
-| Guardado, historial, figuras y reglas | No implementados en 01 |
+- Herramienta Personajes: crear al tocar casilla vacía, seleccionar desde tablero
+  o lista, ver/editar ficha, cambiar equipo, duplicar con nueva identidad y eliminar
+  previa confirmación. Nombre, posición, base, velocidad y alcance configurables.
+- Fichas A…Z, AA… con ID estable independiente de nombre/coordenada. Nombres iguales
+  admitidos. Azul/T1 liso y Rojo/T2 rayado iniciales; crear equipos con código,
+  nombre, paleta y patrón. Color nunca es el único identificador.
+- Bases 1×1 y 2×2: ocupación completa, límites y colisiones validados centralmente.
+  2×2 es representación de posición, no legalidad reglamentaria.
+- Mantener pulsado y arrastrar: preview ✓/× más explicación. Destino válido se
+  confirma al soltar; inválido/cancelación/segundo dedo deja la ocupación intacta.
+  Movimiento por coordenada editable como alternativa accesible.
+- Zoom, pan, giro y navegación al inicio preservan las figuras durante la sesión.
+  Reducción de tablero rechazada si una base quedaría fuera; ampliación las conserva.
+- Solo Seleccionar y Personajes activas. Los otros modos siguen deshabilitados.
+  Deshacer, persistencia, terreno, muros y reglas son futuros.
 
 ## B. Archivos principales
 
-- `lib/domain/board/`: BoardDimensions, CellCoordinate, BoardGeometry,
-  BoardCamera y ViewportSize, en Dart puro.
-- `lib/application/board/board_session.dart`: estado central inmutable.
-- `lib/presentation/editor/`: controlador de presentación, canvas, painter,
-  herramientas, controles y diálogo de tamaño.
-- `lib/app.dart`, catálogo y HomeScreen: ciclo de vida de sesión y acceso al Editor.
-- Tests de dominio, sesión y Editor; inicio actualizado a un modo disponible.
-- `tool/preview_test.dart`: capturas del inicio y tableros 8×12 y 40×40.
+- `lib/domain/characters/{character,team,character_repository}.dart`: modelos puros,
+  huellas extensibles, colección inmutable e índice de ocupación.
+- `lib/application/board/board_session.dart`: escenario local, equipos, identidad
+  monotónica y operaciones atómicas.
+- `lib/presentation/editor/character_dialog.dart`: ficha, duplicación, borrado y equipos.
+- Canvas, painter, controller y Editor: gestos, preview, fichas y lista accesible.
+- `test/characters_test.dart`, `test/character_editor_test.dart`, regresiones del Editor
+  y `tool/preview_test.dart`. README, arquitectura, decisiones y roadmap actualizados.
 
 ## C. Verificación ejecutada
 
-Flutter **3.50.0**, Dart **3.14.0**, desde
-`C:\Users\ValinorPC\develop\flutter\bin` o el PATH temporal documentado.
-Android: minSdk **24**, compile/targetSdk **36**, NDK **28.2.13676358**,
-AGP **9.3.1**, Gradle **9.5.0**, Kotlin **2.4.20**, JBR **25.0.4**.
+Entorno sin cambio: Flutter 3.50.0, Dart 3.14.0, material_ui 1.11.0; Android
+minSdk 24, compile/target 36, JBR 25, Gradle 9.5.0, AGP 9.3.1 y Kotlin 2.4.20.
+No se añadieron dependencias.
 
 | Comando | Resultado real |
 | --- | --- |
-| `flutter pub get` | Correcto; ninguna dependencia nueva |
-| `dart format lib test tool` | Fuentes formateadas |
-| `flutter analyze` | **No issues found** |
-| `flutter test` | **52 pruebas aprobadas** |
-| `flutter test tool/preview_test.dart` | **5 renders aprobados**, revisados visualmente |
-| `flutter build apk --debug` | **Correcto**, build definitivo en **65,5 s**, tras comprobar teclado y área segura |
-| `aapt dump badging` / `dump permissions` | 0.2.0, código 2, SDK 24/36; sin INTERNET |
+| `dart format lib test tool` | Correcto |
+| `flutter --no-version-check analyze` | **No issues found**, 9,5 s |
+| `flutter --no-version-check test --reporter expanded` | **77 pruebas aprobadas**, 32 s |
+| `flutter --no-version-check test tool/preview_test.dart` | **8 renders aprobados**, 6 s; revisados visualmente |
+| `flutter --no-version-check test test/character_editor_test.dart` | **16 aprobadas** tras el último ajuste de nombre Unicode |
+| `flutter --no-version-check build apk --debug` | **Correcto**, build definitivo 79,6 s |
+| `aapt dump badging` / `dump permissions` | Versión 0.3.0/código 3, SDK 24/36, sin INTERNET |
 | `apksigner verify --verbose` | **Verifies**, firma debug APK v2 válida |
-| `adb install -r --no-incremental` | **Success**, APK definitivo instalado en Android 17 / API 37 |
-| Recorrido Android en modo avión | Selección, zoom/pan, 8×12, giro, confirmación y 40×40 comprobados |
+| `adb install -r --no-incremental` | **Success**, versión 0.3.0/código 3 instalada en Android 17/API 37 |
+| Recorrido instalado en modo avión | Creación, equipos, arrastre válido/colisión, edición y duplicación comprobados |
 
-Las 52 pruebas son 14 de dominio/aplicación, 16 del inicio y 22 del Editor.
-Incluyen 4×4=16, 8×12=96, 16×24=384 y 40×40=1600; etiquetas hasta AA1/AN40;
-4800 conversiones con tres cámaras; bordes exactos; pan y pinza con dos punteros;
-cancelación/confirmación de tamaño y conservación tras giro/navegación.
-También se simula el teclado del formulario para comprobar que no altera
-viewport, cámara ni selección del tablero situado debajo.
+Las 77 pruebas comprenden 23 de dominio/aplicación, 16 del inicio, 22 del Editor
+anterior y 16 de interfaz de figuras. Incluyen colisiones completas, límites 2×2,
+identidad, nombres repetidos, duplicación, liberación de origen, equipos, rechazo
+atómico, redimensionamiento y conservación ante cámara/orientación/navegación.
+Widgets: creación/edición, mensajes inválidos, duplicar/borrar, equipos, arrastre
+válido/inválido/fuera, cancelar, segundo dedo y anclaje desde celda secundaria.
+Formularios comprobados a 320×568, 800×360 y 320×320 con texto 100 % y 300 %.
 
-Editor y configuración se abren en 320×568, 800×360, 320×320, 568×320 y
-1024×768 con texto ×1, ×2 y ×3, sin desbordes. El inicio conserva sus otros
-15 casos de tamaño/escala. No se silencian toques fallidos ni errores.
+Se corrigieron dos fallos encontrados en el recorrido de pruebas: aviso que tapaba
+el botón de ficha y formularios con dropdowns desbordados o acciones inaccesibles
+con texto grande. Las pruebas definitivas pasan después de esas correcciones.
+La comprobación de actualizaciones del SDK intentó descargar etiquetas Git; se
+canceló esa consulta y se utilizó `--no-version-check`, sin actualizar Flutter.
 
-### APK comprobado
+Evidencia local en `build/`: `test-02-final.log`, `analyze-02-final.log`,
+`preview-02.log`, `character-test-02-final.log`, `build-02-final.log`; renders en `build/previews/prompt-02/`. Son renders Flutter,
+no evidencia de instalación en Android. Las capturas reales del recorrido instalado
+se conservan por separado en `build/verification/prompt-02/`.
 
-- Salida estándar: `C:\Users\ValinorPC\Documents\ChatGPT\App de heroclix\build\app\outputs\flutter-apk\app-debug.apk`.
-- Copia de entrega: `C:\Users\ValinorPC\Documents\ChatGPT\App de heroclix\build\releases\heroclix-prompt-01-debug.apk`.
-- **182427264 bytes**, aproximadamente **173,98 MiB**.
-- SHA-256: `563CE16BB898F3F284EE18EBDE81EB15F679EB4077AA99A19F855A4C544F74EF`.
-- ID: `com.valinor.heroclixtrainer`, versión 0.2.0, código 2.
-- ABI: arm64-v8a, armeabi-v7a y x86_64. Firma debug; no release final.
-- APK de 00 conservado en `build/releases/heroclix-prompt-00-debug.apk`,
-  contrastado con su hash histórico antes de sustituir la salida estándar.
+APK definitivo: `build/releases/heroclix-prompt-02-debug.apk`, **182514718 bytes**
+(**174,06 MiB**). SHA-256:
+`C20C49E98DAA1890D8E22395E94D37663C3F9A3BD465A2AA95934290025FCB0C`.
+También disponible en `build/app/outputs/flutter-apk/app-debug.apk`.
+Los binarios y capturas se conservan locales, excluidos de Git.
 
-Renders en `build/previews/`: inicio vertical/horizontal, editor 8×12 en ambas
-orientaciones (D6) y editor 40×40 (AA20). No son capturas de teléfono.
+### Recorrido Android realmente ejecutado
 
-### Ejecución Android comprobada
+AVD Android 17/API 37, 540×1200, instancia temporal sin ventana, `-read-only` y
+`-no-snapshot`. Modo avión confirmado en 1 y Wi-Fi en 0. Se instaló el APK definitivo.
 
-AVD **Medium Phone API 37.0**, Android **17 / API 37**, x86_64, emulador 37.2.13,
-WHPX y GPU host NVIDIA. Framebuffer **540×1200**, densidad **210**. La imagen
-exige 4096 MiB de RAM; se probaron sesiones temporales `-read-only`, sin guardar
-snapshots ni cambiar la configuración persistente de la AVD. Se cerró al finalizar.
+- Crear A en A1 con Azul/T1 y B en C1 con Rojo/T2. Letras, códigos y patrones visibles.
+- Arrastrar A desde A1 a B2: preview válida con ✓; el origen permanece ocupado hasta
+  soltar y después queda libre. El pie muestra A en B2.
+- Arrastrar A hacia C1: preview inválida con × y explicación «C1 está ocupada por la
+  ficha B». Al soltar, A permanece en B2 y B en C1.
+- Editar el nombre de A con teclado y guardar conserva su letra/posición. Duplicar
+  crea la ficha C en A1 con el nombre editado, sin desplazar A ni B.
+- Capturas reales revisadas: `dos_equipos.png`, `preview_valida.png`, `movida_B2.png`,
+  `preview_invalida.png`, `colision_rechazada.png` y `duplicada_C.png`.
 
-Comprobado sobre el APK definitivo:
+El arranque en frío demoró unos 197 s y Android mostró avisos de System UI y
+Digital Wellbeing; se atendieron y se detuvieron servicios de fondo únicamente en
+la instancia temporal. Son limitaciones del entorno y no se presentan como errores
+de la aplicación. El emulador ya no estaba activo al retomar la conversación.
+No se completó en el recorrido instalado la comprobación de base 2×2 ni el giro;
+ambos casos sí pasaron en las pruebas de dominio/widgets descritas arriba.
+No se afirma haber revisado un log final de crashes del proceso Android.
 
-- Arranque offline, entrada al Editor 4×4 y selección A1.
-- Formulario con teclado numérico: los rótulos de las filas conservaron las
-  mismas posiciones de píxel al abrir el teclado tras el ajuste de área segura.
-- Cambio a 8 filas × 12 columnas, selección D6 y giro a horizontal conservando D6.
-- Confirmación antes de perder D6; el tablero anterior permanece mientras se decide.
-- Cambio confirmado a 40×40, selección AA20 y navegación con seis ampliaciones
-  y arrastre sin perder la coordenada seleccionada.
-- Volver al inicio y abrir de nuevo conserva 40×40, AA20 y la vista de cámara.
-- Modo avión `1`, Wi-Fi deshabilitado; sin RenderFlex overflow, FATAL EXCEPTION
-  ni Unhandled Exception en el log del proceso. El buffer de crashes estuvo vacío.
+## D. Comprobación manual
 
-Las pruebas de pinza con dos punteros y todas las entradas inválidas se verificaron
-automáticamente en widgets; no se presentan como una prueba de pinza en teléfono.
-La imagen del emulador tuvo un arranque lento y ANR inicial de System UI antes del
-recorrido. Se cerraron servicios de Google de esa sesión temporal y se continuó;
-esto no es una medición de rendimiento en teléfono físico. El aviso esperado del
-servicio VM local sin INTERNET sigue documentado en ANDROID.md.
+1. Instalar el APK debug de 02 y abrir Editor sin conexión.
+2. Personajes → A1 → nombre/equipo/velocidad/alcance → Guardar. Repetir en C1 con
+   Rojo/T2. Confirmar fichas A/B y códigos/patrones distintos.
+3. Tocar A, pulsar lápiz inferior, cambiar nombre/posición/equipo. Crear un equipo
+   adicional. Guardar mantiene su etiqueta e ID.
+4. Mantener A y arrastrar hacia una celda libre: preview ✓, soltar mueve. Hacia B:
+   preview ×, soltar explica colisión y conserva origen. Tocar vacío con Seleccionar
+   selecciona la casilla. La ficha también permite escribir una coordenada.
+5. Duplicar desde ficha, elegir destino y guardar; aparece nueva letra. Eliminar
+   la copia y confirmar. Revisar lista de figuras del icono superior.
+6. Crear base 2×2: D4 se rechaza en tablero 4×4; C3 ocupa C3,D3,C4,D4. Revisar
+   aviso de representación sin legalidad reglamentaria. Intentar superponer otra
+   figura sobre cualquiera de sus cuatro casillas.
+7. Zoom/pan, girar y volver al inicio/editor: las coordenadas no cambian. Reducir
+   dimensiones con una base fuera se rechaza sin borrar figuras.
 
-Capturas reales revisadas en `build/verification/prompt-01/`: `final_4x4.png`,
-`tablero_8x12.png`, `horizontal_8x12_D6.png`, `confirmacion.png`, `teclado.png`,
-`tablero_40x40_AA20.png`, `zoom_40x40_AA20.png` y `sesion_conservada.png`.
-Estos archivos de build se ignoran en Git.
+## E. Limitaciones y pendientes
 
-## D. Procedimiento manual
-
-1. Instalar este APK según ANDROID.md y abrir **Editor**.
-2. Comprobar 4×4; tocar A1 y volver a tocarla para deseleccionar.
-3. Crear 8 filas y 12 columnas; seleccionar una casilla. Intentar 40×40 y
-   cancelar: tamaño y selección anteriores deben conservarse.
-4. Confirmar el cambio: limpia selección y ajusta cámara, conservando opciones.
-   Probar vacío, letras, 1 y 41 sin alterar el tablero.
-5. Hacer pinza/arrastre sin seleccionar; usar −/+, centrar, ajustar y opciones.
-6. Girar y volver al inicio/Editor: conserva tamaño y selección. Las otras
-   herramientas no permiten colocar ni borrar elementos.
-7. Activar modo avión y reiniciar el proceso: funciona offline y empieza en 4×4,
-   porque todavía no existe persistencia.
-
-## E. Límites y supuestos
-
-- Bordes compartidos: derecha/abajo. Borde externo derecho/inferior excluido.
-  Tolerancia de 1e-9 de casilla para redondeo de transformaciones.
-- Escala 0,02–6 y 64 unidades por celda son convenciones de render, no medidas
-  de HeroClix. Las coordenadas seleccionadas nunca son píxeles.
-- La sesión dura mientras el proceso siga abierto. Guardado/historial son de 04.
-- No hay personajes, equipos, terreno, muros, visión, distancias ni reglas en 01.
-- Teléfono físico y recorrido de TalkBack pendientes. No se intentó release firmado.
-- Sin permiso INTERNET: el servicio local VM de debug no puede abrir un socket;
-  la app se instala/abre manualmente sin hot reload (ANDROID.md).
+- Sesión solo en memoria: cerrar el proceso pierde figuras/equipos. Guardar e
+  historial/deshacer corresponden a 04. La eliminación actual exige confirmación.
+- Velocidad/alcance 0–99 son anotaciones validadas; no se calculan ataques, rutas,
+  alcance efectivo, visión ni legalidad de movimiento. Bases especiales se evaluarán
+  en 08. No hay excepciones que permitan solapar figuras.
+- Anclaje de bases rectangulares: esquina superior izquierda. UI ofrece solo 1×1/2×2.
+- Crear un equipo es una operación explícita; permanece en la sesión aunque luego
+  se cancele el formulario de figura. No se ofrece gestión/borrado de equipos existentes.
+- En 40×40 se requiere ampliar para leer y tocar con precisión. Se pinta un único
+  canvas; no se creó un widget por celda ni se incorporó un motor de reglas.
+- No se probó un teléfono físico ni APK release firmado con clave del usuario.
 
 ## F. Documentación
 
-ROADMAP, DECISIONES, ARQUITECTURA, README y el módulo board describen 01.
-ENTREGA_00 conserva el informe anterior. REGLAS conserva la fuente oficial;
-esta etapa no implementó ninguna regla del juego.
+ROADMAP, DECISIONES y este ESTADO actualizados; README y ARQUITECTURA describen
+el uso y los límites reales. El informe 01 se archivó antes de sustituir el estado.
+Las etapas anteriores y sus APK locales permanecen conservados.
 
-## G. Siguiente etapa
+## G. Límite de etapa
 
-Revisar 01 y autorizar expresamente 02 para figuras y equipos.
-**No se avanzó al Prompt 02.**
+**No se inició Prompt 03.** La siguiente etapa requiere nueva orden del usuario.
