@@ -1,0 +1,21 @@
+name: heroclix_simulator_trainer
+description: Simulador táctico y entrenador offline para Android.
+publish_to: none
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.14.0
+  flutter: '>=3.50.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  material_ui: ^1.11.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true

@@ -1,0 +1,6 @@
+# Copiar a key.properties (ignorado por Git) y completar localmente.
+# Usar ruta absoluta con / en Windows. Nunca subir claves ni contraseñas.
+storeFile=
+storePassword=
+keyAlias=
+keyPassword=
