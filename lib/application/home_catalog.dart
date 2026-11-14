@@ -1,6 +1,6 @@
 import '../domain/app_mode.dart';
 
-/// Catálogo inmutable. Solo el editor tiene una ruta operativa en 01.
+/// Catálogo inmutable. Solo el editor tiene una ruta operativa en 01–02.
 const homeModes = <AppMode>[
   AppMode.editor,
   AppMode.simulator,

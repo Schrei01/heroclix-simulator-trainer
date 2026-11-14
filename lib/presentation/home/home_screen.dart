@@ -148,7 +148,7 @@ class _ModeCard extends StatelessWidget {
     final (title, description, icon) = switch (mode) {
       AppMode.editor => (
         'Editor',
-        'Configura una cuadrícula y selecciona casillas.',
+        'Configura el tablero y coloca figuras de distintos equipos.',
         Icons.edit_outlined,
       ),
       AppMode.simulator => (

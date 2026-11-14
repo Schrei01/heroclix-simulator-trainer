@@ -192,7 +192,6 @@ void main() {
   ) async {
     final controller = await openEditor(tester);
     for (final id in [
-      'characters',
       'terrain',
       'walls',
       'vision',

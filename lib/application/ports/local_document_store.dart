@@ -1,4 +1,4 @@
-/// Puerto para futuros adaptadores locales. No realiza I/O en las etapas 00–01.
+/// Puerto para futuros adaptadores locales. No realiza I/O en las etapas 00–02.
 ///
 /// Los IDs son opacos: el adaptador deberá validarlos y no interpretarlos como
 /// rutas arbitrarias. Las operaciones fallidas deberán comunicar el error sin

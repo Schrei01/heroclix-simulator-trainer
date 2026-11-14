@@ -8,6 +8,7 @@ import '../theme/app_theme.dart';
 import 'board_canvas.dart';
 import 'board_size_dialog.dart';
 import 'editor_controller.dart';
+import 'character_dialog.dart';
 
 enum _ViewAction { grid, coordinates, clearSelection }
 
@@ -24,7 +25,60 @@ class EditorScreen extends StatelessWidget {
         selectedCell: controller.value.selectedCell,
       ),
     );
-    if (dimensions != null) controller.changeDimensions(dimensions);
+    if (dimensions != null) {
+      final error = controller.attempt(
+        (session) => session.changeDimensions(dimensions),
+      );
+      if (error != null && context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(error)));
+      }
+    }
+  }
+
+  Future<void> _roster(BuildContext context) async {
+    final id = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        scrollable: true,
+        title: const Text('Figuras del escenario'),
+        content: SizedBox(
+          width: 380,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (controller.value.characters.isEmpty)
+                const Text(
+                  'Usa Personajes y toca una casilla vacía para crear una figura.',
+                ),
+              for (final figure in controller.value.characters.all)
+                ListTile(
+                  key: ValueKey('roster-${figure.id}'),
+                  title: Text('${figure.label} · ${figure.name}'),
+                  subtitle: Text(
+                    '${controller.value.teamById(figure.teamId).code} · ${controller.value.teamById(figure.teamId).name} · ${figure.position.label} · base ${figure.footprint.label}',
+                  ),
+                  onTap: () => Navigator.pop(context, figure.id),
+                ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cerrar'),
+          ),
+        ],
+      ),
+    );
+    if (id != null && context.mounted) {
+      controller.selectCharacter(id);
+      await showCharacterDialog(
+        context,
+        controller,
+        character: controller.value.characters.byId(id),
+      );
+    }
   }
 
   @override
@@ -44,6 +98,12 @@ class EditorScreen extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
           actions: [
+            IconButton(
+              key: const ValueKey('character-roster'),
+              tooltip: 'Lista de figuras',
+              onPressed: () => _roster(context),
+              icon: const Icon(Icons.groups_outlined),
+            ),
             IconButton(
               key: const ValueKey('board-size-button'),
               tooltip: 'Cambiar filas y columnas',
@@ -100,7 +160,10 @@ class EditorScreen extends StatelessWidget {
                     final canvas = Expanded(
                       child: BoardCanvas(controller: controller),
                     );
-                    final tools = _ToolBar(vertical: horizontal);
+                    final tools = _ToolBar(
+                      vertical: horizontal,
+                      controller: controller,
+                    );
                     return horizontal
                         ? Row(children: [tools, canvas])
                         : Column(children: [tools, canvas]);
@@ -125,8 +188,13 @@ class _CameraBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final selected = session.selectedCell;
-    final message = selected == null
-        ? 'Cuadrícula vacía · toca una casilla'
+    final figure = session.selectedCharacter;
+    final message = figure != null
+        ? '${figure.label} · ${figure.name} · ${session.teamById(figure.teamId).code} · ${figure.position.label}'
+        : selected == null
+        ? (session.characters.isEmpty
+              ? 'Cuadrícula vacía · toca una casilla'
+              : '${session.characters.length} figuras · toca una casilla')
         : 'Seleccionada: ${selected.label}';
     final zoom = '${(session.camera.scale * 100).round()} %';
     return ColoredBox(
@@ -135,6 +203,14 @@ class _CameraBar extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 8),
         child: Row(
           children: [
+            if (figure != null)
+              IconButton(
+                key: const ValueKey('edit-character'),
+                tooltip: 'Ver o editar ficha ${figure.label}',
+                onPressed: () =>
+                    showCharacterDialog(context, controller, character: figure),
+                icon: const Icon(Icons.edit_outlined),
+              ),
             Expanded(
               child: Tooltip(
                 message: '$message · zoom $zoom',
@@ -181,9 +257,10 @@ class _CameraBar extends StatelessWidget {
 }
 
 class _ToolBar extends StatelessWidget {
-  const _ToolBar({required this.vertical});
+  const _ToolBar({required this.vertical, required this.controller});
 
   final bool vertical;
+  final EditorController controller;
 
   @override
   Widget build(BuildContext context) {
@@ -207,23 +284,31 @@ class _ToolBar extends StatelessWidget {
             width: 48,
             height: 48,
             child: Semantics(
-              selected: id == 'select',
+              selected: id == controller.value.tool.name,
               child: IconButton(
                 key: ValueKey('tool-$id'),
-                tooltip: id == 'select' ? title : '$title · Próximamente',
-                onPressed: id == 'select'
+                tooltip: id == 'select' || id == 'characters'
+                    ? title
+                    : '$title · Próximamente',
+                onPressed: id == 'select' || id == 'characters'
                     ? () {
+                        controller.setTool(
+                          id == 'select'
+                              ? EditorTool.select
+                              : EditorTool.characters,
+                        );
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
+                          SnackBar(
                             content: Text(
-                              'Toca una casilla para seleccionarla; '
-                              'tócala de nuevo para deseleccionar.',
+                              id == 'characters'
+                                  ? 'Toca una casilla vacía para crear. Mantén pulsada una figura y arrastra para moverla.'
+                                  : 'Toca para seleccionar; mantén pulsada una figura y arrastra para moverla.',
                             ),
                           ),
                         );
                       }
                     : null,
-                style: id == 'select'
+                style: id == controller.value.tool.name
                     ? IconButton.styleFrom(
                         backgroundColor: AppTheme.accent.withValues(
                           alpha: 0.18,

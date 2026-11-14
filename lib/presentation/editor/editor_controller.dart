@@ -3,6 +3,10 @@ import 'package:flutter/foundation.dart';
 import '../../application/board/board_session.dart';
 import '../../domain/board/board_dimensions.dart';
 import '../../domain/board/board_viewport.dart';
+import '../../domain/board/cell_coordinate.dart';
+import '../../domain/characters/character.dart';
+import '../../domain/characters/character_repository.dart';
+import '../../domain/characters/team.dart';
 
 /// Adaptador de notificación: la sesión y las conversiones usan Dart puro.
 final class EditorController extends ValueNotifier<BoardSession> {
@@ -19,4 +23,28 @@ final class EditorController extends ValueNotifier<BoardSession> {
   void zoom(double factor) => value = value.zoom(factor);
   void centerCamera() => value = value.centerCamera();
   void resetCamera() => value = value.resetCamera();
+  void setTool(EditorTool tool) => value = value.setTool(tool);
+  void selectCharacter(String id) => value = value.selectCharacter(id);
+  void deleteCharacter(String id) => value = value.deleteCharacter(id);
+  String? attempt(BoardSession Function(BoardSession) operation) {
+    try {
+      value = operation(value);
+      return null;
+    } on PlacementException catch (error) {
+      return error.message;
+    } on ArgumentError catch (error) {
+      return error.message?.toString() ?? 'Datos inválidos.';
+    }
+  }
+
+  String? saveCharacter(CharacterDraft data, {String? id}) => attempt(
+    (session) => id == null
+        ? session.createCharacter(data)
+        : session.editCharacter(id, data),
+  );
+  String? moveCharacter(String id, CellCoordinate cell) =>
+      attempt((session) => session.moveCharacter(id, cell));
+  String? addTeam(String name, int color, TeamPattern pattern) => attempt(
+    (session) => session.addTeam(name: name, color: color, pattern: pattern),
+  );
 }
