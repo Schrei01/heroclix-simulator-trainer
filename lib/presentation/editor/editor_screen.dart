@@ -11,6 +11,7 @@ import 'editor_controller.dart';
 import 'character_dialog.dart';
 import 'layer_toolbar.dart';
 import 'layer_actions.dart';
+import '../scenarios/scenario_actions.dart';
 
 enum _ViewAction {
   grid,
@@ -20,6 +21,15 @@ enum _ViewAction {
   clearTerrain,
   clearWalls,
   clearFigures,
+  newScenario,
+  save,
+  saveAs,
+  library,
+  importJson,
+  exportJson,
+  shareJson,
+  exportPng,
+  details,
 }
 
 class EditorScreen extends StatelessWidget {
@@ -96,120 +106,233 @@ class EditorScreen extends StatelessWidget {
     valueListenable: controller,
     builder: (context, session, _) {
       final scaler = MediaQuery.textScalerOf(context);
-      return Scaffold(
-        // Los formularios viven en diálogos: su teclado no desplaza la cámara
-        // del tablero que permanece debajo.
-        resizeToAvoidBottomInset: false,
-        appBar: AppBar(
-          toolbarHeight: math.max(56, scaler.scale(24) + 16),
-          title: Text(
-            'Editor · ${session.dimensions.rows} × ${session.dimensions.columns}',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          actions: [
-            IconButton(
-              key: const ValueKey('character-roster'),
-              tooltip: 'Lista de figuras',
-              onPressed: () => _roster(context),
-              icon: const Icon(Icons.groups_outlined),
+      final workspace = controller.workspace;
+      final filesEnabled =
+          workspace != null &&
+          !workspace.loading &&
+          !workspace.busy &&
+          !controller.fileBusy;
+      final actions = ScenarioActions(controller);
+      return AbsorbPointer(
+        absorbing: workspace?.loading == true || workspace?.switching == true,
+        child: Scaffold(
+          // Los formularios viven en diálogos: su teclado no desplaza la cámara
+          // del tablero que permanece debajo.
+          resizeToAvoidBottomInset: false,
+          appBar: AppBar(
+            toolbarHeight: math.max(
+              56,
+              scaler.scale(workspace == null ? 24 : 27) + 16,
             ),
-            IconButton(
-              key: const ValueKey('board-size-button'),
-              tooltip: 'Cambiar filas y columnas',
-              onPressed: () => _configureSize(context),
-              icon: const Icon(Icons.grid_4x4_outlined),
-            ),
-            PopupMenuButton<_ViewAction>(
-              key: const ValueKey('board-view-options'),
-              tooltip: 'Opciones del tablero',
-              onSelected: (action) {
-                switch (action) {
-                  case _ViewAction.grid:
-                    controller.toggleGrid();
-                  case _ViewAction.coordinates:
-                    controller.toggleCoordinates();
-                  case _ViewAction.clearSelection:
-                    controller.clearSelection();
-                  case _ViewAction.legend:
-                    showLayerLegend(context);
-                  case _ViewAction.clearTerrain:
-                    clearLayer(context, controller, 'terreno');
-                  case _ViewAction.clearWalls:
-                    clearLayer(context, controller, 'muros');
-                  case _ViewAction.clearFigures:
-                    clearLayer(context, controller, 'figuras');
-                }
-              },
-              itemBuilder: (context) => [
-                CheckedPopupMenuItem(
-                  key: const ValueKey('grid-option'),
-                  value: _ViewAction.grid,
-                  checked: session.showGrid,
-                  child: const Text('Mostrar cuadrícula'),
+            title: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Editor · ${session.dimensions.rows} × ${session.dimensions.columns}',
+                  style: workspace == null
+                      ? null
+                      : const TextStyle(fontSize: 16),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                CheckedPopupMenuItem(
-                  key: const ValueKey('coordinates-option'),
-                  value: _ViewAction.coordinates,
-                  checked: session.showCoordinates,
-                  child: const Text('Mostrar coordenadas'),
-                ),
-                PopupMenuItem(
-                  key: const ValueKey('clear-selection-option'),
-                  value: _ViewAction.clearSelection,
-                  enabled: session.selectedCell != null,
-                  child: const Text('Limpiar selección'),
-                ),
-                const PopupMenuItem(
-                  value: _ViewAction.legend,
-                  child: Text('Leyenda y capas'),
-                ),
-                const PopupMenuItem(
-                  key: ValueKey('clear-terrain-option'),
-                  value: _ViewAction.clearTerrain,
-                  child: Text('Limpiar solo terreno'),
-                ),
-                const PopupMenuItem(
-                  key: ValueKey('clear-walls-option'),
-                  value: _ViewAction.clearWalls,
-                  child: Text('Limpiar solo muros'),
-                ),
-                const PopupMenuItem(
-                  key: ValueKey('clear-figures-option'),
-                  value: _ViewAction.clearFigures,
-                  child: Text('Limpiar solo figuras'),
-                ),
+                if (workspace != null)
+                  Tooltip(
+                    message: '${workspace.current.name} · ${workspace.status}',
+                    child: Text(
+                      workspace.current.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 11),
+                    ),
+                  ),
               ],
             ),
-          ],
-        ),
-        body: SafeArea(
-          top: false,
-          maintainBottomViewPadding: true,
-          child: Column(
-            children: [
-              if (session.editsLayers) LayerToolbar(controller: controller),
-              Expanded(
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    final horizontal =
-                        MediaQuery.orientationOf(context) ==
-                        Orientation.landscape;
-                    final canvas = Expanded(
-                      child: BoardCanvas(controller: controller),
-                    );
-                    final tools = _ToolBar(
-                      vertical: horizontal,
-                      controller: controller,
-                    );
-                    return horizontal
-                        ? Row(children: [tools, canvas])
-                        : Column(children: [tools, canvas]);
-                  },
+            actions: [
+              if (workspace != null)
+                IconButton(
+                  key: const ValueKey('scenario-library'),
+                  tooltip: 'Biblioteca local',
+                  onPressed: filesEnabled
+                      ? () => actions.library(context)
+                      : null,
+                  icon: const Icon(Icons.folder_open_outlined),
                 ),
+              IconButton(
+                key: const ValueKey('character-roster'),
+                tooltip: 'Lista de figuras',
+                onPressed: () => _roster(context),
+                icon: const Icon(Icons.groups_outlined),
               ),
-              _CameraBar(controller: controller, session: session),
+              IconButton(
+                key: const ValueKey('board-size-button'),
+                tooltip: 'Cambiar filas y columnas',
+                onPressed: () => _configureSize(context),
+                icon: const Icon(Icons.grid_4x4_outlined),
+              ),
+              PopupMenuButton<_ViewAction>(
+                key: const ValueKey('board-view-options'),
+                tooltip: 'Opciones del tablero',
+                onSelected: (action) {
+                  switch (action) {
+                    case _ViewAction.grid:
+                      controller.toggleGrid();
+                    case _ViewAction.coordinates:
+                      controller.toggleCoordinates();
+                    case _ViewAction.clearSelection:
+                      controller.clearSelection();
+                    case _ViewAction.legend:
+                      showLayerLegend(context);
+                    case _ViewAction.clearTerrain:
+                      clearLayer(context, controller, 'terreno');
+                    case _ViewAction.clearWalls:
+                      clearLayer(context, controller, 'muros');
+                    case _ViewAction.clearFigures:
+                      clearLayer(context, controller, 'figuras');
+                    case _ViewAction.newScenario:
+                      actions.create(context);
+                    case _ViewAction.save:
+                      actions.save(context);
+                    case _ViewAction.saveAs:
+                      actions.saveAs(context);
+                    case _ViewAction.library:
+                      actions.library(context);
+                    case _ViewAction.importJson:
+                      actions.importJson(context);
+                    case _ViewAction.exportJson:
+                      actions.exportJson(context, share: false);
+                    case _ViewAction.shareJson:
+                      actions.exportJson(context, share: true);
+                    case _ViewAction.exportPng:
+                      actions.exportPng(context);
+                    case _ViewAction.details:
+                      actions.details(context);
+                  }
+                },
+                itemBuilder: (context) => [
+                  if (workspace != null) ...[
+                    PopupMenuItem(
+                      key: const ValueKey('new-scenario'),
+                      value: _ViewAction.newScenario,
+                      enabled: filesEnabled,
+                      child: const Text('Nuevo escenario'),
+                    ),
+                    PopupMenuItem(
+                      key: const ValueKey('save-scenario'),
+                      value: _ViewAction.save,
+                      enabled: filesEnabled,
+                      child: const Text('Guardar en biblioteca'),
+                    ),
+                    PopupMenuItem(
+                      key: const ValueKey('save-as-scenario'),
+                      value: _ViewAction.saveAs,
+                      enabled: filesEnabled,
+                      child: const Text('Guardar como'),
+                    ),
+                    PopupMenuItem(
+                      value: _ViewAction.library,
+                      enabled: filesEnabled,
+                      child: const Text('Biblioteca local'),
+                    ),
+                    PopupMenuItem(
+                      key: const ValueKey('import-scenario'),
+                      value: _ViewAction.importJson,
+                      enabled: filesEnabled && controller.files != null,
+                      child: const Text('Importar JSON'),
+                    ),
+                    PopupMenuItem(
+                      key: const ValueKey('export-json'),
+                      value: _ViewAction.exportJson,
+                      enabled: filesEnabled && controller.files != null,
+                      child: const Text('Exportar JSON'),
+                    ),
+                    PopupMenuItem(
+                      key: const ValueKey('share-json'),
+                      value: _ViewAction.shareJson,
+                      enabled: filesEnabled && controller.files != null,
+                      child: const Text('Compartir JSON'),
+                    ),
+                    PopupMenuItem(
+                      key: const ValueKey('export-png'),
+                      value: _ViewAction.exportPng,
+                      enabled: filesEnabled && controller.files != null,
+                      child: const Text('Exportar / compartir PNG'),
+                    ),
+                    const PopupMenuItem(
+                      value: _ViewAction.details,
+                      child: Text('Escenario y autoguardado'),
+                    ),
+                    const PopupMenuDivider(),
+                  ],
+                  CheckedPopupMenuItem(
+                    key: const ValueKey('grid-option'),
+                    value: _ViewAction.grid,
+                    checked: session.showGrid,
+                    child: const Text('Mostrar cuadrícula'),
+                  ),
+                  CheckedPopupMenuItem(
+                    key: const ValueKey('coordinates-option'),
+                    value: _ViewAction.coordinates,
+                    checked: session.showCoordinates,
+                    child: const Text('Mostrar coordenadas'),
+                  ),
+                  PopupMenuItem(
+                    key: const ValueKey('clear-selection-option'),
+                    value: _ViewAction.clearSelection,
+                    enabled: session.selectedCell != null,
+                    child: const Text('Limpiar selección'),
+                  ),
+                  const PopupMenuItem(
+                    value: _ViewAction.legend,
+                    child: Text('Leyenda y capas'),
+                  ),
+                  const PopupMenuItem(
+                    key: ValueKey('clear-terrain-option'),
+                    value: _ViewAction.clearTerrain,
+                    child: Text('Limpiar solo terreno'),
+                  ),
+                  const PopupMenuItem(
+                    key: ValueKey('clear-walls-option'),
+                    value: _ViewAction.clearWalls,
+                    child: Text('Limpiar solo muros'),
+                  ),
+                  const PopupMenuItem(
+                    key: ValueKey('clear-figures-option'),
+                    value: _ViewAction.clearFigures,
+                    child: Text('Limpiar solo figuras'),
+                  ),
+                ],
+              ),
             ],
+          ),
+          body: SafeArea(
+            top: false,
+            maintainBottomViewPadding: true,
+            child: Column(
+              children: [
+                if (session.editsLayers) LayerToolbar(controller: controller),
+                Expanded(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final horizontal =
+                          MediaQuery.orientationOf(context) ==
+                          Orientation.landscape;
+                      final canvas = Expanded(
+                        child: BoardCanvas(controller: controller),
+                      );
+                      final tools = _ToolBar(
+                        vertical: horizontal,
+                        controller: controller,
+                      );
+                      return horizontal
+                          ? Row(children: [tools, canvas])
+                          : Column(children: [tools, canvas]);
+                    },
+                  ),
+                ),
+                _CameraBar(controller: controller, session: session),
+              ],
+            ),
           ),
         ),
       );
@@ -322,6 +445,46 @@ class _ToolBar extends StatelessWidget {
       scrollDirection: vertical ? Axis.vertical : Axis.horizontal,
       padding: const EdgeInsets.all(8),
       children: [
+        if (controller.workspace case final workspace?)
+          SizedBox(
+            width: 48,
+            height: 48,
+            child: IconButton(
+              key: const ValueKey('autosave-status'),
+              tooltip: '${workspace.current.name} · ${workspace.status}',
+              onPressed: () => ScenarioActions(controller).details(context),
+              icon: workspace.loading || workspace.busy || controller.fileBusy
+                  ? const Icon(Icons.hourglass_empty)
+                  : Icon(
+                      (workspace.error != null ||
+                              workspace.autosaveError != null)
+                          ? Icons.error_outline
+                          : workspace.dirty || !workspace.saved
+                          ? Icons.info_outline
+                          : Icons.check_circle_outline,
+                    ),
+            ),
+          ),
+        SizedBox(
+          width: 48,
+          height: 48,
+          child: IconButton(
+            key: const ValueKey('undo-edit'),
+            tooltip: 'Deshacer',
+            onPressed: controller.history.canUndo ? controller.undo : null,
+            icon: const Icon(Icons.undo),
+          ),
+        ),
+        SizedBox(
+          width: 48,
+          height: 48,
+          child: IconButton(
+            key: const ValueKey('redo-edit'),
+            tooltip: 'Rehacer',
+            onPressed: controller.history.canRedo ? controller.redo : null,
+            icon: const Icon(Icons.redo),
+          ),
+        ),
         for (final (id, title, icon) in tools)
           SizedBox(
             width: 48,

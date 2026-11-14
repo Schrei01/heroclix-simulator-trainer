@@ -1,55 +1,63 @@
 import 'board_session.dart';
-import '../../domain/board/board_dimensions.dart';
-import '../../domain/characters/character_repository.dart';
-import '../../domain/terrain/terrain.dart';
-import '../../domain/terrain/edge_wall.dart';
 
-/// Un comando por operación terminada. No hay historial ni botones undo en 03.
+/// Referencias a contenido inmutable por operación terminada, nunca por píxel.
 final class BoardEdit {
-  BoardEdit.between(BoardSession before, BoardSession after)
-    : dimensions = before.dimensions,
-      _beforeTerrain = before.terrain,
-      _afterTerrain = after.terrain,
-      _beforeWalls = before.walls,
-      _afterWalls = after.walls,
-      _beforeCharacters = before.characters,
-      _afterCharacters = after.characters,
-      _afterNextCharacter = after.nextCharacter;
-  final BoardDimensions dimensions;
-  final TerrainLayer _beforeTerrain, _afterTerrain;
-  final WallLayer _beforeWalls, _afterWalls;
-  final CharacterRepository _beforeCharacters, _afterCharacters;
-  final int _afterNextCharacter;
-  bool get changesLayers =>
-      _beforeTerrain != _afterTerrain ||
-      _beforeWalls != _afterWalls ||
-      _beforeCharacters != _afterCharacters;
+  BoardEdit.between(this._before, this._after);
+  final BoardSession _before, _after;
+  static bool sameContent(BoardSession a, BoardSession b) =>
+      a.dimensions == b.dimensions &&
+      a.terrain == b.terrain &&
+      a.walls == b.walls &&
+      a.characters == b.characters &&
+      a.teams == b.teams;
+  bool get changesLayers => !sameContent(_before, _after);
   BoardSession reverse(BoardSession current) {
-    if (current.dimensions != dimensions ||
-        current.terrain != _afterTerrain ||
-        current.walls != _afterWalls ||
-        current.characters != _afterCharacters) {
+    if (!sameContent(current, _after)) {
       throw StateError('El comando no corresponde al estado actual.');
     }
-    return current.replaceLayers(
-      terrain: _beforeTerrain,
-      walls: _beforeWalls,
-      characters: _beforeCharacters,
-    );
+    return current.restoreContent(_before);
   }
 
   BoardSession apply(BoardSession current) {
-    if (current.dimensions != dimensions ||
-        current.terrain != _beforeTerrain ||
-        current.walls != _beforeWalls ||
-        current.characters != _beforeCharacters) {
+    if (!sameContent(current, _before)) {
       throw StateError('El comando no corresponde al estado actual.');
     }
-    return current.replaceLayers(
-      terrain: _afterTerrain,
-      walls: _afterWalls,
-      characters: _afterCharacters,
-      minimumNextCharacter: _afterNextCharacter,
-    );
+    return current.restoreContent(_after);
+  }
+}
+
+final class EditorHistory {
+  EditorHistory({this.limit = 100}) {
+    if (limit < 1 || limit > 1000) throw RangeError.range(limit, 1, 1000);
+  }
+  final int limit;
+  final _undo = <BoardEdit>[], _redo = <BoardEdit>[];
+  bool get canUndo => _undo.isNotEmpty;
+  bool get canRedo => _redo.isNotEmpty;
+  int get undoCount => _undo.length;
+  void record(BoardEdit edit) {
+    if (!edit.changesLayers) return;
+    _undo.add(edit);
+    if (_undo.length > limit) _undo.removeAt(0);
+    _redo.clear();
+  }
+
+  BoardSession undo(BoardSession current) {
+    if (!canUndo) return current;
+    final result = _undo.last.reverse(current);
+    _redo.add(_undo.removeLast());
+    return result;
+  }
+
+  BoardSession redo(BoardSession current) {
+    if (!canRedo) return current;
+    final result = _redo.last.apply(current);
+    _undo.add(_redo.removeLast());
+    return result;
+  }
+
+  void clear() {
+    _undo.clear();
+    _redo.clear();
   }
 }

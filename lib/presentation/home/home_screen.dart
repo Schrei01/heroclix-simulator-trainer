@@ -90,7 +90,7 @@ class HomeScreen extends StatelessWidget {
                   const SizedBox(height: 28),
                   const Text(
                     'Sin cuentas ni conexión a internet. '
-                    'Tu tablero se conserva durante esta sesión.',
+                    'Autoguardado local y biblioteca de escenarios en el editor.',
                   ),
                 ],
               ),

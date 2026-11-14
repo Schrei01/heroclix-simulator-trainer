@@ -41,6 +41,55 @@ final class BoardSession {
   );
 
   final BoardDimensions dimensions;
+
+  /// Reconstrucción del documento; la cámara y herramientas se reinician.
+  static BoardSession restore({
+    required BoardDimensions dimensions,
+    required List<Team> teams,
+    required CharacterRepository characters,
+    required TerrainLayer terrain,
+    required WallLayer walls,
+    required int nextCharacter,
+    required int nextTeam,
+  }) {
+    if (teams.isEmpty ||
+        teams.length > 32 ||
+        nextCharacter < 1 ||
+        nextTeam < 1 ||
+        characters.all.any(
+          (figure) => !teams.any((team) => team.id == figure.teamId),
+        )) {
+      throw ArgumentError('Equipos o identidades del escenario inválidos.');
+    }
+    return BoardSession._(
+      dimensions: dimensions,
+      camera: BoardCamera.identity,
+      teams: List.unmodifiable(teams),
+      characters: characters,
+      terrain: terrain,
+      walls: walls,
+      nextCharacter: nextCharacter,
+      nextTeam: nextTeam,
+    ).replaceLayers(terrain: terrain, walls: walls, characters: characters);
+  }
+
+  BoardSession restoreContent(BoardSession source) => _copy(
+    dimensions: source.dimensions,
+    teams: source.teams,
+    characters: source.characters,
+    terrain: source.terrain,
+    walls: source.walls,
+    clearSelection: true,
+    nextCharacter: source.nextCharacter > nextCharacter
+        ? source.nextCharacter
+        : nextCharacter,
+    nextTeam: source.nextTeam > nextTeam ? source.nextTeam : nextTeam,
+    camera: dimensions == source.dimensions
+        ? camera
+        : viewport == null
+        ? BoardCamera.identity
+        : BoardCamera.fit(source.dimensions, viewport!),
+  );
   final BoardCamera camera;
   final CellCoordinate? selectedCell;
   final ViewportSize? viewport;
@@ -173,6 +222,11 @@ final class BoardSession {
   }
 
   BoardSession createCharacter(CharacterDraft data, {bool allowStudy = false}) {
+    if (nextCharacter >= 1000000000) {
+      throw const PlacementException(
+        'Se agotó el contador de identidades. Crea un escenario nuevo si necesitas continuar.',
+      );
+    }
     _validateTeam(data.teamId);
     _checkFigureTerrain(data, allowStudy);
     final figure = Character(
@@ -236,6 +290,16 @@ final class BoardSession {
     required int color,
     required TeamPattern pattern,
   }) {
+    if (nextTeam >= 1000000000) {
+      throw const PlacementException(
+        'Se agotó el contador de equipos de este escenario.',
+      );
+    }
+    if (teams.length >= 32) {
+      throw const PlacementException(
+        'El escenario admite como máximo 32 equipos.',
+      );
+    }
     if (teams.any(
       (team) => team.name.toLowerCase() == name.trim().toLowerCase(),
     )) {

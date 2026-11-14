@@ -19,6 +19,8 @@ import 'package:heroclix_simulator_trainer/domain/terrain/terrain.dart';
 import 'package:heroclix_simulator_trainer/domain/terrain/edge_wall.dart';
 import 'package:heroclix_simulator_trainer/domain/terrain/editing_geometry.dart';
 
+import '../test/support/scenario_fakes.dart';
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -45,6 +47,26 @@ void main() {
   for (final (name, size, dimensions) in [
     ('inicio_vertical', const Size(400, 900), null),
     ('inicio_horizontal', const Size(1000, 700), null),
+    (
+      'biblioteca_vertical',
+      const Size(400, 900),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
+    (
+      'guardar_como',
+      const Size(400, 900),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
+    (
+      'png_opciones',
+      const Size(400, 900),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
+    (
+      'autoguardado_error',
+      const Size(400, 900),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
     (
       'terreno_vertical',
       const Size(400, 900),
@@ -94,8 +116,17 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
       addTearDown(tester.view.resetPhysicalSize);
       final key = GlobalKey();
+      final store = MemoryStore(),
+          editor = await persistentController(MemoryStore());
+      // Cada render posee su propio almacenamiento, sin canal de plataforma.
+      editor.dispose();
+      final persistent = await persistentController(store);
+      await persistent.workspace!.save(name: 'Escenario de ejemplo');
       await tester.pumpWidget(
-        RepaintBoundary(key: key, child: const HeroClixApp()),
+        RepaintBoundary(
+          key: key,
+          child: HeroClixApp(controller: persistent),
+        ),
       );
       await tester.pumpAndSettle();
       if (dimensions != null) {
@@ -175,6 +206,9 @@ void main() {
           controller.setTool(EditorTool.terrain);
           controller.configureLayers(rectangle: true);
           await tester.pumpAndSettle();
+          await tester.ensureVisible(
+            find.byKey(const ValueKey('tool-terrain')),
+          );
           controller.draft.value = LayerDraft(
             tool: EditorTool.terrain,
             type: TerrainType.hindering,
@@ -211,6 +245,43 @@ void main() {
           );
           await tester.pumpAndSettle();
         }
+        if (name == 'biblioteca_vertical') {
+          await controller.workspace!.save();
+          await controller.workspace!.duplicate(
+            controller.workspace!.current.id,
+            'Escenario de ejemplo',
+          );
+          await tester.tap(find.byKey(const ValueKey('scenario-library')));
+          await tester.pumpAndSettle();
+        }
+        if (name == 'guardar_como' || name == 'png_opciones') {
+          await tester.tap(find.byKey(const ValueKey('board-view-options')));
+          await tester.pumpAndSettle();
+          final item = find.byKey(
+            ValueKey(
+              name == 'guardar_como' ? 'save-as-scenario' : 'export-png',
+            ),
+          );
+          await tester.ensureVisible(item);
+          await tester.tap(item);
+          await tester.pumpAndSettle();
+        }
+        if (name == 'autoguardado_error') {
+          store.failWrite = true;
+          controller.saveCharacter(
+            CharacterDraft(
+              name: 'Otra figura',
+              teamId: 'team-1',
+              position: CellCoordinate.parse('D2'),
+            ),
+          );
+          await tester.pumpAndSettle();
+          await tester.ensureVisible(
+            find.byKey(const ValueKey('autosave-status')),
+          );
+          await tester.tap(find.byKey(const ValueKey('autosave-status')));
+          await tester.pumpAndSettle();
+        }
       }
       expect(tester.takeException(), isNull);
 
@@ -220,7 +291,7 @@ void main() {
         final image = await boundary.toImage();
         try {
           final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-          final output = File('build/previews/prompt-03/$name.png');
+          final output = File('build/previews/prompt-04/$name.png');
           await output.parent.create(recursive: true);
           await output.writeAsBytes(bytes!.buffer.asUint8List());
         } finally {
