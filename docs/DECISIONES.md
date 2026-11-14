@@ -91,3 +91,35 @@ un teléfono físico; TalkBack y rendimiento real quedan pendientes.
 
 La fuente y fecha objetivo se registran en REGLAS.md. En esta etapa no se ha
 verificado ni implementado ninguna regla del juego.
+
+## Etapa 01 — 2026-11-14
+
+- La solicitud de ejecutar 01 autoriza continuar desde la base 00 validada.
+- Se trabaja en `codex/prompt-01`, sobre el mismo repositorio; no se inicia 02.
+- Versión de app: `0.2.0+2`. Solo Editor se habilita; los otros modos permanecen
+  futuros y todas las herramientas de edición salvo Seleccionar siguen deshabilitadas.
+- Dimensiones 2–40 por eje, 4×4 inicial. Columna desde A, después Z viene AA;
+  fila desde 1. Los índices del modelo empiezan en cero.
+- Cada celda mide 64 unidades de escena; esta es una convención de render,
+  no una medida reglamentaria ni la resolución física del teléfono.
+- Empates sobre líneas compartidas: derecha/abajo. Bordes externos derecho e
+  inferior excluidos. Se corrige redondeo al entero dentro de 1e-9 de casilla.
+- BoardSession inmutable centraliza tamaño, selección, visibilidad y cámara.
+  La adaptación a ValueNotifier y matrices de Flutter queda en presentación.
+- Zoom con pinza o botones, pan con un dedo, centrar sin cambiar escala y ajustar
+  vista completa son operaciones distintas. El rango de escala es 0,02–6.
+- Al girar se mantiene el punto central y el zoom. Volver al inicio no destruye
+  la sesión. Cerrar el proceso sí la reinicia; guardar sigue reservado a 04.
+- El teclado de los diálogos no redimensiona el canvas inferior. Los formularios
+  manejan sus propios insets y scroll; abrirlos no modifica la cámara de la sesión.
+  Se mantiene también el padding inferior del área segura cuando aparece el teclado;
+  la regresión simula tanto viewInsets como el cambio de padding de Android.
+- Cambiar tamaño preserva opciones de visualización, limpia selección y ajusta
+  cámara. Si hay una selección se solicita confirmación explícita antes de perderla;
+  cancelar o introducir valores inválidos conserva la sesión anterior completa.
+- Se conserva el informe y APK de 00 como entrega histórica. No se agregan reglas,
+  figuras, terreno, persistencia, historial ni dependencias externas en esta etapa.
+- Entrega validada con 52 pruebas, análisis estático, cinco renders y APK debug
+  firmado. En Android 17 se comprobó el recorrido offline hasta 40×40/AA20,
+  giro y conservación al volver al inicio. El detalle, hash y límites del entorno
+  constan en ESTADO.md. Se deja la rama de 01 para revisión, sin iniciar 02.

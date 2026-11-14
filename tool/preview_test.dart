@@ -7,6 +7,10 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:heroclix_simulator_trainer/app.dart';
+import 'package:heroclix_simulator_trainer/domain/board/board_dimensions.dart';
+import 'package:heroclix_simulator_trainer/domain/board/board_viewport.dart';
+import 'package:heroclix_simulator_trainer/domain/board/cell_coordinate.dart';
+import 'package:heroclix_simulator_trainer/presentation/editor/editor_screen.dart';
 import 'package:material_ui/material_ui.dart';
 
 void main() {
@@ -32,9 +36,24 @@ void main() {
     await iconLoader.load();
   });
 
-  for (final (name, size) in [
-    ('inicio_vertical', const Size(400, 900)),
-    ('inicio_horizontal', const Size(1000, 700)),
+  for (final (name, size, dimensions) in [
+    ('inicio_vertical', const Size(400, 900), null),
+    ('inicio_horizontal', const Size(1000, 700), null),
+    (
+      'editor_vertical',
+      const Size(400, 900),
+      BoardDimensions(rows: 8, columns: 12),
+    ),
+    (
+      'editor_horizontal',
+      const Size(1000, 600),
+      BoardDimensions(rows: 8, columns: 12),
+    ),
+    (
+      'editor_40x40',
+      const Size(1000, 700),
+      BoardDimensions(rows: 40, columns: 40),
+    ),
   ]) {
     testWidgets('renderiza $name', (tester) async {
       tester.view.devicePixelRatio = 1;
@@ -46,6 +65,28 @@ void main() {
         RepaintBoundary(key: key, child: const HeroClixApp()),
       );
       await tester.pumpAndSettle();
+      if (dimensions != null) {
+        await tester.ensureVisible(find.text('Abrir editor'));
+        await tester.tap(find.text('Abrir editor'));
+        await tester.pumpAndSettle();
+        final controller = tester
+            .widget<EditorScreen>(find.byType(EditorScreen))
+            .controller;
+        controller.changeDimensions(dimensions);
+        await tester.pumpAndSettle();
+        final cell = CellCoordinate.parse(
+          dimensions.columns == 40 ? 'AA20' : 'D6',
+        );
+        final point = controller.value.camera.sceneToViewport(
+          const BoardGeometry().cellCenter(cell, dimensions),
+        );
+        await tester.tapAt(
+          tester.getTopLeft(find.byKey(const ValueKey('board-viewport'))) +
+              Offset(point.x, point.y),
+        );
+        await tester.pumpAndSettle();
+        expect(controller.value.selectedCell, cell);
+      }
       expect(tester.takeException(), isNull);
 
       final boundary =

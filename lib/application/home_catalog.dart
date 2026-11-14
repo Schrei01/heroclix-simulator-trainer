@@ -1,9 +1,11 @@
 import '../domain/app_mode.dart';
 
-/// Catálogo inmutable del inicio. Ningún modo tiene aún una ruta implementada.
-const plannedModes = <AppMode>[
+/// Catálogo inmutable. Solo el editor tiene una ruta operativa en 01.
+const homeModes = <AppMode>[
   AppMode.editor,
   AppMode.simulator,
   AppMode.trainer,
   AppMode.referee,
 ];
+
+const availableModes = <AppMode>{AppMode.editor};

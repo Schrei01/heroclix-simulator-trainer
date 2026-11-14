@@ -5,8 +5,8 @@ y una nueva orden antes de iniciar la siguiente. Estado al 2026-11-14.
 
 | Etapa | Entrega | Estado |
 | --- | --- | --- |
-| 00 | Base Flutter, inicio, arquitectura, pruebas y documentación | Implementada; tests, APK debug y emulador verificados; revisión pendiente |
-| 01 | Tablero configurable, coordenadas, selección, zoom y desplazamiento | Pendiente |
+| 00 | Base Flutter, inicio, arquitectura, pruebas y documentación | Validada; continuación a 01 autorizada por el usuario |
+| 01 | Tablero configurable, coordenadas, selección, zoom y desplazamiento | Implementada; 52 tests, 5 renders, APK y recorrido Android verificados; revisión pendiente |
 | 02 | Figuras genéricas, equipos y ocupación | Pendiente |
 | 03 | Terreno, muros y capas de edición | Pendiente |
 | 04 | Persistencia local, JSON/PNG y deshacer/rehacer | Pendiente |
@@ -19,8 +19,8 @@ y una nueva orden antes de iniciar la siguiente. Estado al 2026-11-14.
 | 11 | Comparación de posiciones y métricas tácticas | Pendiente |
 | 12 | Integración, accesibilidad, verificación y APK final | Pendiente |
 
-La etapa 00 no incluye tablero, personajes, reglas ni persistencia funcional.
-La navegación al Editor se habilitará en 01; la entrada al Simulador tendrá
+Editor se habilita en 01. El informe histórico de 00 se conserva en ENTREGA_00.md.
+La entrada al Simulador tendrá
 funciones reales al integrar las herramientas tácticas de 05–06. Árbitro se
 habilitará en 06 y Entrenador en 10. Todos usarán el mismo escenario cuando exista.
 Esta previsión no constituye implementación de esas etapas.

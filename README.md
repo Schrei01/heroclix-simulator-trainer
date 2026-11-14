@@ -1,7 +1,7 @@
 # HeroClix Simulator & Trainer
 
 Aplicación Android Flutter/Dart, offline y en español. Versión inicial
-`0.1.0+1`. Se desarrolla por etapas en este mismo repositorio.
+`0.2.0+2`. Se desarrolla por etapas en este mismo repositorio.
 
 ## Repositorio
 
@@ -13,20 +13,43 @@ git clone https://github.com/Schrei01/heroclix-simulator-trainer.git
 cd heroclix-simulator-trainer
 ```
 
+La entrega 01 está en `codex/prompt-01` para revisión. Después de clonar, usa
+`git switch codex/prompt-01` para trabajar con esa entrega.
+
 ## Qué existe
 
-La etapa 00 prepara el arranque, una pantalla de inicio adaptable con tema
-original y las entradas **Editor**, **Simulador**, **Entrenador** y **Árbitro**.
-Las cuatro muestran **Próximamente**, están deshabilitadas y no tienen navegación.
+La etapa 01 añade el **Editor**: cuadrícula inicial 4×4, filas y columnas
+independientes de 2 a 40, selección A1…AN40, zoom con pinza/botones,
+desplazamiento, centrar/ajustar y opciones de cuadrícula/coordenadas. Las celdas
+son cuadradas. En horizontal las herramientas están a la izquierda.
 
-No hay tablero, personajes, reglas, escenarios guardados ni ejercicios en esta
-entrega. Las carpetas de esos módulos y el puerto de almacenamiento solo preparan
-la arquitectura. Consultar [estado real y verificación](docs/ESTADO.md).
+Solo **Seleccionar** está activa. Personajes, terrenos, muros, visión, distancia,
+movimiento y borrar son futuros. **Simulador**, **Entrenador** y **Árbitro**
+permanecen deshabilitados. No hay reglas del juego, guardado ni ejercicios.
 
-Validación local del 2026-11-14: análisis estático y 18 pruebas correctos;
-APK debug generado e instalado en un emulador Android 17, con inicio comprobado
-en ambas orientaciones y sin conectividad. Los detalles y límites constan en
-ESTADO.md; no se ha iniciado la etapa 01.
+El tablero se conserva al girar o volver al inicio durante la misma sesión.
+Cerrar la aplicación pierde esa sesión; persistencia e historial corresponden a 04.
+El informe de 00 se conserva en [ENTREGA_00.md](docs/ENTREGA_00.md).
+Consultar [estado real y verificación](docs/ESTADO.md) para los resultados actuales.
+
+Validación de 01: **52 pruebas**, análisis estático y cinco renders correctos;
+APK debug generado, firmado e instalado en Android 17. Se comprobó offline
+selección, navegación, giro y configuración hasta 40×40.
+
+## Uso del Editor
+
+1. Pulsa **Abrir editor**. El icono de cuadrícula de la barra superior permite
+   introducir filas y columnas por separado, por ejemplo 8 y 12.
+2. Toca una casilla para seleccionarla; toca la misma para deseleccionar. La
+   coordenada aparece abajo. Un toque fuera de la cuadrícula limpia selección.
+3. Arrastra para desplazar o usa dos dedos para ampliar. Los botones **−** y **+**
+   ofrecen zoom sin gestos; sus ayudas indican el porcentaje actual.
+4. **Centrar** mantiene el zoom; **Ajustar** restablece la vista del tablero completo.
+5. El menú de opciones muestra/oculta cuadrícula y coordenadas o limpia selección.
+   Cambiar dimensiones con una selección requiere confirmación y permite cancelar.
+
+En un borde compartido se selecciona derecha/abajo; el borde exterior derecho o
+inferior queda fuera. En mapas grandes, amplía para leer rótulos y tocar con precisión.
 
 ## Ejecutar
 
@@ -67,9 +90,9 @@ conserva la resolución de dependencias de esta aplicación.
 
 ## Organización
 
-- `lib/domain`: Dart puro; tipos comunes y módulos futuros documentados.
-- `lib/application`: catálogo inmutable y puertos locales.
-- `lib/presentation`: inicio y tema Flutter.
+- `lib/domain`: Dart puro; dimensiones, coordenadas, geometría de tablero y cámara.
+- `lib/application`: sesión inmutable, catálogo y puertos locales.
+- `lib/presentation`: inicio, Editor, gestos y tema Flutter.
 - `lib/infrastructure`: ubicación de adaptadores futuros.
 - `android`: adaptación de plataforma e identidad configurable.
 - `test`: contratos de dominio y comportamiento del inicio.
@@ -87,9 +110,9 @@ compilación durante el desarrollo sí puede requerir internet.
 - [REGLAS](docs/REGLAS.md): fuentes oficiales y método de validación futuro.
 - [ANDROID](docs/ANDROID.md): herramientas, APK y firma.
 
-Ninguna regla oficial está implementada en 00. Se usarán explicaciones propias,
+Ninguna regla oficial está implementada en 01. Se usarán explicaciones propias,
 fuentes verificadas y «No evaluado» ante casos no soportados. El producto será
 una herramienta de apoyo, no una decisión oficial de torneo.
 
-La siguiente etapa es 01, tablero interactivo; requiere revisión de 00 y nueva
+La siguiente etapa es 02, figuras y equipos; requiere revisión de 01 y nueva
 orden. No se inicia automáticamente.
