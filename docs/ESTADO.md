@@ -1,147 +1,177 @@
-# Estado actual — etapa 02
+# Estado actual — etapa 03
 
-2026-11-14 (America/Bogota). App **0.3.0+3**.
+2026-11-14 (America/Bogota). App **0.4.0+4**.
 Repositorio: https://github.com/Schrei01/heroclix-simulator-trainer.
-Rama: `codex/prompt-02`, sobre la entrega 01 (`6618597`).
+Rama: `codex/prompt-03`, sobre 02 (`36d704a`).
+Informes previos: [00](ENTREGA_00.md), [01](ENTREGA_01.md), [02](ENTREGA_02.md).
 
-**02 implementada y verificada: análisis limpio, 77 pruebas, 8 renders, APK
-debug firmado y recorrido parcial instalado en Android. Pendiente revisión del usuario.**
-Informes anteriores: [ENTREGA_00.md](ENTREGA_00.md), [ENTREGA_01.md](ENTREGA_01.md).
+**03 implementada y verificada: análisis limpio, 106 pruebas, 12 renders, APK debug
+firmado y recorrido offline instalado en Android. Pendiente revisión del usuario.**
 
-## A. Operativo frente a preparado
+## A. Operativo y preparado
 
-- Herramienta Personajes: crear al tocar casilla vacía, seleccionar desde tablero
-  o lista, ver/editar ficha, cambiar equipo, duplicar con nueva identidad y eliminar
-  previa confirmación. Nombre, posición, base, velocidad y alcance configurables.
-- Fichas A…Z, AA… con ID estable independiente de nombre/coordenada. Nombres iguales
-  admitidos. Azul/T1 liso y Rojo/T2 rayado iniciales; crear equipos con código,
-  nombre, paleta y patrón. Color nunca es el único identificador.
-- Bases 1×1 y 2×2: ocupación completa, límites y colisiones validados centralmente.
-  2×2 es representación de posición, no legalidad reglamentaria.
-- Mantener pulsado y arrastrar: preview ✓/× más explicación. Destino válido se
-  confirma al soltar; inválido/cancelación/segundo dedo deja la ocupación intacta.
-  Movimiento por coordenada editable como alternativa accesible.
-- Zoom, pan, giro y navegación al inicio preservan las figuras durante la sesión.
-  Reducción de tablero rechazada si una base quedaría fuera; ampliación las conserva.
-- Solo Seleccionar y Personajes activas. Los otros modos siguen deshabilitados.
-  Deshacer, persistencia, terreno, muros y reglas son futuros.
+- Terreno despejado (implícito), obstaculizado y bloqueado. Toque, trazo interpolado
+  y rectángulo con vista previa y Aplicar/Cancelar; coordenadas como alternativa.
+- Muros solo sobre bordes internos. IDs normalizados sin duplicar el borde que
+  comparten dos vecinas. Añadir/borrar por toque, trazo con orientación fija o par
+  de coordenadas. Franja de toque explícita, sin confundir muro con celda bloqueada.
+- Borrar elemento elige muro o figura; pintar despejado cambia el terreno.
+  Tres limpiezas independientes con confirmación. Las otras capas se conservan.
+- Bloqueado bajo figura: Cancelar o Conservar para estudio, sin eliminarla. Casillas
+  incompatibles marcadas con ! y texto accesible. La ficha exige opción de estudio
+  para crear/editar sobre bloqueado; arrastre normal rechaza ese destino.
+- Leyenda con H/puntos, B/rayas y muro de línea doble, además del color. Figuras y
+  equipos conservan sus códigos/patrones. Zoom, giro y navegación preservan capas.
+- Previa fuera del escenario: cancelar/segundo dedo/cambio de herramienta o giro
+  la descartan. Un trazo confirmado genera un solo comando, sin snapshots por píxel.
+- Preparado: elevación 0–40 sin editor/análisis, BoardEdit reversible sin historial
+  en UI y fragmento LayerCodec versionado en memoria. Ninguna función de guardado,
+  importar/exportar o deshacer de 04 se presenta como operativa.
 
 ## B. Archivos principales
 
-- `lib/domain/characters/{character,team,character_repository}.dart`: modelos puros,
-  huellas extensibles, colección inmutable e índice de ocupación.
-- `lib/application/board/board_session.dart`: escenario local, equipos, identidad
-  monotónica y operaciones atómicas.
-- `lib/presentation/editor/character_dialog.dart`: ficha, duplicación, borrado y equipos.
-- Canvas, painter, controller y Editor: gestos, preview, fichas y lista accesible.
-- `test/characters_test.dart`, `test/character_editor_test.dart`, regresiones del Editor
-  y `tool/preview_test.dart`. README, arquitectura, decisiones y roadmap actualizados.
+- `lib/domain/terrain/terrain.dart`, `edge_wall.dart`, `editing_geometry.dart`.
+- `lib/application/board/board_session.dart`, `board_edit.dart`, `layer_draft.dart`,
+  `layer_codec.dart`.
+- `lib/presentation/editor/layer_toolbar.dart`, `layer_actions.dart`, canvas,
+  painter, controlador, ficha y pantalla Editor.
+- `test/terrain_test.dart`, `test/terrain_editor_test.dart`, regresiones y renders.
+- README, ARQUITECTURA, ROADMAP, DECISIONES y este informe. Entrega 02 archivada.
 
-## C. Verificación ejecutada
+## C. Comandos y resultados reales
 
-Entorno sin cambio: Flutter 3.50.0, Dart 3.14.0, material_ui 1.11.0; Android
-minSdk 24, compile/target 36, JBR 25, Gradle 9.5.0, AGP 9.3.1 y Kotlin 2.4.20.
-No se añadieron dependencias.
+Flutter 3.50.0, Dart 3.14.0, material_ui 1.11.0. Sin dependencias nuevas.
+Android minSdk 24, compile/target 36, NDK 28.2.13676358, AGP 9.3.1,
+Gradle 9.5.0, Kotlin 2.4.20 y Android Studio JBR 25.
 
-| Comando | Resultado real |
+| Comando | Resultado |
 | --- | --- |
-| `dart format lib test tool` | Correcto |
-| `flutter --no-version-check analyze` | **No issues found**, 9,5 s |
-| `flutter --no-version-check test --reporter expanded` | **77 pruebas aprobadas**, 32 s |
-| `flutter --no-version-check test tool/preview_test.dart` | **8 renders aprobados**, 6 s; revisados visualmente |
-| `flutter --no-version-check test test/character_editor_test.dart` | **16 aprobadas** tras el último ajuste de nombre Unicode |
-| `flutter --no-version-check build apk --debug` | **Correcto**, build definitivo 79,6 s |
-| `aapt dump badging` / `dump permissions` | Versión 0.3.0/código 3, SDK 24/36, sin INTERNET |
+| `dart format lib test tool` | 38 archivos, formato correcto |
+| `flutter --no-version-check analyze --no-pub` | **No issues found**, 5,1 s |
+| `flutter --no-version-check test --no-pub --reporter expanded` | **106 aprobadas**, 54 s |
+| `flutter --no-version-check test tool/preview_test.dart --no-pub` | **12 renders aprobados**, 9 s; revisados visualmente |
+| `flutter --no-version-check test test/terrain_test.dart --no-pub` | **12 aprobadas** tras revisar reproducción de comandos e IDs |
+| `flutter --no-version-check build apk --debug` | **Correcto**, build definitivo 25,4 s |
+| `aapt dump badging` / `dump permissions` | Versión 0.4.0/código 4, SDK 24/36, sin INTERNET |
 | `apksigner verify --verbose` | **Verifies**, firma debug APK v2 válida |
-| `adb install -r --no-incremental` | **Success**, versión 0.3.0/código 3 instalada en Android 17/API 37 |
-| Recorrido instalado en modo avión | Creación, equipos, arrastre válido/colisión, edición y duplicación comprobados |
+| `adb install -r --no-incremental` | **Success**, APK definitivo instalado en Android 17/API 37 |
+| Recorrido Android sin conexión | Terreno/figura, muro compartido, rectángulo, estudio, limpiar muros y giro comprobados |
 
-Las 77 pruebas comprenden 23 de dominio/aplicación, 16 del inicio, 22 del Editor
-anterior y 16 de interfaz de figuras. Incluyen colisiones completas, límites 2×2,
-identidad, nombres repetidos, duplicación, liberación de origen, equipos, rechazo
-atómico, redimensionamiento y conservación ante cámara/orientación/navegación.
-Widgets: creación/edición, mensajes inválidos, duplicar/borrar, equipos, arrastre
-válido/inválido/fuera, cancelar, segundo dedo y anclaje desde celda secundaria.
-Formularios comprobados a 320×568, 800×360 y 320×320 con texto 100 % y 300 %.
+106 pruebas: 35 de dominio/aplicación y 71 de widgets. Las 29 añadidas en 03
+son 12 de terreno/edición/serialización y 17 de UI. Incluyen los 3.120 bordes internos
+de 40×40, orden inverso de vecinas, no duplicación, límites externos, rectángulos,
+trazos rápidos sin huecos, estudio explícito, independencia de capas, comandos
+reversibles, memoria/fragmento JSON, datos corruptos, limpieza confirmada con zoom,
+giro/navegación y alternativas por coordenadas.
 
-Se corrigieron dos fallos encontrados en el recorrido de pruebas: aviso que tapaba
-el botón de ficha y formularios con dropdowns desbordados o acciones inaccesibles
-con texto grande. Las pruebas definitivas pasan después de esas correcciones.
-La comprobación de actualizaciones del SDK intentó descargar etiquetas Git; se
-canceló esa consulta y se utilizó `--no-version-check`, sin actualizar Flutter.
+Interfaz comprobada en 320×568, 800×360 y 320×320 con texto al 300 %, además de
+las regresiones previas con tamaños y escalas 100/200/300 %. En viewport pequeño,
+la previa se confirma mediante diálogo desplazable. Se mantiene fatal el aviso de
+hit test en las pruebas: no se ignoran controles ocultos o inaccesibles.
 
-Evidencia local en `build/`: `test-02-final.log`, `analyze-02-final.log`,
-`preview-02.log`, `character-test-02-final.log`, `build-02-final.log`; renders en `build/previews/prompt-02/`. Son renders Flutter,
-no evidencia de instalación en Android. Las capturas reales del recorrido instalado
-se conservan por separado en `build/verification/prompt-02/`.
+Durante la implementación se corrigieron: orientación espuria en vértices por
+redondeo, controles fuera del árbol por barra virtualizada, acciones de previa
+inaccesibles en viewport mínimo, cierre de confirmación al girar y glifos ausentes
+en los renders. Se comprobó además que reproducir comandos mantiene los contadores
+de identidad para poder seguir creando figuras sin colisiones de ID. Las pruebas
+finales pasan con las correcciones; no se atribuyen éxitos a las ejecuciones fallidas.
 
-APK definitivo: `build/releases/heroclix-prompt-02-debug.apk`, **182514718 bytes**
-(**174,06 MiB**). SHA-256:
-`C20C49E98DAA1890D8E22395E94D37663C3F9A3BD465A2AA95934290025FCB0C`.
-También disponible en `build/app/outputs/flutter-apk/app-debug.apk`.
-Los binarios y capturas se conservan locales, excluidos de Git.
+Logs locales: `build/test-03-final.log`, `preview-03-final.log`,
+`analyze-03-final.log`, `terrain-test-03-final.log`, `build-03-verified.log`. Renders: `build/previews/prompt-03/`.
+Son renders Flutter; no se presentan como capturas de dispositivo Android.
 
-### Recorrido Android realmente ejecutado
+### APK definitivo
 
-AVD Android 17/API 37, 540×1200, instancia temporal sin ventana, `-read-only` y
-`-no-snapshot`. Modo avión confirmado en 1 y Wi-Fi en 0. Se instaló el APK definitivo.
+- Archivo local: `build/releases/heroclix-prompt-03-debug.apk`.
+- Copia estándar: `build/app/outputs/flutter-apk/app-debug.apk`.
+- Tamaño: **182617240 bytes (174,16 MiB)**.
+- SHA-256: `2965192C35948BFE2C2EFA90577D94911C3D5A6239DCC0CDE1C3870AFA31F357`.
+- Los APK y evidencias permanecen locales, excluidos de Git; 00/01/02 conservados.
 
-- Crear A en A1 con Azul/T1 y B en C1 con Rojo/T2. Letras, códigos y patrones visibles.
-- Arrastrar A desde A1 a B2: preview válida con ✓; el origen permanece ocupado hasta
-  soltar y después queda libre. El pie muestra A en B2.
-- Arrastrar A hacia C1: preview inválida con × y explicación «C1 está ocupada por la
-  ficha B». Al soltar, A permanece en B2 y B en C1.
-- Editar el nombre de A con teclado y guardar conserva su letra/posición. Duplicar
-  crea la ficha C en A1 con el nombre editado, sin desplazar A ni B.
-- Capturas reales revisadas: `dos_equipos.png`, `preview_valida.png`, `movida_B2.png`,
-  `preview_invalida.png`, `colision_rechazada.png` y `duplicada_C.png`.
+### Recorrido Android ejecutado
 
-El arranque en frío demoró unos 197 s y Android mostró avisos de System UI y
-Digital Wellbeing; se atendieron y se detuvieron servicios de fondo únicamente en
-la instancia temporal. Son limitaciones del entorno y no se presentan como errores
-de la aplicación. El emulador ya no estaba activo al retomar la conversación.
-No se completó en el recorrido instalado la comprobación de base 2×2 ni el giro;
-ambos casos sí pasaron en las pruebas de dominio/widgets descritas arriba.
-No se afirma haber revisado un log final de crashes del proceso Android.
+AVD `Medium_Phone_API_37.0`, Android 17/API 37; 540×1200 y luego 1200×540.
+Instancia temporal sin ventana, `-read-only` y `-no-snapshot`, GPU host. Modo avión
+confirmado en **1** y Wi-Fi en **0** antes y después del recorrido.
 
-## D. Comprobación manual
+- Crear figura A/T1 en A1. Aplicar obstaculizado a A1 por Coordenadas; la figura
+  permanece en su casilla y conserva etiqueta/equipo.
+- Añadir muro compartido A1/B1 por par de coordenadas. La línea doble se dibuja
+  sobre el borde; no cambia la figura ni su terreno.
+- Rellenar B2–D3: previa de seis celdas, todavía sin puntos de terreno; Aplicar
+  transforma exactamente esas seis celdas en obstaculizado, conservando A1 y muro.
+- Bloquear A1 ocupado: aparece Cancelar/Conservar para estudio; elegir Conservar
+  mantiene la figura, añade ! y texto de estudio en selección/semántica.
+- Limpiar solo muros con confirmación retira la línea compartida y conserva figura,
+  bloqueado en A1 y las seis celdas obstaculizadas.
+- Girar a horizontal y Ajustar: figura A en A1, advertencia y terreno conservados.
 
-1. Instalar el APK debug de 02 y abrir Editor sin conexión.
-2. Personajes → A1 → nombre/equipo/velocidad/alcance → Guardar. Repetir en C1 con
-   Rojo/T2. Confirmar fichas A/B y códigos/patrones distintos.
-3. Tocar A, pulsar lápiz inferior, cambiar nombre/posición/equipo. Crear un equipo
-   adicional. Guardar mantiene su etiqueta e ID.
-4. Mantener A y arrastrar hacia una celda libre: preview ✓, soltar mueve. Hacia B:
-   preview ×, soltar explica colisión y conserva origen. Tocar vacío con Seleccionar
-   selecciona la casilla. La ficha también permite escribir una coordenada.
-5. Duplicar desde ficha, elegir destino y guardar; aparece nueva letra. Eliminar
-   la copia y confirmar. Revisar lista de figuras del icono superior.
-6. Crear base 2×2: D4 se rechaza en tablero 4×4; C3 ocupa C3,D3,C4,D4. Revisar
-   aviso de representación sin legalidad reglamentaria. Intentar superponer otra
-   figura sobre cualquiera de sus cuatro casillas.
-7. Zoom/pan, girar y volver al inicio/editor: las coordenadas no cambian. Reducir
-   dimensiones con una base fuera se rechaza sin borrar figuras.
+Capturas reales revisadas en `build/verification/prompt-03/`:
+`obstaculizado_con_figura.png`, `muro_compartido.png`, `rectangulo_previa.png`,
+`rectangulo_aplicado.png`, `advertencia_bloqueado.png`, `estudio_con_figura.png`,
+`limpiar_solo_muros.png` y `girado.png`. El emulador se cerró al terminar.
 
-## E. Limitaciones y pendientes
+El arranque frío demoró unos **195 s**. System UI mostró un aviso de lentitud,
+atendido para continuar; UI Automator devolvió dos lecturas sin raíz que se
+rechazaron y se repitieron sin usar estados obsoletos. Se detuvieron servicios de
+fondo solo en la instancia temporal. No representa una medición de rendimiento en
+un teléfono físico.
 
-- Sesión solo en memoria: cerrar el proceso pierde figuras/equipos. Guardar e
-  historial/deshacer corresponden a 04. La eliminación actual exige confirmación.
-- Velocidad/alcance 0–99 son anotaciones validadas; no se calculan ataques, rutas,
-  alcance efectivo, visión ni legalidad de movimiento. Bases especiales se evaluarán
-  en 08. No hay excepciones que permitan solapar figuras.
-- Anclaje de bases rectangulares: esquina superior izquierda. UI ofrece solo 1×1/2×2.
-- Crear un equipo es una operación explícita; permanece en la sesión aunque luego
-  se cancele el formulario de figura. No se ofrece gestión/borrado de equipos existentes.
-- En 40×40 se requiere ampliar para leer y tocar con precisión. Se pinta un único
-  canvas; no se creó un widget por celda ni se incorporó un motor de reglas.
-- No se probó un teléfono físico ni APK release firmado con clave del usuario.
+`app_android.log`, limitado al PID de la app, no contiene `FATAL EXCEPTION`,
+`Unhandled Exception`, `RenderFlex` ni `E/flutter`. Sí registra que el servicio
+HTTP de Dart VM debug no pudo abrir 127.0.0.1 por falta de permiso de red; la UI y
+la edición funcionaron. También hay avisos de plataforma/intent de lanzamiento
+por adb; no se da por verificado un APK release.
+
+En Android se comprobó el flujo por coordenadas. Los trazos rápidos, cancelación,
+bordes externos y las otras limpiezas fueron verificados por dominio/widgets;
+no se afirma haber repetido todos esos casos en el emulador.
+
+## D. Comprobar manualmente
+
+1. Instalar el APK de 03 y abrir Editor sin conexión. Crear dos figuras de equipos
+   diferentes y dejar una en B2.
+2. Terrenos → Obstaculizado: tocar B2 y arrastrar A2…D2. La figura permanece en B2;
+   el trazo no deja huecos. Probar Despejado sobre B2 sin borrar la figura.
+3. Bloqueado → B2: cancelar conserva el estado; Conservar para estudio mantiene la
+   figura con !. Quitar bloqueado elimina la advertencia derivada.
+4. Rellenar rectángulo → A1…C3: revisar previa y cancelar; repetir y aplicar.
+   Repetir con Coordenadas (inicio/fin) y cancelar la confirmación.
+5. Muros: tocar el borde entre A1/B1 y volver a añadirlo; hay un solo muro.
+   Trazo vertical y horizontal; Borrar muro no afecta terreno ni figuras.
+   Un borde externo muestra explicación sin modificar el mapa.
+6. Borrar elemento → figura: confirmar y comprobar que terreno/muros permanecen.
+   Probar el selector de muro. Despejado es una acción diferente de Borrar elemento.
+7. Menú superior → Limpiar solo terreno/muros/figuras: cancelar primero y luego
+   confirmar una de ellas. Solo cambia la capa indicada, incluso tras ampliar.
+8. Girar y navegar al inicio/editor: figuras, terreno y muros conservan sus
+   coordenadas. Dos dedos cancelan un trazo y navegan sin pintar.
+
+## E. Limitaciones, supuestos y pendientes
+
+- Solo sesión en memoria; cerrar proceso pierde escenario. Sin historial/deshacer,
+  archivos, importación/exportación ni biblioteca de escenarios. Corresponden a 04.
+- LayerCodec es un fragmento, layerSchemaVersion 1, sin I/O; no define aún el esquema
+  de documento completo. Altura 0–40 es un límite de producto preparado, no una regla.
+- Solo muros internos unitarios. Trazo conserva orientación del primer borde;
+  cambiar de vertical a horizontal requiere otro trazo. Paso exacto por vértice
+  no pinta celdas cuyo interior no se atraviesa.
+- Compatibilidad figura/bloqueado es una política de representación para estudio.
+  No se evalúan visión, movimiento, ataques, elevación ni reglas de bases especiales.
+  No se admite solapar figuras. 2×2 sigue siendo representación de posición.
+- BoardEdit conserva referencias inmutables por operación terminada; solo se retiene
+  el último comando. Revertir rechaza capas/dimensiones ajenas y no restaura cámara
+  ni recicla IDs; aún no existe una política de historial de usuario.
+- Con mapas grandes es necesario ampliar; barra de capa desplazable horizontalmente.
+  Reducir se rechaza si eliminaría terreno o convertiría un muro en borde externo.
+- No se probó teléfono físico ni APK release firmado con una clave del usuario.
 
 ## F. Documentación
 
-ROADMAP, DECISIONES y este ESTADO actualizados; README y ARQUITECTURA describen
-el uso y los límites reales. El informe 01 se archivó antes de sustituir el estado.
-Las etapas anteriores y sus APK locales permanecen conservados.
+ROADMAP, DECISIONES y ESTADO actualizados. README explica uso, política de estudio
+y límites; ARQUITECTURA distingue capas, previa y comandos/fragmento preparados.
+Las entregas previas y sus APK locales permanecen conservados.
 
 ## G. Límite de etapa
 
-**No se inició Prompt 03.** La siguiente etapa requiere nueva orden del usuario.
+**No se inició Prompt 04.** Se requiere nueva orden después de revisar esta entrega.

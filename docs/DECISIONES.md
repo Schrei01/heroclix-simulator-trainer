@@ -154,3 +154,43 @@ verificado ni implementado ninguna regla del juego.
 - Reducir dimensiones se rechaza si una base quedaría fuera; ampliar conserva todas
   las figuras. No se borran ni reubican silenciosamente.
 - Sin dependencias nuevas, red en runtime, ataques, reglas ni funciones de 03.
+
+## Etapa 03 — 2026-11-14
+
+- Orden del usuario autoriza continuar desde 02. Rama `codex/prompt-03`, app 0.4.0+4.
+- TerrainLayer, WallLayer y CharacterRepository son capas inmutables independientes.
+  Despejado/elevación 0 es el valor implícito. Pintar despejado conserva la elevación
+  preparada de la celda; Limpiar terreno reinicia toda su capa.
+- CellTerrain incluye elevación entera 0–40 como límite provisional del producto.
+  Sin controles ni interpretación de altura hasta 08.
+- Muros internos de longitud una casilla, eje/vértice normalizados; ID h:col:fila
+  o v:col:fila. Orden de casillas vecinas no cambia identidad. No se admiten muros
+  externos; hit fuera del área devuelve null y la UI explica la restricción.
+- Franja de toque 0,22 casillas; empates de distancia dentro de 1e-9 favorecen vertical.
+  Un trazo bloquea la orientación del primer borde para no crear ramas en vértices.
+- Terreno: un toque o trazo completo es una operación. La interpolación divide el
+  segmento en todos sus cruces de cuadrícula, independiente de los eventos recibidos.
+  El paso exacto por vértice no pinta las casillas cuyo interior no se atraviesa.
+- Previa transitoria separada del escenario. Segundo dedo, cancelación, cambio de
+  herramienta u orientación la descarta. Rectángulos requieren Aplicar o Cancelar;
+  coordenadas dan una alternativa al gesto. Con viewport menor de 240 unidades,
+  las acciones de previa usan diálogo desplazable para mantener accesibilidad.
+- Un dedo edita en herramientas de capa; dos dedos navegan. Seleccionar mantiene
+  el pan con un dedo y el arrastre largo de figuras. Pintar nunca arrastra figuras.
+- Bloqueado ocupado: decisión explícita Cancelar/Conservar para estudio, sin pérdida
+  de figuras. Conflictos derivados de terreno + ocupación, marcados con ! y texto
+  accesible. Crear/editar sobre bloqueado requiere casilla de estudio explícita;
+  arrastre ordinario lo rechaza y remite a la ficha. No es una evaluación de reglas.
+- Borrar elemento elige figura o muro; terreno se cambia a despejado. Tres limpiezas
+  independientes y confirmadas. Borrar/limpiar figuras no recicla sus IDs/etiquetas.
+- BoardEdit conserva referencias de capas antes/después por operación completada;
+  aplicar/revertir exige el estado esperado y dimensiones compatibles, preserva
+  cámara y no recicla identidades. El controlador solo expone el último comando
+  para preparar 04: no se implementa historial ni UI de deshacer.
+- LayerCodec es un fragmento de capas con layerSchemaVersion 1 y orden determinista,
+  validación de límites, tipos, duplicados e identidad de bordes. Solo memoria;
+  no se ha definido el esquema completo ni guardado/importación/exportación de 04.
+- Reducir tablero se rechaza si descartaría terreno o un muro dejaría de ser interno.
+  Las capas no se recortan silenciosamente. Ampliar y mover cámara las conservan.
+- H/puntos, B/rayas y muros de línea doble son indicadores independientes del color.
+  La leyenda explica semántica, controles y límites. No se implementa visión.

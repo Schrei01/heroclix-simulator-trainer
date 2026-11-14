@@ -19,7 +19,7 @@ no importa Flutter, infraestructura ni plataforma.
 
 `domain/board` contiene BoardDimensions, CellCoordinate, BoardGeometry,
 BoardCamera y ViewportSize. characters implementa figuras, equipos y ocupación.
-Los módulos terrain, geometry (intersecciones
+terrain implementa terrenos, muros normalizados y geometría de edición. Los módulos geometry (intersecciones
 de visión), rules, movement y training conservan documentación de alcance sin
 implementar todavía sus funciones.
 
@@ -27,7 +27,7 @@ implementar todavía sus funciones.
 
 El inicio usa un catálogo inmutable; solo Editor está disponible. `BoardSession`
 es la única fuente de verdad del tablero: dimensiones, selección, cámara,
-viewport, opciones de visualización, figuras y equipos. Es inmutable y no importa Flutter.
+viewport, opciones de visualización, figuras, equipos, terreno y muros. Es inmutable y no importa Flutter.
 
 `EditorController` es un ValueNotifier de presentación que adapta cambios de
 sesión a widgets. HeroClixApp lo posee y lo destruye al salir de la app: la sesión
@@ -45,7 +45,8 @@ siempre es CellCoordinate, nunca un Offset o píxel de pantalla.
 `LocalDocumentStore` define un puerto independiente de Flutter para leer,
 escribir y eliminar documentos locales. No tiene adaptador de producción en 00;
 los fallos se comunicarán al consumidor y nunca destruirán la sesión activa.
-Serialización, schemaVersion, migraciones e historial corresponden a 04.
+El documento completo, su schemaVersion, migraciones e historial corresponden a 04;
+LayerCodec prepara en 03 un fragmento versionado de terreno y bordes en memoria.
 
 ## Render y gestos en 01
 
@@ -58,8 +59,8 @@ El hit test usa BoardGeometry tras invertir la cámara. Una pinza o desplazamien
 que supera el umbral táctil no produce selección; un gesto con varios punteros
 queda bloqueado para selección hasta un nuevo toque. Es independiente del zoom.
 
-Capas previstas, aún sin datos ni lógica: casillas/terreno, bordes/muros,
-superposiciones reglamentarias. Las figuras se implementan en 02.
+Terreno, muros y figuras tienen capas operativas desde 03. Las superposiciones
+reglamentarias siguen futuras.
 La cuadrícula y su selección no
 se almacenan como si fueran terreno ni figuras.
 
@@ -88,3 +89,21 @@ El arrastre conserva el mundo hasta soltar: FigureDragPreview vive únicamente e
 BoardCanvas, usa validatePlacement y se pinta como superposición. Se revalida el
 movimiento al confirmar. Las figuras se pintan tras cuadrícula/coordenadas, con
 código de equipo, patrón y resaltado de selección. Terreno/muros siguen reservados.
+
+## Edición de capas en 03
+
+BoardSession centraliza política de conflictos, pintura y limpieza por capa.
+BoardEdit guarda estados de capas inmutables antes/después de una operación y
+puede aplicar/revertir sin restaurar cámara; la UI aún no presenta historial.
+LayerDraft es un borrador transitorio en un ValueNotifier separado de la sesión:
+no hay una mutación del escenario por cada píxel del arrastre.
+
+BoardCanvas usa punteros para capturar un trazo y cancelar al añadir otro dedo.
+EditingGeometry convierte puntos mediante la cámara y evita huecos entre eventos.
+Al soltar, LayerActions confirma conflictos o borrado y aplica una sola operación.
+Los rectángulos esperan confirmación explícita; coordenadas ofrecen el mismo flujo.
+BoardPainter dibuja terreno, cuadrícula, figuras, muros, advertencias y previas.
+Las advertencias de estudio se derivan de las capas; no son reglas de HeroClix.
+
+LayerCodec serializa solo un fragmento terreno/bordes, sin I/O. El documento de
+escenario completo y el almacenamiento no están implementados en esta etapa.
