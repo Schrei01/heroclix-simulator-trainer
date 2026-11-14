@@ -1,4 +1,6 @@
 # geometry
 
-Módulo reservado: Segmentos e intersecciones, sin dictámenes reglamentarios (05).
-Sin implementación en la etapa 00. El código futuro deberá usar Dart puro, sin Flutter.
+Implementado en 05 con Dart puro: racionales, segmento centro a centro, intervalos
+interiores y contactos con bordes/vértices. Sin dictámenes reglamentarios.
+Contrato y ejemplos en docs/GEOMETRIA.md. Verificar sin Flutter con
+`dart run tool/verify_geometry.dart` desde la raíz del repositorio.

@@ -12,6 +12,8 @@ import '../../application/board/layer_draft.dart';
 import '../../domain/terrain/editing_geometry.dart';
 
 import 'layer_actions.dart';
+import 'sight_controls.dart';
+import 'sight_painter.dart';
 
 class BoardCanvas extends StatefulWidget {
   const BoardCanvas({required this.controller, super.key});
@@ -201,7 +203,11 @@ class _BoardCanvasState extends State<BoardCanvas> {
     widget.controller.value.dimensions,
   );
   void _startDrag(LongPressStartDetails details) {
-    if (_multiTouch || widget.controller.value.editsLayers) return;
+    if (_multiTouch ||
+        widget.controller.value.editsLayers ||
+        widget.controller.value.tool == EditorTool.vision) {
+      return;
+    }
     final cell = _cell(details.localPosition);
     final figure = cell == null
         ? null
@@ -408,6 +414,18 @@ class _BoardCanvasState extends State<BoardCanvas> {
                 onTapUp: (details) {
                   if (!_blockTap) {
                     final cell = _cell(details.localPosition);
+                    if (session.tool == EditorTool.vision) {
+                      if (cell != null) {
+                        widget.controller.tap(
+                          BoardPoint(
+                            details.localPosition.dx,
+                            details.localPosition.dy,
+                          ),
+                        );
+                        pickSightCell(context, widget.controller, cell);
+                      }
+                      return;
+                    }
                     if (session.tool == EditorTool.characters &&
                         cell != null &&
                         session.characters.at(cell) == null) {
@@ -465,11 +483,41 @@ class _BoardCanvasState extends State<BoardCanvas> {
                               preview: _drag,
                               layerPreview: widget.controller.draft.value,
                             ),
+                            foregroundPainter: SightPainter(
+                              widget.controller.sight.trace,
+                              line: widget.controller.sight.showLine,
+                              cells: widget.controller.sight.showCells,
+                              contacts: widget.controller.sight.showContacts,
+                            ),
                             isComplex: true,
                           ),
                         ),
                       ),
                     ),
+                    if (session.tool == EditorTool.vision)
+                      Positioned(
+                        left: 8,
+                        right: 8,
+                        bottom: 8,
+                        child: IgnorePointer(
+                          child: Material(
+                            color: AppTheme.surface,
+                            borderRadius: BorderRadius.circular(8),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8),
+                              child: Text(
+                                widget.controller.sight.error ??
+                                    (widget.controller.sight.trace == null
+                                        ? 'Toca ${widget.controller.sight.chooseOrigin ? 'origen' : 'destino'} · casilla o figura. Solo geometría.'
+                                        : '${widget.controller.sight.trace!.path.origin.label} a ${widget.controller.sight.trace!.path.destination.label} · ${widget.controller.sight.trace!.segments.length} tramos · Solo geometría'),
+                                key: const ValueKey('sight-status'),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                     if (_drag != null)
                       Positioned(
                         left: 8,

@@ -7,7 +7,7 @@ import '../../domain/characters/team.dart';
 import '../../domain/terrain/terrain.dart';
 import '../../domain/terrain/edge_wall.dart';
 
-enum EditorTool { select, characters, terrain, walls, erase }
+enum EditorTool { select, characters, terrain, walls, erase, vision }
 
 enum EraseLayer { figures, walls }
 

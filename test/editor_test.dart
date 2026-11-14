@@ -191,7 +191,7 @@ void main() {
     tester,
   ) async {
     final controller = await openEditor(tester);
-    for (final id in ['vision', 'distance', 'movement']) {
+    for (final id in ['distance', 'movement']) {
       final button = tester.widget<IconButton>(
         find.byKey(ValueKey('tool-$id')),
       );

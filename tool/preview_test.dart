@@ -21,6 +21,8 @@ import 'package:heroclix_simulator_trainer/domain/terrain/editing_geometry.dart'
 
 import '../test/support/scenario_fakes.dart';
 
+import 'package:heroclix_simulator_trainer/application/board/sight_probe.dart';
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -47,6 +49,16 @@ void main() {
   for (final (name, size, dimensions) in [
     ('inicio_vertical', const Size(400, 900), null),
     ('inicio_horizontal', const Size(1000, 700), null),
+    ('geometria_vertical', const Size(400, 900), BoardDimensions.initial),
+    ('geometria_horizontal', const Size(1000, 600), BoardDimensions.initial),
+    ('geometria_inspector', const Size(400, 900), BoardDimensions.initial),
+    ('geometria_eventos', const Size(400, 900), BoardDimensions.initial),
+    ('geometria_base', const Size(400, 900), BoardDimensions.initial),
+    (
+      'geometria_40x40',
+      const Size(1000, 700),
+      BoardDimensions(rows: 40, columns: 40),
+    ),
     (
       'biblioteca_vertical',
       const Size(400, 900),
@@ -116,10 +128,8 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
       addTearDown(tester.view.resetPhysicalSize);
       final key = GlobalKey();
-      final store = MemoryStore(),
-          editor = await persistentController(MemoryStore());
+      final store = MemoryStore();
       // Cada render posee su propio almacenamiento, sin canal de plataforma.
-      editor.dispose();
       final persistent = await persistentController(store);
       await persistent.workspace!.save(name: 'Escenario de ejemplo');
       await tester.pumpWidget(
@@ -282,6 +292,56 @@ void main() {
           await tester.tap(find.byKey(const ValueKey('autosave-status')));
           await tester.pumpAndSettle();
         }
+        if (name.startsWith('geometria')) {
+          controller.setTool(EditorTool.vision);
+          controller.setSightEndpoint(
+            ProbeEndpoint.cell(CellCoordinate.parse('A1')),
+            asOrigin: true,
+          );
+          controller.setSightEndpoint(
+            ProbeEndpoint.cell(
+              CellCoordinate.parse(
+                name == 'geometria_40x40'
+                    ? 'AN39'
+                    : name == 'geometria_horizontal'
+                    ? 'D3'
+                    : 'D4',
+              ),
+            ),
+            asOrigin: false,
+          );
+          await tester.pumpAndSettle();
+          await tester.ensureVisible(find.byKey(const ValueKey('tool-vision')));
+          await tester.pumpAndSettle();
+          controller.resetCamera();
+          await tester.pumpAndSettle();
+          if (name == 'geometria_inspector' || name == 'geometria_eventos') {
+            final button = find.byKey(const ValueKey('sight-inspect'));
+            await tester.ensureVisible(button);
+            await tester.pumpAndSettle();
+            await tester.tap(button);
+            await tester.pumpAndSettle();
+            if (name == 'geometria_eventos') {
+              await tester.ensureVisible(
+                find.byKey(const ValueKey('sight-event-2')),
+              );
+              await tester.pumpAndSettle();
+            }
+          }
+          if (name == 'geometria_base') {
+            final point = controller.value.camera.sceneToViewport(
+              const BoardGeometry().cellCenter(
+                CellCoordinate.parse('C4'),
+                dimensions,
+              ),
+            );
+            await tester.tapAt(
+              tester.getTopLeft(find.byKey(const ValueKey('board-viewport'))) +
+                  Offset(point.x, point.y),
+            );
+            await tester.pumpAndSettle();
+          }
+        }
       }
       expect(tester.takeException(), isNull);
 
@@ -291,7 +351,7 @@ void main() {
         final image = await boundary.toImage();
         try {
           final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-          final output = File('build/previews/prompt-04/$name.png');
+          final output = File('build/previews/prompt-05/$name.png');
           await output.parent.create(recursive: true);
           await output.writeAsBytes(bytes!.buffer.asUint8List());
         } finally {

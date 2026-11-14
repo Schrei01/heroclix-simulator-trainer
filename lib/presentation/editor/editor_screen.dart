@@ -12,6 +12,7 @@ import 'character_dialog.dart';
 import 'layer_toolbar.dart';
 import 'layer_actions.dart';
 import '../scenarios/scenario_actions.dart';
+import 'sight_controls.dart';
 
 enum _ViewAction {
   grid,
@@ -30,6 +31,7 @@ enum _ViewAction {
   shareJson,
   exportPng,
   details,
+  sight,
 }
 
 class EditorScreen extends StatelessWidget {
@@ -207,9 +209,15 @@ class EditorScreen extends StatelessWidget {
                       actions.exportPng(context);
                     case _ViewAction.details:
                       actions.details(context);
+                    case _ViewAction.sight:
+                      showSightInspector(context, controller);
                   }
                 },
                 itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: _ViewAction.sight,
+                    child: Text('Inspeccionar geometría'),
+                  ),
                   if (workspace != null) ...[
                     PopupMenuItem(
                       key: const ValueKey('new-scenario'),
@@ -311,6 +319,8 @@ class EditorScreen extends StatelessWidget {
             child: Column(
               children: [
                 if (session.editsLayers) LayerToolbar(controller: controller),
+                if (session.tool == EditorTool.vision)
+                  SightToolbar(controller: controller),
                 Expanded(
                   child: LayoutBuilder(
                     builder: (context, constraints) {
@@ -435,7 +445,7 @@ class _ToolBar extends StatelessWidget {
       ('characters', 'Personajes', Icons.person_outline),
       ('terrain', 'Terrenos', Icons.terrain_outlined),
       ('walls', 'Muros', Icons.view_column_outlined),
-      ('vision', 'Visión', Icons.visibility_outlined),
+      ('vision', 'Línea de visión · Geometría', Icons.visibility_outlined),
       ('distance', 'Distancia', Icons.straighten_outlined),
       ('movement', 'Movimiento', Icons.route_outlined),
       ('erase', 'Borrar elemento', Icons.backspace_outlined),
@@ -504,6 +514,7 @@ class _ToolBar extends StatelessWidget {
                           ),
                         );
                         if (controller.value.editsLayers) return;
+                        if (id == 'vision') return;
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(

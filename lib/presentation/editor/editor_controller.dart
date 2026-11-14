@@ -12,12 +12,32 @@ import '../../application/board/layer_draft.dart';
 import '../../domain/terrain/terrain.dart';
 import '../scenarios/workspace_controller.dart';
 import '../../application/ports/scenario_files.dart';
+import '../../application/board/sight_probe.dart';
 
 /// Adaptador de notificación: la sesión y las conversiones usan Dart puro.
 final class EditorController extends ValueNotifier<BoardSession> {
   EditorController() : super(BoardSession.initial());
   final draft = ValueNotifier<LayerDraft?>(null);
   final history = EditorHistory();
+  final sight = SightProbe();
+  @override
+  set value(BoardSession next) {
+    sight.evaluate(next);
+    super.value = next;
+  }
+
+  void setSightEndpoint(ProbeEndpoint endpoint, {required bool asOrigin}) {
+    sight.setEndpoint(endpoint, asOrigin: asOrigin);
+    sight.evaluate(value);
+    notifyListeners();
+  }
+
+  void updateSight(void Function(SightProbe) change) {
+    change(sight);
+    sight.evaluate(value);
+    notifyListeners();
+  }
+
   WorkspaceController? workspace;
   ScenarioFiles? files;
   bool fileBusy = false, _closed = false;
@@ -34,6 +54,7 @@ final class EditorController extends ValueNotifier<BoardSession> {
 
   void loadScenario(BoardSession session) {
     cancelDraft();
+    sight.clear();
     history.clear();
     _lastEdit = null;
     value = session;
