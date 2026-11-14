@@ -194,3 +194,29 @@ verificado ni implementado ninguna regla del juego.
   Las capas no se recortan silenciosamente. Ampliar y mover cámara las conservan.
 - H/puntos, B/rayas y muros de línea doble son indicadores independientes del color.
   La leyenda explica semántica, controles y límites. No se implementa visión.
+
+## 2026-11-14 — Prompt 04
+
+- Documento completo schemaVersion 1, validación cerrada y sin migración implícita.
+  Referencia reglamentaria editable como metadato, sin motor de reglas. Formato,
+  campos y límites documentados en ESCENARIOS.md.
+- Biblioteca privada hasta 200 escenarios con identidad aleatoria independiente
+  del nombre; nombres repetidos permitidos. Importar/duplicar/guardar como generan
+  otra identidad. Guardar mantiene la actual. Eliminar pide confirmación.
+- Recuperación working.json separada, versionada y escrita en cola por revisión;
+  temporal + flush + rename. No se promete conservar una edición anterior a la
+  confirmación del indicador. Un fallo mantiene el mundo y ofrece reintento.
+- Recuperación futura/corrupta no se pisa automáticamente; reemplazo explícito la
+  archiva antes. Documento incompatible en biblioteca exige Guardar como.
+- Historial de 100 comandos completados con referencias inmutables, sin cámara,
+  selección ni snapshots por píxel. Nuevo/abrir/importar/guardar como reinicia pilas.
+  Undo/redo no recicla IDs. Borrar archivo de biblioteca no pertenece al historial.
+- Puente Android propio por MethodChannel, sin paquetes nuevos: SAF para archivos,
+  FileProvider de cache/exports para compartir, permiso de lectura temporal. Sin
+  INTERNET ni permisos de almacenamiento amplios. Cancelar no cambia el tablero.
+- PNG reusa painter sin controles; 2048 px por eje por defecto, 4096 opcional,
+  coordenadas/leyenda independientes. Se informa el coste aproximado de 64 MiB
+  crudos en 4K y el límite nativo de archivo PNG de 16 MiB.
+- Pruebas incluyen reinicio de controladores, fallos y carreras de I/O, esquema
+  desconocido, nombres iguales, 40×40 completo, navegación y PNG real. No se añade
+  geometría ni funciones reglamentarias de Prompt 05.

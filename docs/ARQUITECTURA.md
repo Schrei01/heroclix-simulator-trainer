@@ -2,18 +2,18 @@
 
 ## Dependencias
 
-`presentación → aplicación → dominio`. La infraestructura implementará los
+`presentación → aplicación → dominio`. La infraestructura implementa los
 puertos de aplicación. El punto de entrada compone las dependencias; el dominio
 no importa Flutter, infraestructura ni plataforma.
 
 | Ruta | Responsabilidad actual |
 | --- | --- |
-| `lib/main.dart` | Arranque Flutter |
+| `lib/main.dart` | Composición de archivos Android, repositorio, workspace y editor |
 | `lib/app.dart` | MaterialApp, idioma y tema |
 | `lib/domain/` | Tipos puros, sin widgets ni acceso a plataforma |
 | `lib/application/` | Catálogo, sesión inmutable de tablero y puertos de persistencia |
 | `lib/presentation/` | Inicio, Editor, adaptación de gestos/cámara y tema |
-| `lib/infrastructure/local/` | Reserva documentada para almacenamiento futuro |
+| `lib/infrastructure/local/` | FileDocumentStore y AndroidScenarioFiles |
 | `android/` | Adaptación nativa, identidad y configuración de build |
 | `test/` | Contratos de dominio y pruebas de widgets |
 
@@ -30,8 +30,9 @@ es la única fuente de verdad del tablero: dimensiones, selección, cámara,
 viewport, opciones de visualización, figuras, equipos, terreno y muros. Es inmutable y no importa Flutter.
 
 `EditorController` es un ValueNotifier de presentación que adapta cambios de
-sesión a widgets. HeroClixApp lo posee y lo destruye al salir de la app: la sesión
-se conserva al volver al inicio y al girar, pero no tras cerrar el proceso.
+sesión a widgets. HeroClixApp lo posee y lo destruye al salir de la app. Desde 04,
+WorkspaceController autoguarda las ediciones lógicas y recupera el documento al
+arrancar. Cámara, selección y preferencias de vista permanecen solo en memoria.
 
 InteractiveViewer usa una TransformationController como proyección de la cámara.
 Sus cambios se convierten a BoardCamera; los botones modifican BoardSession y el
@@ -42,11 +43,12 @@ El viewport se actualiza después del layout. Al redimensionar se conserva el
 punto lógico central y el zoom; «Ajustar» encaja el mapa completo. La selección
 siempre es CellCoordinate, nunca un Offset o píxel de pantalla.
 
-`LocalDocumentStore` define un puerto independiente de Flutter para leer,
-escribir y eliminar documentos locales. No tiene adaptador de producción en 00;
-los fallos se comunicarán al consumidor y nunca destruirán la sesión activa.
-El documento completo, su schemaVersion, migraciones e historial corresponden a 04;
-LayerCodec prepara en 03 un fragmento versionado de terreno y bordes en memoria.
+`LocalDocumentStore` define leer/escribir/eliminar/listar. FileDocumentStore
+implementa archivos privados con límites y reemplazo mediante temporal/rename.
+ScenarioRepository separa biblioteca de recuperación; ScenarioCodec valida el
+documento completo de esquema 1. WorkspaceController serializa I/O y revisiones,
+conserva la sesión ante fallos y publica una nueva solo después de protegerla.
+LayerCodec sigue validando terreno/bordes como parte del documento completo.
 
 ## Render y gestos en 01
 
@@ -88,13 +90,14 @@ La presentación recoge formularios y llama al controlador; nunca decide ocupaci
 El arrastre conserva el mundo hasta soltar: FigureDragPreview vive únicamente en
 BoardCanvas, usa validatePlacement y se pinta como superposición. Se revalida el
 movimiento al confirmar. Las figuras se pintan tras cuadrícula/coordenadas, con
-código de equipo, patrón y resaltado de selección. Terreno/muros siguen reservados.
+código de equipo, patrón y resaltado de selección. Terreno/muros se integran en 03.
 
 ## Edición de capas en 03
 
 BoardSession centraliza política de conflictos, pintura y limpieza por capa.
 BoardEdit guarda estados de capas inmutables antes/después de una operación y
-puede aplicar/revertir sin restaurar cámara; la UI aún no presenta historial.
+puede aplicar/revertir sin restaurar cámara; en 04 EditorHistory conserva 100
+operaciones y el controlador expone deshacer/rehacer.
 LayerDraft es un borrador transitorio en un ValueNotifier separado de la sesión:
 no hay una mutación del escenario por cada píxel del arrastre.
 
@@ -107,3 +110,22 @@ Las advertencias de estudio se derivan de las capas; no son reglas de HeroClix.
 
 LayerCodec serializa solo un fragmento terreno/bordes, sin I/O. El documento de
 escenario completo y el almacenamiento no están implementados en esta etapa.
+
+## Persistencia e intercambio en 04
+
+ScenarioDocument contiene identidad, nombre, referencia reglamentaria y fechas,
+además del mundo lógico. Los detalles del esquema y políticas están en
+[ESCENARIOS.md](ESCENARIOS.md). Todos los tipos de documento/codec/repositorio y
+puertos siguen fuera de Flutter. WorkspaceController coordina en presentación
+los callbacks de sesión, estado sucio, recuperación e I/O; no duplica el mundo.
+
+EditorController registra solo cambios de contenido: camera/selección/previas no
+ensucian el documento ni generan historial. Un gesto confirmado genera un comando.
+BoardSession.restoreContent preserva contadores monotónicos; cargar otra escena
+limpia historial y ajusta cámara. No hay pila persistida ni snapshots por píxel.
+
+ScenarioFiles es un puerto para selección, exportación y compartir. Android lo
+implementa por MethodChannel, SAF y FileProvider de alcance limitado; los tests
+sustituyen ese puerto. BoardPngExporter reutiliza BoardPainter con PictureRecorder,
+sin widgets ni cámara de pantalla. Los renders de verificación usan un store en
+memoria; main de producción siempre compone archivos privados reales.

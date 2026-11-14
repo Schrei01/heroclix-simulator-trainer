@@ -53,11 +53,13 @@ ESTADO.md para saber qué se ejecutó realmente.
 2. Ejecutar `flutter devices` y anotar ID, modelo y versión Android.
 3. Instalar con `adb -s ID install -r build/app/outputs/flutter-apk/app-debug.apk`
    y abrir la app desde el launcher.
-4. Comprobar nombre, español y cuatro tarjetas con «Próximamente». Tocarlas no
-   abre otras pantallas. No debe aparecer el contador de la plantilla Flutter.
+4. Comprobar nombre, español y Editor operativo. Simulador, Entrenador y Árbitro
+   siguen deshabilitados como «Próximamente». Abrir Editor y editar un escenario.
 5. Girar vertical/horizontal y recorrer la pantalla. Repetir con texto ampliado
    en accesibilidad de Android y TalkBack; los modos se anuncian deshabilitados.
-6. Deshabilitar Wi-Fi y datos y reiniciar la app. El inicio debe seguir completo.
+6. Deshabilitar Wi-Fi y datos. Esperar confirmación de autoguardado, forzar cierre,
+   reabrir Editor y comprobar contenido. Probar biblioteca y exportar/importar JSON
+   con el selector nativo; exportar PNG y abrir Compartir (cancelar para la prueba).
 7. Registrar resultados reales en ESTADO.md; las pruebas de widgets no sustituyen
    estas pruebas de dispositivo.
 
