@@ -9,8 +9,18 @@ import 'board_canvas.dart';
 import 'board_size_dialog.dart';
 import 'editor_controller.dart';
 import 'character_dialog.dart';
+import 'layer_toolbar.dart';
+import 'layer_actions.dart';
 
-enum _ViewAction { grid, coordinates, clearSelection }
+enum _ViewAction {
+  grid,
+  coordinates,
+  clearSelection,
+  legend,
+  clearTerrain,
+  clearWalls,
+  clearFigures,
+}
 
 class EditorScreen extends StatelessWidget {
   const EditorScreen({required this.controller, super.key});
@@ -121,6 +131,14 @@ class EditorScreen extends StatelessWidget {
                     controller.toggleCoordinates();
                   case _ViewAction.clearSelection:
                     controller.clearSelection();
+                  case _ViewAction.legend:
+                    showLayerLegend(context);
+                  case _ViewAction.clearTerrain:
+                    clearLayer(context, controller, 'terreno');
+                  case _ViewAction.clearWalls:
+                    clearLayer(context, controller, 'muros');
+                  case _ViewAction.clearFigures:
+                    clearLayer(context, controller, 'figuras');
                 }
               },
               itemBuilder: (context) => [
@@ -142,6 +160,25 @@ class EditorScreen extends StatelessWidget {
                   enabled: session.selectedCell != null,
                   child: const Text('Limpiar selección'),
                 ),
+                const PopupMenuItem(
+                  value: _ViewAction.legend,
+                  child: Text('Leyenda y capas'),
+                ),
+                const PopupMenuItem(
+                  key: ValueKey('clear-terrain-option'),
+                  value: _ViewAction.clearTerrain,
+                  child: Text('Limpiar solo terreno'),
+                ),
+                const PopupMenuItem(
+                  key: ValueKey('clear-walls-option'),
+                  value: _ViewAction.clearWalls,
+                  child: Text('Limpiar solo muros'),
+                ),
+                const PopupMenuItem(
+                  key: ValueKey('clear-figures-option'),
+                  value: _ViewAction.clearFigures,
+                  child: Text('Limpiar solo figuras'),
+                ),
               ],
             ),
           ],
@@ -151,6 +188,7 @@ class EditorScreen extends StatelessWidget {
           maintainBottomViewPadding: true,
           child: Column(
             children: [
+              if (session.editsLayers) LayerToolbar(controller: controller),
               Expanded(
                 child: LayoutBuilder(
                   builder: (context, constraints) {
@@ -189,11 +227,16 @@ class _CameraBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final selected = session.selectedCell;
     final figure = session.selectedCharacter;
+    final conflicts = session.studyConflicts;
+    final study =
+        figure != null && figure.occupiedCells.any(conflicts.contains);
     final message = figure != null
-        ? '${figure.label} · ${figure.name} · ${session.teamById(figure.teamId).code} · ${figure.position.label}'
+        ? '${figure.label} · ${figure.name} · ${session.teamById(figure.teamId).code} · ${figure.position.label}${study ? ' · ! Estudio' : ''}'
         : selected == null
         ? (session.characters.isEmpty
-              ? 'Cuadrícula vacía · toca una casilla'
+              ? (session.terrain.isEmpty && session.walls.isEmpty
+                    ? 'Cuadrícula vacía · toca una casilla'
+                    : 'Terreno ${session.terrain.cells.length} · Muros ${session.walls.edges.length}')
               : '${session.characters.length} figuras · toca una casilla')
         : 'Seleccionada: ${selected.label}';
     final zoom = '${(session.camera.scale * 100).round()} %';
@@ -272,7 +315,7 @@ class _ToolBar extends StatelessWidget {
       ('vision', 'Visión', Icons.visibility_outlined),
       ('distance', 'Distancia', Icons.straighten_outlined),
       ('movement', 'Movimiento', Icons.route_outlined),
-      ('erase', 'Borrar', Icons.backspace_outlined),
+      ('erase', 'Borrar elemento', Icons.backspace_outlined),
     ];
     final list = ListView(
       key: ValueKey(vertical ? 'tools-left' : 'tools-top'),
@@ -287,16 +330,17 @@ class _ToolBar extends StatelessWidget {
               selected: id == controller.value.tool.name,
               child: IconButton(
                 key: ValueKey('tool-$id'),
-                tooltip: id == 'select' || id == 'characters'
+                tooltip: EditorTool.values.any((tool) => tool.name == id)
                     ? title
                     : '$title · Próximamente',
-                onPressed: id == 'select' || id == 'characters'
+                onPressed: EditorTool.values.any((tool) => tool.name == id)
                     ? () {
                         controller.setTool(
-                          id == 'select'
-                              ? EditorTool.select
-                              : EditorTool.characters,
+                          EditorTool.values.firstWhere(
+                            (tool) => tool.name == id,
+                          ),
                         );
+                        if (controller.value.editsLayers) return;
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(

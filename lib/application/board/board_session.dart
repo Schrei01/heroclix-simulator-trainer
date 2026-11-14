@@ -4,8 +4,12 @@ import '../../domain/board/cell_coordinate.dart';
 import '../../domain/characters/character.dart';
 import '../../domain/characters/character_repository.dart';
 import '../../domain/characters/team.dart';
+import '../../domain/terrain/terrain.dart';
+import '../../domain/terrain/edge_wall.dart';
 
-enum EditorTool { select, characters }
+enum EditorTool { select, characters, terrain, walls, erase }
+
+enum EraseLayer { figures, walls }
 
 /// Única fuente de verdad de la sesión de edición, independiente de Flutter.
 /// Figuras y cámara locales; no evalúa reglas del juego.
@@ -23,6 +27,12 @@ final class BoardSession {
     this.tool = EditorTool.select,
     this.nextCharacter = 1,
     this.nextTeam = 3,
+    this.terrain = const TerrainLayer.empty(),
+    this.walls = const WallLayer.empty(),
+    this.terrainType = TerrainType.hindering,
+    this.rectangleBrush = false,
+    this.eraseWalls = false,
+    this.eraseLayer = EraseLayer.figures,
   });
 
   factory BoardSession.initial() => const BoardSession._(
@@ -42,6 +52,21 @@ final class BoardSession {
   final EditorTool tool;
   final int nextCharacter;
   final int nextTeam;
+  final TerrainLayer terrain;
+  final WallLayer walls;
+  final TerrainType terrainType;
+  final bool rectangleBrush, eraseWalls;
+  final EraseLayer eraseLayer;
+  bool get editsLayers =>
+      tool == EditorTool.terrain ||
+      tool == EditorTool.walls ||
+      tool == EditorTool.erase;
+  Set<CellCoordinate> get studyConflicts => {
+    for (final entry in terrain.cells.entries)
+      if (entry.value.type == TerrainType.blocking &&
+          characters.at(entry.key) != null)
+        entry.key,
+  };
   Character? get selectedCharacter => selectedCharacterId == null
       ? null
       : characters.byId(selectedCharacterId!);
@@ -62,6 +87,12 @@ final class BoardSession {
     EditorTool? tool,
     int? nextCharacter,
     int? nextTeam,
+    TerrainLayer? terrain,
+    WallLayer? walls,
+    TerrainType? terrainType,
+    bool? rectangleBrush,
+    bool? eraseWalls,
+    EraseLayer? eraseLayer,
   }) => BoardSession._(
     dimensions: dimensions ?? this.dimensions,
     camera: camera ?? this.camera,
@@ -77,6 +108,12 @@ final class BoardSession {
     tool: tool ?? this.tool,
     nextCharacter: nextCharacter ?? this.nextCharacter,
     nextTeam: nextTeam ?? this.nextTeam,
+    terrain: terrain ?? this.terrain,
+    walls: walls ?? this.walls,
+    terrainType: terrainType ?? this.terrainType,
+    rectangleBrush: rectangleBrush ?? this.rectangleBrush,
+    eraseWalls: eraseWalls ?? this.eraseWalls,
+    eraseLayer: eraseLayer ?? this.eraseLayer,
   );
 
   BoardSession resizeViewport(ViewportSize next) {
@@ -135,8 +172,9 @@ final class BoardSession {
     }
   }
 
-  BoardSession createCharacter(CharacterDraft data) {
+  BoardSession createCharacter(CharacterDraft data, {bool allowStudy = false}) {
     _validateTeam(data.teamId);
+    _checkFigureTerrain(data, allowStudy);
     final figure = Character(
       id: 'figure-$nextCharacter',
       label: CellCoordinate.columnLabel(nextCharacter - 1),
@@ -150,8 +188,13 @@ final class BoardSession {
     );
   }
 
-  BoardSession editCharacter(String id, CharacterDraft data) {
+  BoardSession editCharacter(
+    String id,
+    CharacterDraft data, {
+    bool allowStudy = false,
+  }) {
     _validateTeam(data.teamId);
+    _checkFigureTerrain(data, allowStudy);
     final original = characters.byId(id);
     if (original == null) {
       throw const PlacementException('La figura ya no existe.');
@@ -171,11 +214,19 @@ final class BoardSession {
     return createCharacter(original.data.at(position));
   }
 
-  BoardSession moveCharacter(String id, CellCoordinate position) => _copy(
-    characters: characters.move(id, position, dimensions),
-    selectedCharacterId: id,
-    selectedCell: position,
-  );
+  BoardSession moveCharacter(String id, CellCoordinate position) {
+    final figure = characters.byId(id);
+    if (figure == null) {
+      throw const PlacementException('La figura ya no existe.');
+    }
+    _checkFigureTerrain(figure.data.at(position), false);
+    return _copy(
+      characters: characters.move(id, position, dimensions),
+      selectedCharacterId: id,
+      selectedCell: position,
+    );
+  }
+
   BoardSession deleteCharacter(String id) => _copy(
     characters: characters.remove(id),
     clearSelection: selectedCharacterId == id,
@@ -208,12 +259,15 @@ final class BoardSession {
       for (var col = 0; col < dimensions.columns; col++) {
         final cell = CellCoordinate(column: col, row: row);
         if (characters
-            .validatePlacement(
-              dimensions: dimensions,
-              position: cell,
-              footprint: footprint,
-            )
-            .isValid) {
+                .validatePlacement(
+                  dimensions: dimensions,
+                  position: cell,
+                  footprint: footprint,
+                )
+                .isValid &&
+            !footprint
+                .cellsAt(cell)
+                .any((cell) => terrain.at(cell).type == TerrainType.blocking)) {
           return cell;
         }
       }
@@ -223,6 +277,12 @@ final class BoardSession {
 
   BoardSession changeDimensions(BoardDimensions next) {
     if (next == dimensions) return this;
+    if (terrain.cells.keys.any((cell) => !next.contains(cell)) ||
+        walls.edges.values.any((edge) => !edge.isInternal(next))) {
+      throw const PlacementException(
+        'El tamaño dejaría terreno o muros fuera de sus límites. Limpia esos elementos antes de reducir.',
+      );
+    }
     for (final figure in characters.all) {
       final validation = characters.validatePlacement(
         dimensions: next,
@@ -259,4 +319,113 @@ final class BoardSession {
   BoardSession resetCamera() => viewport == null
       ? this
       : withCamera(BoardCamera.fit(dimensions, viewport!));
+
+  BoardSession configureLayers({
+    TerrainType? type,
+    bool? rectangle,
+    bool? removeWalls,
+    EraseLayer? erase,
+  }) => _copy(
+    terrainType: type,
+    rectangleBrush: rectangle,
+    eraseWalls: removeWalls,
+    eraseLayer: erase,
+  );
+
+  List<CellCoordinate> blockingConflicts(
+    Iterable<CellCoordinate> cells,
+    TerrainType type,
+  ) => type != TerrainType.blocking
+      ? const []
+      : cells
+            .where((cell) => characters.at(cell) != null)
+            .toList(growable: false);
+
+  void _checkFigureTerrain(CharacterDraft data, bool allowStudy) {
+    if (!allowStudy &&
+        data.footprint
+            .cellsAt(data.position)
+            .any((cell) => terrain.at(cell).type == TerrainType.blocking)) {
+      throw const PlacementException(
+        'La base toca terreno bloqueado. Cambia el terreno o permite explícitamente la posición para estudio desde la ficha.',
+      );
+    }
+  }
+
+  PlacementValidation validateFigurePlacement(
+    Character figure,
+    CellCoordinate? position,
+  ) {
+    final result = characters.validatePlacement(
+      dimensions: dimensions,
+      position: position,
+      footprint: figure.footprint,
+      excludingId: figure.id,
+    );
+    if (!result.isValid) return result;
+    if (figure.footprint
+        .cellsAt(position!)
+        .any((cell) => terrain.at(cell).type == TerrainType.blocking)) {
+      return const PlacementValidation.invalid(
+        'Terreno bloqueado: usa la ficha para conservar una posición para estudio.',
+      );
+    }
+    return result;
+  }
+
+  BoardSession paintTerrain(
+    Iterable<CellCoordinate> cells,
+    TerrainType type, {
+    bool allowStudy = false,
+  }) {
+    final targets = cells.toSet();
+    if (!allowStudy && blockingConflicts(targets, type).isNotEmpty) {
+      throw const PlacementException(
+        'Hay figuras en las casillas. Cancela o conserva la representación para estudio explícitamente.',
+      );
+    }
+    return _copy(terrain: terrain.paint(targets, type, dimensions));
+  }
+
+  BoardSession editWalls(Iterable<EdgeWall> edges, {required bool erase}) =>
+      _copy(walls: walls.edit(edges, dimensions, erase: erase));
+  BoardSession clearTerrain() => _copy(terrain: const TerrainLayer.empty());
+  BoardSession clearWalls() => _copy(walls: const WallLayer.empty());
+  BoardSession clearCharacters() => _copy(
+    characters: const CharacterRepository.empty(),
+    clearSelection: true,
+  );
+
+  /// Puerta para comandos reversibles; no restaura cámara ni recicla identidades.
+  BoardSession replaceLayers({
+    required TerrainLayer terrain,
+    required WallLayer walls,
+    required CharacterRepository characters,
+    int minimumNextCharacter = 1,
+  }) {
+    if (minimumNextCharacter < 1) {
+      throw RangeError.value(minimumNextCharacter, 'minimumNextCharacter');
+    }
+    if (terrain.cells.keys.any((cell) => !dimensions.contains(cell)) ||
+        walls.edges.values.any((edge) => !edge.isInternal(dimensions)) ||
+        characters.all.any(
+          (figure) =>
+              figure.occupiedCells.any((cell) => !dimensions.contains(cell)),
+        )) {
+      throw const PlacementException(
+        'Las capas no caben en el tablero actual.',
+      );
+    }
+    return _copy(
+      terrain: terrain,
+      walls: walls,
+      characters: characters,
+      nextCharacter: nextCharacter < minimumNextCharacter
+          ? minimumNextCharacter
+          : nextCharacter,
+      clearSelection:
+          selectedCharacterId != null &&
+          characters.byId(selectedCharacterId!) == null,
+    );
+  }
 }

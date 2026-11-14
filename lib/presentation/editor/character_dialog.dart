@@ -88,11 +88,17 @@ class _CharacterDialogState extends State<CharacterDialog> {
   late String _team;
   late Footprint _footprint;
   bool _duplicate = false;
+  bool _allowStudy = false;
   String? _error;
   @override
   void initState() {
     super.initState();
     final figure = widget.character;
+    _allowStudy =
+        figure?.occupiedCells.any(
+          (cell) => widget.controller.value.studyConflicts.contains(cell),
+        ) ??
+        false;
     _name = TextEditingController(text: figure?.name ?? 'Figura');
     _position = TextEditingController(
       text: (figure?.position ?? widget.position)?.label ?? 'A1',
@@ -131,6 +137,7 @@ class _CharacterDialogState extends State<CharacterDialog> {
     final error = widget.controller.saveCharacter(
       data,
       id: _duplicate ? null : widget.character?.id,
+      allowStudy: _allowStudy,
     );
     if (error != null) {
       setState(() => _error = error);
@@ -297,6 +304,19 @@ class _CharacterDialogState extends State<CharacterDialog> {
                   ),
                 ),
               ),
+            CheckboxListTile(
+              key: const ValueKey('allow-study-position'),
+              contentPadding: EdgeInsets.zero,
+              title: const Text(
+                'Permitir posición sobre bloqueado para estudio',
+              ),
+              subtitle: const Text(
+                'Se marcará con !. No afirma legalidad reglamentaria.',
+              ),
+              value: _allowStudy,
+              onChanged: (value) =>
+                  setState(() => _allowStudy = value ?? false),
+            ),
             if (widget.character != null && !_duplicate)
               Wrap(
                 children: [

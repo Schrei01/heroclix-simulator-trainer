@@ -7,6 +7,9 @@ import '../theme/app_theme.dart';
 import '../../application/board/board_session.dart';
 import '../../domain/characters/character.dart';
 import '../../domain/characters/team.dart';
+import '../../domain/terrain/terrain.dart';
+import '../../domain/terrain/edge_wall.dart';
+import '../../application/board/layer_draft.dart';
 
 final class FigureDragPreview {
   const FigureDragPreview(
@@ -32,6 +35,7 @@ final class BoardPainter extends CustomPainter {
     required this.showCoordinates,
     this.session,
     this.preview,
+    this.layerPreview,
   });
 
   final BoardDimensions dimensions;
@@ -40,6 +44,7 @@ final class BoardPainter extends CustomPainter {
   final bool showCoordinates;
   final BoardSession? session;
   final FigureDragPreview? preview;
+  final LayerDraft? layerPreview;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -52,6 +57,54 @@ final class BoardPainter extends CustomPainter {
       dimensions.rows * cell,
     );
     canvas.drawRect(grid, Paint()..color = AppTheme.surface);
+    final terrain = session?.terrain;
+    if (terrain != null) {
+      for (final entry in terrain.cells.entries) {
+        final type = entry.value.type;
+        if (type == TerrainType.clear) continue;
+        final rect = _cellRect(entry.key);
+        final blocking = type == TerrainType.blocking;
+        canvas.drawRect(
+          rect,
+          Paint()
+            ..color = blocking
+                ? const Color(0xff524229)
+                : const Color(0xff25453c),
+        );
+        canvas.save();
+        canvas.clipRect(rect.deflate(1));
+        final pattern = Paint()
+          ..color = blocking ? const Color(0xffe9bd6b) : const Color(0xff87d8c0)
+          ..strokeWidth = 1.5;
+        if (blocking) {
+          for (double x = rect.left - cell; x < rect.right; x += 12) {
+            canvas.drawLine(
+              Offset(x, rect.top),
+              Offset(x + cell, rect.bottom),
+              pattern,
+            );
+          }
+        } else {
+          for (double x = rect.left + 8; x < rect.right; x += 12) {
+            for (double y = rect.top + 8; y < rect.bottom; y += 12) {
+              canvas.drawCircle(Offset(x, y), 1.5, pattern);
+            }
+          }
+        }
+        canvas.restore();
+        canvas.drawRect(
+          Rect.fromLTWH(rect.left + 3, rect.top + 3, 14, 15),
+          Paint()..color = AppTheme.background,
+        );
+        _text(
+          canvas,
+          blocking ? 'B' : 'H',
+          Offset(rect.left + 10, rect.top + 10),
+          fontSize: 11,
+          color: Colors.white,
+        );
+      }
+    }
 
     final selected = selectedCell;
     if (selected != null) {
@@ -184,6 +237,42 @@ final class BoardPainter extends CustomPainter {
         _text(canvas, '${figure.label}\n${team.code}', rect.center);
       }
     }
+    if (state != null) {
+      for (final edge in state.walls.edges.values) {
+        _wall(canvas, edge, const Color(0xfff5d28b));
+      }
+      for (final cell in state.studyConflicts) {
+        final rect = _cellRect(cell);
+        final center = Offset(rect.right - 9, rect.top + 10);
+        canvas.drawCircle(center, 9, Paint()..color = const Color(0xffb71c1c));
+        _text(canvas, '!', center, fontSize: 16, color: Colors.white);
+      }
+    }
+    final draft = layerPreview;
+    if (draft != null) {
+      final incompatible =
+          draft.tool == EditorTool.terrain &&
+          state != null &&
+          state.blockingConflicts(draft.cells, draft.type).isNotEmpty;
+      final color =
+          incompatible || draft.tool == EditorTool.erase || draft.eraseWalls
+          ? const Color(0xffff8a80)
+          : const Color(0xff69f0ae);
+      for (final cell in draft.cells) {
+        final rect = _cellRect(cell).deflate(1);
+        canvas.drawRect(rect, Paint()..color = color.withValues(alpha: .28));
+        canvas.drawRect(
+          rect,
+          Paint()
+            ..color = color
+            ..strokeWidth = 2
+            ..style = PaintingStyle.stroke,
+        );
+      }
+      for (final edge in draft.edges) {
+        _wall(canvas, edge, color);
+      }
+    }
     final drag = preview;
     if (drag != null) {
       final pos = drag.position;
@@ -212,14 +301,59 @@ final class BoardPainter extends CustomPainter {
     }
   }
 
-  void _text(Canvas canvas, String value, Offset center) {
+  Rect _cellRect(CellCoordinate cell) => Rect.fromLTWH(
+    BoardGeometry.gutter + cell.column * BoardGeometry.cellExtent,
+    BoardGeometry.gutter + cell.row * BoardGeometry.cellExtent,
+    BoardGeometry.cellExtent,
+    BoardGeometry.cellExtent,
+  );
+  void _wall(Canvas canvas, EdgeWall edge, Color color) {
+    final start = Offset(
+      BoardGeometry.gutter + edge.column * BoardGeometry.cellExtent,
+      BoardGeometry.gutter + edge.row * BoardGeometry.cellExtent,
+    );
+    final end =
+        start +
+        (edge.axis == EdgeAxis.vertical
+            ? const Offset(0, BoardGeometry.cellExtent)
+            : const Offset(BoardGeometry.cellExtent, 0));
+    canvas.drawLine(
+      start,
+      end,
+      Paint()
+        ..color = const Color(0xff101c2b)
+        ..strokeWidth = 9,
+    );
+    canvas.drawLine(
+      start,
+      end,
+      Paint()
+        ..color = color
+        ..strokeWidth = 6,
+    );
+    canvas.drawLine(
+      start,
+      end,
+      Paint()
+        ..color = const Color(0xff101c2b)
+        ..strokeWidth = 2,
+    );
+  }
+
+  void _text(
+    Canvas canvas,
+    String value,
+    Offset center, {
+    double fontSize = 20,
+    Color color = const Color(0xff102030),
+  }) {
     final text = TextPainter(
       text: TextSpan(
         text: value,
-        style: const TextStyle(
-          color: Color(0xff102030),
+        style: TextStyle(
+          color: color,
           fontFamily: 'sans-serif',
-          fontSize: 20,
+          fontSize: fontSize,
           fontWeight: FontWeight.w900,
         ),
       ),
@@ -240,5 +374,8 @@ final class BoardPainter extends CustomPainter {
       oldDelegate.session?.teams != session?.teams ||
       oldDelegate.session?.selectedCharacterId !=
           session?.selectedCharacterId ||
-      oldDelegate.preview != preview;
+      oldDelegate.preview != preview ||
+      oldDelegate.session?.terrain != session?.terrain ||
+      oldDelegate.session?.walls != session?.walls ||
+      oldDelegate.layerPreview != layerPreview;
 }

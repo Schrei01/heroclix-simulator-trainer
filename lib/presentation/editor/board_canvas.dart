@@ -8,6 +8,10 @@ import 'editor_controller.dart';
 import '../../application/board/board_session.dart';
 import '../../domain/board/cell_coordinate.dart';
 import 'character_dialog.dart';
+import '../../application/board/layer_draft.dart';
+import '../../domain/terrain/editing_geometry.dart';
+
+import 'layer_actions.dart';
 
 class BoardCanvas extends StatefulWidget {
   const BoardCanvas({required this.controller, super.key});
@@ -27,6 +31,168 @@ class _BoardCanvasState extends State<BoardCanvas> {
   bool _multiTouch = false;
   FigureDragPreview? _drag;
   int _dragColumnOffset = 0, _dragRowOffset = 0;
+  BoardPoint? _editLast;
+  CellCoordinate? _editAnchor;
+  bool _layerGesture = false;
+  bool _compactDialogOpen = false;
+
+  Future<void> _compactPreview(LayerDraft draft) async {
+    if (!mounted || widget.controller.draft.value != draft) {
+      _compactDialogOpen = false;
+      return;
+    }
+    final apply = await showDialog<bool>(
+      context: context,
+      builder: (context) => ValueListenableBuilder<LayerDraft?>(
+        valueListenable: widget.controller.draft,
+        child: Dialog(
+          insetPadding: const EdgeInsets.all(16),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'Vista previa: ${draft.cells.length} casillas',
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                  Text(
+                    '${terrainName(draft.type)} · ${draft.cells.first.label} a ${draft.cells.last.label}. La selección se muestra en el tablero. El escenario aún no ha cambiado.',
+                  ),
+                  Wrap(
+                    alignment: WrapAlignment.end,
+                    children: [
+                      TextButton(
+                        key: const ValueKey('cancel-layer-preview'),
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text('Cancelar'),
+                      ),
+                      FilledButton(
+                        key: const ValueKey('apply-layer-preview'),
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text('Aplicar terreno'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        builder: (context, current, child) {
+          if (current != draft) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (context.mounted &&
+                  (ModalRoute.of(context)?.isCurrent ?? false)) {
+                Navigator.pop(context, false);
+              }
+            });
+          }
+          return child!;
+        },
+      ),
+    );
+    if (mounted && widget.controller.draft.value == draft) {
+      if (apply == true) {
+        await commitLayerDraft(context, widget.controller);
+      } else {
+        widget.controller.cancelDraft();
+      }
+    }
+    _compactDialogOpen = false;
+    if (mounted) setState(() {});
+  }
+
+  void _onDraft() {
+    if (mounted) setState(() {});
+  }
+
+  void _beginLayer(Offset point) {
+    final controller = widget.controller;
+    final state = controller.value;
+    if (controller.draft.value?.pending ?? false) return;
+    _layerGesture = true;
+    _editAnchor = _cell(point);
+    _editLast = _scene(point);
+    controller.draft.value = LayerDraft(
+      tool: state.tool,
+      type: state.terrainType,
+      rectangle: state.rectangleBrush && state.tool == EditorTool.terrain,
+      eraseWalls: state.eraseWalls,
+      eraseLayer: state.eraseLayer,
+    );
+    _updateLayer(point);
+  }
+
+  void _updateLayer(Offset point) {
+    final controller = widget.controller;
+    final draft = controller.draft.value;
+    if (!_layerGesture || draft == null || _multiTouch) return;
+    final state = controller.value;
+    final scene = _scene(point), previous = _editLast ?? _scene(point);
+    final cell = _cell(point);
+    const geometry = EditingGeometry();
+    if (draft.tool == EditorTool.terrain) {
+      if (draft.rectangle) {
+        _editAnchor ??= cell;
+        if (_editAnchor != null && cell != null) {
+          controller.draft.value = draft.update(
+            cells: geometry.rectangle(_editAnchor!, cell),
+          );
+        }
+      } else {
+        controller.draft.value = draft.update(
+          cells: {
+            ...draft.cells,
+            ...geometry.cellsAlong(previous, scene, state.dimensions),
+          },
+        );
+      }
+    } else if (draft.tool == EditorTool.erase &&
+        draft.eraseLayer == EraseLayer.figures) {
+      final figure = cell == null ? null : state.characters.at(cell);
+      controller.draft.value = draft.update(
+        figureId: figure?.id,
+        cells: figure?.occupiedCells ?? [],
+      );
+    } else {
+      final dx = scene.x - previous.x, dy = scene.y - previous.y;
+      final steps = ((dx.abs() + dy.abs()) / (BoardGeometry.cellExtent / 8))
+          .ceil()
+          .clamp(1, 20000);
+      final edges = {...draft.edges};
+      for (var step = 0; step <= steps; step++) {
+        final edge = geometry.edgeAt(
+          BoardPoint(
+            previous.x + dx * step / steps,
+            previous.y + dy * step / steps,
+          ),
+          state.dimensions,
+          axis: edges.isEmpty ? null : edges.first.axis,
+        );
+        if (edge != null) edges.add(edge);
+      }
+      controller.draft.value = draft.update(edges: edges);
+    }
+    _editLast = scene;
+  }
+
+  void _pointerUp(PointerUpEvent event) {
+    if (_layerGesture && !_multiTouch && _pointers.length == 1) {
+      _updateLayer(event.localPosition);
+      final draft = widget.controller.draft.value;
+      _layerGesture = false;
+      if (draft != null && draft.rectangle && draft.cells.isNotEmpty) {
+        widget.controller.draft.value = draft.update(pending: true);
+      } else {
+        commitLayerDraft(context, widget.controller);
+      }
+    }
+    _pointers.remove(event.pointer);
+  }
 
   BoardPoint _scene(Offset point) => widget.controller.value.camera
       .viewportToScene(BoardPoint(point.dx, point.dy));
@@ -35,7 +201,7 @@ class _BoardCanvasState extends State<BoardCanvas> {
     widget.controller.value.dimensions,
   );
   void _startDrag(LongPressStartDetails details) {
-    if (_multiTouch) return;
+    if (_multiTouch || widget.controller.value.editsLayers) return;
     final cell = _cell(details.localPosition);
     final figure = cell == null
         ? null
@@ -66,12 +232,7 @@ class _BoardCanvasState extends State<BoardCanvas> {
         ? null
         : CellCoordinate(column: col, row: row);
     final state = widget.controller.value;
-    final result = state.characters.validatePlacement(
-      dimensions: state.dimensions,
-      position: target,
-      footprint: drag.figure.footprint,
-      excludingId: drag.figure.id,
-    );
+    final result = state.validateFigurePlacement(drag.figure, target);
     setState(
       () => _drag = FigureDragPreview(
         drag.figure,
@@ -120,6 +281,7 @@ class _BoardCanvasState extends State<BoardCanvas> {
       _matrix(widget.controller.value.camera),
     )..addListener(_onTransform);
     widget.controller.addListener(_onSession);
+    widget.controller.draft.addListener(_onDraft);
   }
 
   @override
@@ -127,7 +289,9 @@ class _BoardCanvasState extends State<BoardCanvas> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.controller != widget.controller) {
       oldWidget.controller.removeListener(_onSession);
+      oldWidget.controller.draft.removeListener(_onDraft);
       widget.controller.addListener(_onSession);
+      widget.controller.draft.addListener(_onDraft);
       _onSession();
     }
   }
@@ -147,6 +311,7 @@ class _BoardCanvasState extends State<BoardCanvas> {
   @override
   void dispose() {
     widget.controller.removeListener(_onSession);
+    widget.controller.draft.removeListener(_onDraft);
     _transform.removeListener(_onTransform);
     _transform.dispose();
     super.dispose();
@@ -159,14 +324,22 @@ class _BoardCanvasState extends State<BoardCanvas> {
       _multiTouch = false;
     }
     _pointers.add(event.pointer);
+    if (_pointers.length == 1 && widget.controller.value.editsLayers) {
+      _blockTap = true;
+      _beginLayer(event.localPosition);
+    }
     if (_pointers.length > 1) {
       _blockTap = true;
       _multiTouch = true;
       _cancelDrag();
+      _layerGesture = false;
+      widget.controller.cancelDraft();
+      setState(() {});
     }
   }
 
   void _pointerMove(PointerMoveEvent event) {
+    if (widget.controller.value.editsLayers) _updateLayer(event.localPosition);
     if (_pointerStart != null &&
         (event.localPosition - _pointerStart!).distance > kTouchSlop) {
       _blockTap = true;
@@ -186,10 +359,22 @@ class _BoardCanvasState extends State<BoardCanvas> {
           constraints.maxWidth,
           constraints.maxHeight,
         );
+        final draft = widget.controller.draft.value;
+        if (constraints.maxHeight < 240 &&
+            draft != null &&
+            draft.pending &&
+            !_compactDialogOpen) {
+          _compactDialogOpen = true;
+          WidgetsBinding.instance.addPostFrameCallback(
+            (_) => _compactPreview(draft),
+          );
+        }
         if (viewport != session.viewport) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted) {
               _cancelDrag();
+              widget.controller.cancelDraft();
+              _layerGesture = false;
               widget.controller.resizeViewport(viewport);
             }
           });
@@ -198,7 +383,8 @@ class _BoardCanvasState extends State<BoardCanvas> {
           label:
               'Tablero de ${session.dimensions.rows} filas y '
               '${session.dimensions.columns} columnas. '
-              '${session.selectedCell == null ? 'Sin selección' : 'Seleccionada ${session.selectedCell!.label}'}.',
+              '${session.selectedCell == null ? 'Sin selección' : 'Seleccionada ${session.selectedCell!.label}'}. '
+              '${session.studyConflicts.isEmpty ? '' : '${session.studyConflicts.length} casillas incompatibles para estudio, marcadas con admiración.'}',
           hint:
               'Toca una casilla para seleccionarla. Usa dos dedos para ampliar '
               'y arrastra para desplazar. También hay botones de zoom y centrar.',
@@ -209,10 +395,12 @@ class _BoardCanvasState extends State<BoardCanvas> {
               behavior: HitTestBehavior.opaque,
               onPointerDown: _pointerDown,
               onPointerMove: _pointerMove,
-              onPointerUp: (event) => _pointers.remove(event.pointer),
+              onPointerUp: _pointerUp,
               onPointerCancel: (event) {
                 _blockTap = true;
                 _cancelDrag();
+                _layerGesture = false;
+                widget.controller.cancelDraft();
                 _pointers.remove(event.pointer);
               },
               child: GestureDetector(
@@ -252,7 +440,9 @@ class _BoardCanvasState extends State<BoardCanvas> {
                   children: [
                     Positioned.fill(
                       child: InteractiveViewer(
-                        panEnabled: _drag == null,
+                        panEnabled:
+                            _drag == null &&
+                            (!session.editsLayers || _multiTouch),
                         scaleEnabled: _drag == null,
                         transformationController: _transform,
                         constrained: false,
@@ -273,6 +463,7 @@ class _BoardCanvasState extends State<BoardCanvas> {
                               showCoordinates: session.showCoordinates,
                               session: session,
                               preview: _drag,
+                              layerPreview: widget.controller.draft.value,
                             ),
                             isComplex: true,
                           ),
@@ -294,6 +485,69 @@ class _BoardCanvasState extends State<BoardCanvas> {
                                 '${_drag!.valid ? '✓' : '×'} ${_drag!.message}',
                                 key: const ValueKey('drag-status'),
                                 textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    if (widget.controller.draft.value case final draft?)
+                      Positioned(
+                        left: 8,
+                        right: 8,
+                        bottom: 8,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxHeight: constraints.maxHeight * .6,
+                          ),
+                          child: SingleChildScrollView(
+                            child: Material(
+                              color: AppTheme.surface,
+                              borderRadius: BorderRadius.circular(8),
+                              child: Padding(
+                                padding: const EdgeInsets.all(8),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      'Vista previa · ${draft.tool == EditorTool.terrain
+                                          ? '${draft.cells.length} casillas · ${terrainName(draft.type)}'
+                                          : draft.figureId != null
+                                          ? 'Borrar figura'
+                                          : '${draft.edges.length} bordes internos'}',
+                                      key: const ValueKey(
+                                        'layer-preview-status',
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    if (draft.pending &&
+                                        constraints.maxHeight >= 240)
+                                      Wrap(
+                                        alignment: WrapAlignment.center,
+                                        children: [
+                                          TextButton(
+                                            key: const ValueKey(
+                                              'cancel-layer-preview',
+                                            ),
+                                            onPressed:
+                                                widget.controller.cancelDraft,
+                                            child: const Text('Cancelar'),
+                                          ),
+                                          FilledButton(
+                                            key: const ValueKey(
+                                              'apply-layer-preview',
+                                            ),
+                                            onPressed: () => commitLayerDraft(
+                                              context,
+                                              widget.controller,
+                                            ),
+                                            child: const Text(
+                                              'Aplicar terreno',
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
