@@ -494,30 +494,6 @@ class _BoardCanvasState extends State<BoardCanvas> {
                         ),
                       ),
                     ),
-                    if (session.tool == EditorTool.vision)
-                      Positioned(
-                        left: 8,
-                        right: 8,
-                        bottom: 8,
-                        child: IgnorePointer(
-                          child: Material(
-                            color: AppTheme.surface,
-                            borderRadius: BorderRadius.circular(8),
-                            child: Padding(
-                              padding: const EdgeInsets.all(8),
-                              child: Text(
-                                widget.controller.sight.error ??
-                                    (widget.controller.sight.trace == null
-                                        ? 'Toca ${widget.controller.sight.chooseOrigin ? 'origen' : 'destino'} · casilla o figura. Solo geometría.'
-                                        : '${widget.controller.sight.trace!.path.origin.label} a ${widget.controller.sight.trace!.path.destination.label} · ${widget.controller.sight.trace!.segments.length} tramos · Solo geometría'),
-                                key: const ValueKey('sight-status'),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
                     if (_drag != null)
                       Positioned(
                         left: 8,

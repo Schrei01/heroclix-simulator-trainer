@@ -363,7 +363,7 @@ class _CameraBar extends StatelessWidget {
     final conflicts = session.studyConflicts;
     final study =
         figure != null && figure.occupiedCells.any(conflicts.contains);
-    final message = figure != null
+    final selectionMessage = figure != null
         ? '${figure.label} · ${figure.name} · ${session.teamById(figure.teamId).code} · ${figure.position.label}${study ? ' · ! Estudio' : ''}'
         : selected == null
         ? (session.characters.isEmpty
@@ -372,6 +372,13 @@ class _CameraBar extends StatelessWidget {
                     : 'Terreno ${session.terrain.cells.length} · Muros ${session.walls.edges.length}')
               : '${session.characters.length} figuras · toca una casilla')
         : 'Seleccionada: ${selected.label}';
+    final probe = controller.sight;
+    final message = session.tool != EditorTool.vision
+        ? selectionMessage
+        : probe.error ??
+              (probe.trace == null
+                  ? 'Toca ${probe.chooseOrigin ? 'origen' : 'destino'} · casilla o figura. Solo geometría.'
+                  : '${probe.trace!.path.origin.label} a ${probe.trace!.path.destination.label} · ${probe.trace!.segments.length} tramos · Solo geometría');
     final zoom = '${(session.camera.scale * 100).round()} %';
     return ColoredBox(
       color: AppTheme.surface,
@@ -394,7 +401,11 @@ class _CameraBar extends StatelessWidget {
                   liveRegion: true,
                   child: Text(
                     message,
-                    key: const ValueKey('board-selection-status'),
+                    key: ValueKey(
+                      session.tool == EditorTool.vision
+                          ? 'sight-status'
+                          : 'board-selection-status',
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),

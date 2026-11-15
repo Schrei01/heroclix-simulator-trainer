@@ -153,6 +153,12 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpAndSettle();
       expect(controller.sight.trace, same(before));
+      expect(
+        tester.getTopLeft(key('sight-status')).dy,
+        greaterThanOrEqualTo(tester.getBottomLeft(key('board-viewport')).dy),
+        reason:
+            'El estado debe quedar fuera del tablero para no tapar el destino.',
+      );
       controller.setTool(EditorTool.select);
       controller.moveCharacter('figure-1', c('B1'));
       await tester.pumpAndSettle();
