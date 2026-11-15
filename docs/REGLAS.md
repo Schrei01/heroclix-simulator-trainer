@@ -34,3 +34,11 @@ movimiento, ataques ni excepciones. El inicio no emite dictámenes.
 
 No se distribuyen el PDF, texto completo, iconografía ni ilustraciones oficiales.
 La herramienta futura será de apoyo, no una decisión oficial de torneo.
+
+## Cobertura en 05
+
+Geometría exacta centro-a-centro operativa en el Editor: casillas interiores,
+bordes y vértices. Un contacto con muro/figura no se interpreta como veredicto.
+No se implementa ni valida una regla oficial adicional en esta etapa; la versión
+objetivo del documento permanece como referencia. GEOMETRIA.md describe el
+contrato matemático; la evaluación reglamentaria de visión corresponde a 06.

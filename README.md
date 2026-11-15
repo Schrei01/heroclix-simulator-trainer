@@ -1,13 +1,13 @@
 # HeroClix Simulator & Trainer
 
-Aplicación Android Flutter/Dart, offline y en español. Versión **0.5.0+5**.
-La entrega 04 está en la rama `codex/prompt-04` del repositorio privado
+Aplicación Android Flutter/Dart, offline y en español. Versión **0.6.0+6**.
+La entrega 05 está en la rama `codex/prompt-05` del repositorio privado
 [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer).
 
 ```powershell
 git clone https://github.com/Schrei01/heroclix-simulator-trainer.git
 cd heroclix-simulator-trainer
-git switch codex/prompt-04
+git switch codex/prompt-05
 ```
 
 ## Qué existe
@@ -24,7 +24,30 @@ además del color. Figuras, terreno y muros tienen datos separados.
 
 La etapa 04 añade biblioteca local, recuperación automática de sesión, historial
 de 100 operaciones, JSON versionado y PNG del tablero. Simulador, Entrenador y
-Árbitro permanecen futuros. No hay evaluación reglamentaria, ataques, rutas ni visión.
+Árbitro permanecen futuros. La etapa 05 añade geometría de trayectorias en el
+Editor. No hay evaluación reglamentaria, ataques ni rutas de movimiento.
+
+## Inspeccionar una trayectoria
+
+1. En la barra de herramientas desplazable elige **Línea de visión · Geometría**.
+   Toca origen y destino, casillas o figuras. El asterisco indica el próximo extremo.
+2. **Origen/Destino** permite elegir de nuevo uno. **Coordenadas / figuras** ofrece
+   un formulario para coordenadas fijas o figuras que seguirán su posición.
+   Al tocar una base 2×2 se pide una casilla de referencia explícita; la evaluación
+   completa de bases corresponde a 08.
+3. **Inspeccionar geometría** muestra puntos exactos, tramos dentro de casillas y
+   eventos ordenados. Azul/círculo: borde o interior; lila/rombo: vértice. Las dos
+   casillas laterales tocadas solo en esquina llevan marcas sin relleno interior.
+4. El inspector permite ocultar segmento/extremos, casillas y contactos. También
+   se abre desde Opciones del tablero. La barra tiene Invertir y Limpiar.
+5. Para mover figuras cambia a Seleccionar/Personajes o usa su ficha. La trayectoria
+   ligada a una figura se recalcula; borrar un extremo retira el resultado y muestra
+   error. Zoom y orientación no alteran la geometría. Dos dedos navegan sin elegir.
+
+Un contacto con muro se identifica como cruce de interior o contacto terminal,
+sin deducir su efecto en HeroClix. No se muestran veredictos reglamentarios.
+Los extremos y superposiciones son transitorios: no cambian JSON ni se exportan
+en el PNG del escenario. Detalles matemáticos en [GEOMETRIA](docs/GEOMETRIA.md).
 
 ## Guardar e intercambiar escenarios
 
@@ -100,6 +123,7 @@ no existe editor ni análisis de altura en esta etapa.
 ```powershell
 $env:Path = "$env:USERPROFILE\develop\flutter\bin;$env:Path"
 flutter --no-version-check pub get
+dart run tool/verify_geometry.dart
 dart format --output=none --set-exit-if-changed lib test tool
 flutter --no-version-check analyze
 flutter --no-version-check test
@@ -109,7 +133,7 @@ flutter --no-version-check build apk --debug
 
 `--no-version-check` evita una consulta de actualización del SDK; no cambia su
 versión ni omite análisis o pruebas. Los renders se escriben en
-`build/previews/prompt-04/`; son capturas Flutter, no de un dispositivo.
+`build/previews/prompt-05/`; son capturas Flutter, no de un dispositivo.
 
 Preparación Android y firma release en [ANDROID.md](docs/ANDROID.md).
 El APK debug y sus resultados/hash se registran en [ESTADO.md](docs/ESTADO.md).
@@ -120,6 +144,7 @@ No se incluyen binarios, credenciales ni claves en Git.
 - `lib/domain/board`: dimensiones, coordenadas y cámara en Dart puro.
 - `lib/domain/characters`: figuras, equipos, huellas y ocupación.
 - `lib/domain/terrain`: terreno, elevación preparada, muros normalizados y hit tests.
+- `lib/domain/geometry`: fracciones exactas, segmentos y eventos de intersección.
 - `lib/application/board`: sesión inmutable, comandos reversibles e historial acotado.
 - `lib/application/scenarios`: documento, codec y repositorio de escenarios.
 - `lib/infrastructure/local`: archivos privados y puente nativo Android.
@@ -140,6 +165,6 @@ de herramientas y compilación durante el desarrollo sí puede necesitar interne
 [ARQUITECTURA](docs/ARQUITECTURA.md), [ESTADO](docs/ESTADO.md),
 [REGLAS](docs/REGLAS.md) y [ANDROID](docs/ANDROID.md).
 Informes anteriores: [00](docs/ENTREGA_00.md), [01](docs/ENTREGA_01.md),
-[02](docs/ENTREGA_02.md), [03](docs/ENTREGA_03.md).
+[02](docs/ENTREGA_02.md), [03](docs/ENTREGA_03.md), [04](docs/ENTREGA_04.md).
 
-**No se inició Prompt 05.** Requiere una nueva orden tras revisar esta entrega.
+**No se inició Prompt 06.** Requiere una nueva orden tras revisar esta entrega.

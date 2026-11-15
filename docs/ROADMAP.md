@@ -9,8 +9,8 @@ y una nueva orden antes de iniciar la siguiente. Estado al 2026-11-14.
 | 01 | Tablero configurable, coordenadas, selección, zoom y desplazamiento | Validada; continuación a 02 autorizada por el usuario |
 | 02 | Figuras genéricas, equipos y ocupación | Validada; continuación a 03 autorizada por el usuario |
 | 03 | Terreno, muros y capas de edición | Validada; continuación a 04 autorizada por el usuario |
-| 04 | Persistencia local, JSON/PNG y deshacer/rehacer | Implementada; 139 tests, 16 renders y APK debug; verificación Android en ESTADO.md |
-| 05 | Geometría exacta de segmentos e intersecciones | Pendiente |
+| 04 | Persistencia local, JSON/PNG y deshacer/rehacer | Validada; continuación a 05 autorizada por el usuario |
+| 05 | Geometría exacta de segmentos e intersecciones | Implementada; 168 tests, 13 contratos Dart puros y 22 renders; verificación en ESTADO.md |
 | 06 | Visión reglamentaria explicable y árbitro básico | Pendiente |
 | 07 | Distancias, alcance y análisis de objetivos | Pendiente |
 | 08 | Elevaciones, bases múltiples y capacidades verificadas | Pendiente |

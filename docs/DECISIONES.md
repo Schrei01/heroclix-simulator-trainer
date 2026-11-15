@@ -220,3 +220,27 @@ verificado ni implementado ninguna regla del juego.
 - Pruebas incluyen reinicio de controladores, fallos y carreras de I/O, esquema
   desconocido, nombres iguales, 40×40 completo, navegación y PNG real. No se añade
   geometría ni funciones reglamentarias de Prompt 05.
+
+## 2026-11-14 — Prompt 05
+
+- Segmentos centro-a-centro en unidades lógicas con racionales normalizados.
+  Igualdad/cortes/orden exactos, sin epsilon; doubles solo al proyectar al canvas.
+- Separar CellPass (interior) de contacto terminal de vértice. Un vértice emite
+  cuatro contactos de extremo de borde y las dos celdas solo de esquina; no se
+  infieren cuatro cruces interiores ni efectos de muros.
+- Secuencia determinista por t; cruces antes del intervalo que empieza allí.
+  Igual origen/destino es un punto fijo explícito, sin contactos de borde.
+- Extremo fijo o ligado a figura por ID y desplazamiento en su base. Borrado,
+  cambio de base o dimensión que invalide la referencia retira resultado y avisa.
+  Undo puede recuperarlo. 2×2 pide referencia explícita, evaluación completa en 08.
+- Hasta 16 candidatas explícitas con identidades únicas; no se generan combinaciones
+  de bases, se elige trayectoria ganadora ni se implementan reglas de 06/08.
+- Inspección transitoria fuera del documento/historial: sin cambio de esquema 1,
+  sin autoguardado de extremos, sin overlay de inspección en PNG del escenario.
+  Cambiar de documento la limpia. Zoom/giro no alteran resultado exacto.
+- Solo Editor incorpora la herramienta operativa. Simulador/Árbitro/Entrenador
+  conservan entrada futura. Panel y superposiciones describen geometría sin emitir
+  veredictos reglamentarios.
+- Contratos del motor compartidos entre runner Dart puro y tests Flutter, con
+  oráculo independiente de cajas abiertas para 2.916 pares de 6×9 y simetría de
+  todos los pares de 4×4. Sin paquetes nuevos.

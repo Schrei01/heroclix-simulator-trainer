@@ -95,3 +95,11 @@ Get-Item -LiteralPath '.\build\app\outputs\flutter-apk\app-release.apk'
 Antes de distribuir, verificar la firma con `apksigner verify --verbose` de
 Android Build Tools, instalar y repetir pruebas offline y de orientación.
 No se anuncia release, firma o instalación exitosa sin ejecutar esos pasos.
+
+## Geometría en el dispositivo (05)
+
+En Editor, desplazar la barra hasta Línea de visión · Geometría. Elegir A1 y D4,
+abrir Inspeccionar y revisar los tres vértices. Probar formulario, ocultar las
+capas, invertir extremos, cambiar zoom/orientación y editar una figura usada como
+extremo. Un muro tocado se informa geométricamente, sin resolver reglas. El
+procedimiento y resultados efectivos de cada entrega están en ESTADO.md.

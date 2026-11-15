@@ -19,9 +19,9 @@ no importa Flutter, infraestructura ni plataforma.
 
 `domain/board` contiene BoardDimensions, CellCoordinate, BoardGeometry,
 BoardCamera y ViewportSize. characters implementa figuras, equipos y ocupación.
-terrain implementa terrenos, muros normalizados y geometría de edición. Los módulos geometry (intersecciones
-de visión), rules, movement y training conservan documentación de alcance sin
-implementar todavía sus funciones.
+terrain implementa terrenos, muros normalizados y geometría de edición. geometry
+implementa intersecciones exactas en 05. rules, movement y training conservan
+documentación de alcance sin implementar todavía sus funciones.
 
 ## Estado y persistencia
 
@@ -68,8 +68,8 @@ se almacenan como si fueran terreno ni figuras.
 
 ## Motor futuro
 
-Geometría emitirá intersecciones; reglas interpretará sus efectos; la UI
-representará resultados estructurados. Editor, Simulador, Entrenador y Árbitro
+Geometría ya emite intersecciones exactas y la UI representa sus resultados.
+Reglas interpretará sus efectos en etapas futuras. Editor, Simulador, Entrenador y Árbitro
 consumirán los mismos servicios. Las condiciones no soportadas devolverán
 «No evaluado». No existe dictamen reglamentario en esta etapa.
 
@@ -129,3 +129,22 @@ implementa por MethodChannel, SAF y FileProvider de alcance limitado; los tests
 sustituyen ese puerto. BoardPngExporter reutiliza BoardPainter con PictureRecorder,
 sin widgets ni cámara de pantalla. Los renders de verificación usan un store en
 memoria; main de producción siempre compone archivos privados reales.
+
+## Geometría exacta en 05
+
+SightGeometry y ExactFraction pertenecen al dominio. Reciben dimensiones,
+SightPath y WallLayer y devuelven eventos/intervalos inmutables con coordenadas
+racionales. No conocen cámara, Flutter, archivo, terrenos ni interpretación de
+reglas. SightPath/traceCandidates prepara varias candidatas explícitas.
+
+SightProbe pertenece a aplicación: resuelve extremos fijos o ligados por ID a una
+figura y casilla relativa de su base. EditorController lo recalcula antes de
+notificar cambios de mundo; caché por dimensiones, personajes y muros evita
+repetir geometría en zoom, selección o terreno. No entra en BoardSession guardado,
+JSON ni historial. Cargar otro documento limpia referencias y resultado.
+
+SightPainter es foregroundPainter del canvas. Solo proyecta fracciones a unidades
+de escena y dibuja tramos/contactos ya calculados, sin repetir intersecciones.
+El exportador PNG conserva BoardPainter de 04 y excluye esta inspección transitoria.
+SightControls adapta selección, formulario de referencias y panel de eventos.
+El algoritmo, límites y convenciones están en GEOMETRIA.md.
