@@ -1,6 +1,6 @@
 import '../domain/app_mode.dart';
 
-/// Catálogo inmutable. Solo el editor tiene una ruta operativa en 01–03.
+/// Rutas operativas; Entrenador conserva su entrada futura.
 const homeModes = <AppMode>[
   AppMode.editor,
   AppMode.simulator,
@@ -8,4 +8,8 @@ const homeModes = <AppMode>[
   AppMode.referee,
 ];
 
-const availableModes = <AppMode>{AppMode.editor};
+const availableModes = <AppMode>{
+  AppMode.editor,
+  AppMode.simulator,
+  AppMode.referee,
+};

@@ -16,9 +16,14 @@ import 'sight_controls.dart';
 import 'sight_painter.dart';
 
 class BoardCanvas extends StatefulWidget {
-  const BoardCanvas({required this.controller, super.key});
+  const BoardCanvas({
+    required this.controller,
+    this.readOnly = false,
+    super.key,
+  });
 
   final EditorController controller;
+  final bool readOnly;
 
   @override
   State<BoardCanvas> createState() => _BoardCanvasState();
@@ -203,7 +208,8 @@ class _BoardCanvasState extends State<BoardCanvas> {
     widget.controller.value.dimensions,
   );
   void _startDrag(LongPressStartDetails details) {
-    if (_multiTouch ||
+    if (widget.readOnly ||
+        _multiTouch ||
         widget.controller.value.editsLayers ||
         widget.controller.value.tool == EditorTool.vision) {
       return;
@@ -330,7 +336,9 @@ class _BoardCanvasState extends State<BoardCanvas> {
       _multiTouch = false;
     }
     _pointers.add(event.pointer);
-    if (_pointers.length == 1 && widget.controller.value.editsLayers) {
+    if (!widget.readOnly &&
+        _pointers.length == 1 &&
+        widget.controller.value.editsLayers) {
       _blockTap = true;
       _beginLayer(event.localPosition);
     }
@@ -345,7 +353,9 @@ class _BoardCanvasState extends State<BoardCanvas> {
   }
 
   void _pointerMove(PointerMoveEvent event) {
-    if (widget.controller.value.editsLayers) _updateLayer(event.localPosition);
+    if (!widget.readOnly && widget.controller.value.editsLayers) {
+      _updateLayer(event.localPosition);
+    }
     if (_pointerStart != null &&
         (event.localPosition - _pointerStart!).distance > kTouchSlop) {
       _blockTap = true;
@@ -375,9 +385,14 @@ class _BoardCanvasState extends State<BoardCanvas> {
             (_) => _compactPreview(draft),
           );
         }
-        if (viewport != session.viewport) {
+        // Una vista de lectura cubierta por Editor no disputa su viewport.
+        final canResize =
+            !widget.readOnly || ModalRoute.of(context)?.isCurrent != false;
+        if (canResize && viewport != session.viewport) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) {
+            if (mounted &&
+                (!widget.readOnly ||
+                    ModalRoute.of(context)?.isCurrent != false)) {
               _cancelDrag();
               widget.controller.cancelDraft();
               _layerGesture = false;
@@ -414,7 +429,7 @@ class _BoardCanvasState extends State<BoardCanvas> {
                 onTapUp: (details) {
                   if (!_blockTap) {
                     final cell = _cell(details.localPosition);
-                    if (session.tool == EditorTool.vision) {
+                    if (widget.readOnly || session.tool == EditorTool.vision) {
                       if (cell != null) {
                         widget.controller.tap(
                           BoardPoint(
@@ -460,7 +475,9 @@ class _BoardCanvasState extends State<BoardCanvas> {
                       child: InteractiveViewer(
                         panEnabled:
                             _drag == null &&
-                            (!session.editsLayers || _multiTouch),
+                            (widget.readOnly ||
+                                !session.editsLayers ||
+                                _multiTouch),
                         scaleEnabled: _drag == null,
                         transformationController: _transform,
                         constrained: false,
@@ -488,6 +505,10 @@ class _BoardCanvasState extends State<BoardCanvas> {
                               line: widget.controller.sight.showLine,
                               cells: widget.controller.sight.showCells,
                               contacts: widget.controller.sight.showContacts,
+                              evaluation: widget.controller.vision.enabled
+                                  ? widget.controller.vision.result
+                                  : null,
+                              showCauses: widget.controller.vision.showCauses,
                             ),
                             isComplex: true,
                           ),

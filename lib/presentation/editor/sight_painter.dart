@@ -3,6 +3,8 @@ import 'package:material_ui/material_ui.dart';
 import '../../domain/board/board_viewport.dart';
 import '../../domain/geometry/sight_geometry.dart';
 import '../../domain/terrain/edge_wall.dart';
+import '../../domain/rules/line_of_sight.dart';
+import '../vision/vision_controls.dart' show visionColor;
 
 /// Solo proyecta resultados exactos del motor; no vuelve a calcular contactos.
 final class SightPainter extends CustomPainter {
@@ -11,9 +13,13 @@ final class SightPainter extends CustomPainter {
     required this.line,
     required this.cells,
     required this.contacts,
+    this.evaluation,
+    this.showCauses = true,
   });
   final GeometricTrace? trace;
   final bool line, cells, contacts;
+  final VisionEvaluation? evaluation;
+  final bool showCauses;
   static const pathColor = Color(0xffb3d5ff);
   static const vertexColor = Color(0xffdbb8ff);
   Offset _point(LogicalPoint point) => Offset(
@@ -101,6 +107,9 @@ final class SightPainter extends CustomPainter {
       }
     }
     if (line) {
+      final tint = evaluation == null
+          ? pathColor
+          : visionColor(evaluation!.status);
       final start = _point(result.events.first.point),
           end = _point(result.events.last.point);
       canvas.drawLine(
@@ -114,15 +123,15 @@ final class SightPainter extends CustomPainter {
         start,
         end,
         Paint()
-          ..color = pathColor
+          ..color = tint
           ..strokeWidth = 3,
       );
-      canvas.drawCircle(start, 7, Paint()..color = pathColor);
+      canvas.drawCircle(start, 7, Paint()..color = tint);
       canvas.drawCircle(start, 3, Paint()..color = const Color(0xff102030));
       canvas.drawRect(
         Rect.fromCenter(center: end, width: 10, height: 10),
         Paint()
-          ..color = pathColor
+          ..color = tint
           ..style = PaintingStyle.stroke
           ..strokeWidth = 2,
       );
@@ -143,6 +152,44 @@ final class SightPainter extends CustomPainter {
         } else {
           canvas.drawCircle(p, 4, Paint()..color = pathColor);
         }
+      }
+    }
+    final verdict = evaluation;
+    if (showCauses && verdict != null && verdict.status != VisionStatus.clear) {
+      final tint = visionColor(verdict.status);
+      final cells = {for (final item in verdict.decisive) ...item.cells};
+      final edges = {for (final item in verdict.decisive) ...item.edges};
+      for (final cell in cells) {
+        final rect = Rect.fromLTWH(
+          gutter + cell.column * extent,
+          gutter + cell.row * extent,
+          extent,
+          extent,
+        ).deflate(5);
+        canvas.drawRect(
+          rect,
+          Paint()
+            ..color = tint
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 4,
+        );
+        _label(canvas, '!', rect.topRight + const Offset(-5, 8));
+      }
+      for (final edge in edges) {
+        final a = Offset(
+          gutter + edge.column * extent,
+          gutter + edge.row * extent,
+        );
+        canvas.drawLine(
+          a,
+          a +
+              (edge.axis == EdgeAxis.vertical
+                  ? const Offset(0, extent)
+                  : const Offset(extent, 0)),
+          Paint()
+            ..color = tint
+            ..strokeWidth = 7,
+        );
       }
     }
   }
@@ -175,5 +222,7 @@ final class SightPainter extends CustomPainter {
       oldDelegate.trace != trace ||
       oldDelegate.line != line ||
       oldDelegate.cells != cells ||
-      oldDelegate.contacts != contacts;
+      oldDelegate.contacts != contacts ||
+      oldDelegate.evaluation != evaluation ||
+      oldDelegate.showCauses != showCauses;
 }

@@ -1,6 +1,7 @@
 // Ejecutar explícitamente: flutter test tool/preview_test.dart
 // Capturas de render Flutter; no representan una prueba en Android real.
 import 'dart:io';
+import 'dart:convert';
 import 'dart:ui' as ui;
 
 import 'package:flutter/rendering.dart';
@@ -22,6 +23,11 @@ import 'package:heroclix_simulator_trainer/domain/terrain/editing_geometry.dart'
 import '../test/support/scenario_fakes.dart';
 
 import 'package:heroclix_simulator_trainer/application/board/sight_probe.dart';
+import 'package:heroclix_simulator_trainer/application/scenarios/scenario_document.dart';
+import 'package:heroclix_simulator_trainer/application/scenarios/scenario_codec.dart';
+
+import '../test/vision_state_test.dart' show visionSession, chooseVision;
+import '../test/support/vision_contract.dart' show vs;
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -49,6 +55,14 @@ void main() {
   for (final (name, size, dimensions) in [
     ('inicio_vertical', const Size(400, 900), null),
     ('inicio_horizontal', const Size(1000, 700), null),
+    ('vision_clear', const Size(400, 900), BoardDimensions.initial),
+    ('vision_hindered', const Size(400, 900), BoardDimensions.initial),
+    ('vision_blocked', const Size(400, 900), BoardDimensions.initial),
+    ('vision_corner', const Size(1000, 600), BoardDimensions.initial),
+    ('vision_unknown', const Size(400, 900), BoardDimensions.initial),
+    ('vision_report', const Size(400, 900), BoardDimensions.initial),
+    ('vision_record', const Size(400, 900), BoardDimensions.initial),
+    ('vision_referee', const Size(400, 900), BoardDimensions.initial),
     ('geometria_vertical', const Size(400, 900), BoardDimensions.initial),
     ('geometria_horizontal', const Size(1000, 600), BoardDimensions.initial),
     ('geometria_inspector', const Size(400, 900), BoardDimensions.initial),
@@ -342,6 +356,80 @@ void main() {
             await tester.pumpAndSettle();
           }
         }
+        if (name.startsWith('vision_')) {
+          final world = name == 'vision_corner'
+              ? vs(
+                  target: 'B2',
+                  terrain: {
+                    'B1': TerrainType.blocking,
+                    'A2': TerrainType.hindering,
+                  },
+                )
+              : vs(
+                  terrain: {
+                    if (name != 'vision_clear' && name != 'vision_unknown')
+                      'B1': name == 'vision_blocked'
+                          ? TerrainType.blocking
+                          : TerrainType.hindering,
+                  },
+                );
+          controller.loadScenario(visionSession(world));
+          controller.workspace!.edited(controller.value);
+          chooseVision(controller);
+          controller.setTool(EditorTool.vision);
+          if (name == 'vision_unknown') {
+            controller.updateVision((v) => v.specialEffects = true);
+          }
+          await tester.pumpAndSettle();
+          controller.resetCamera();
+          await tester.pumpAndSettle();
+          if (name == 'vision_referee') {
+            await tester.tap(find.byTooltip('Atrás').last);
+            await tester.pumpAndSettle();
+            await tester.ensureVisible(find.text('Abrir árbitro'));
+            await tester.pumpAndSettle();
+            await tester.tap(find.text('Abrir árbitro'));
+            await tester.pumpAndSettle();
+            controller.resetCamera();
+            await tester.pumpAndSettle();
+          }
+          if (name == 'vision_report' || name == 'vision_record') {
+            await tester.tap(find.byKey(const ValueKey('board-view-options')));
+            await tester.pumpAndSettle();
+            await tester.tap(find.text('Dictamen de visión').last);
+            await tester.pumpAndSettle();
+            if (name == 'vision_record') {
+              final log = find.byKey(const ValueKey('vision-log'));
+              await tester.ensureVisible(log);
+              await tester.pumpAndSettle();
+              await tester.tap(log);
+              await tester.pumpAndSettle();
+              await tester.ensureVisible(
+                find.byKey(const ValueKey('vision-observation-2')),
+              );
+              await tester.pumpAndSettle();
+            }
+          }
+          await tester.runAsync(() async {
+            final doc = ScenarioDocument.fresh(
+              name: name,
+              session: visionSession(world),
+            );
+            const codec = ScenarioCodec();
+            final file = File('build/verification/prompt-06/$name.json');
+            await file.parent.create(recursive: true);
+            await file.writeAsString(codec.encode(doc));
+            await File('build/verification/prompt-06/$name-working.json')
+                .writeAsString(
+                  jsonEncode({
+                    'workspaceSchemaVersion': 1,
+                    'document': codec.toMap(doc),
+                    'dirty': true,
+                    'saved': false,
+                  }),
+                );
+          });
+        }
       }
       expect(tester.takeException(), isNull);
 
@@ -351,7 +439,7 @@ void main() {
         final image = await boundary.toImage();
         try {
           final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-          final output = File('build/previews/prompt-05/$name.png');
+          final output = File('build/previews/prompt-06/$name.png');
           await output.parent.create(recursive: true);
           await output.writeAsBytes(bytes!.buffer.asUint8List());
         } finally {

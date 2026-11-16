@@ -8,6 +8,7 @@ import '../../domain/geometry/sight_geometry.dart';
 import '../scenarios/scenario_dialogs.dart';
 import '../theme/app_theme.dart';
 import 'editor_controller.dart';
+import '../vision/vision_controls.dart';
 
 Future<void> pickSightCell(
   BuildContext context,
@@ -149,6 +150,16 @@ class SightToolbar extends StatelessWidget {
                         icon: const Icon(Icons.manage_search),
                         label: const Text(
                           'Inspeccionar geometría',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      TextButton.icon(
+                        key: const ValueKey('sight-verdict'),
+                        onPressed: () => showVisionReport(context, controller),
+                        icon: const Icon(Icons.fact_check_outlined),
+                        label: const Text(
+                          'Dictamen de visión',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),

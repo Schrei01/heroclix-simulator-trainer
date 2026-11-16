@@ -13,6 +13,7 @@ import 'layer_toolbar.dart';
 import 'layer_actions.dart';
 import '../scenarios/scenario_actions.dart';
 import 'sight_controls.dart';
+import '../vision/vision_controls.dart';
 
 enum _ViewAction {
   grid,
@@ -32,6 +33,7 @@ enum _ViewAction {
   exportPng,
   details,
   sight,
+  visionVerdict,
 }
 
 class EditorScreen extends StatelessWidget {
@@ -211,9 +213,15 @@ class EditorScreen extends StatelessWidget {
                       actions.details(context);
                     case _ViewAction.sight:
                       showSightInspector(context, controller);
+                    case _ViewAction.visionVerdict:
+                      showVisionReport(context, controller);
                   }
                 },
                 itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: _ViewAction.visionVerdict,
+                    child: Text('Dictamen de visión'),
+                  ),
                   const PopupMenuItem(
                     value: _ViewAction.sight,
                     child: Text('Inspeccionar geometría'),
@@ -378,14 +386,27 @@ class _CameraBar extends StatelessWidget {
         : probe.error ??
               (probe.trace == null
                   ? 'Toca ${probe.chooseOrigin ? 'origen' : 'destino'} · casilla o figura. Solo geometría.'
-                  : '${probe.trace!.path.origin.label} a ${probe.trace!.path.destination.label} · ${probe.trace!.segments.length} tramos · Solo geometría');
+                  : '${probe.trace!.path.origin.label} a ${probe.trace!.path.destination.label} · ${probe.trace!.segments.length} tramos · ${controller.vision.enabled ? 'Visión básica' : 'Solo geometría'}');
     final zoom = '${(session.camera.scale * 100).round()} %';
+    final verdict =
+        controller.vision.enabled && session.tool == EditorTool.vision
+        ? controller.vision.result
+        : null;
     return ColoredBox(
       color: AppTheme.surface,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8),
         child: Row(
           children: [
+            if (verdict != null)
+              Padding(
+                padding: const EdgeInsets.only(right: 4),
+                child: Icon(
+                  visionIcon(verdict.status),
+                  color: visionColor(verdict.status),
+                  size: 20,
+                ),
+              ),
             if (figure != null)
               IconButton(
                 key: const ValueKey('edit-character'),
@@ -400,7 +421,9 @@ class _CameraBar extends StatelessWidget {
                 child: Semantics(
                   liveRegion: true,
                   child: Text(
-                    message,
+                    verdict == null
+                        ? message
+                        : '${visionLabel(verdict.status)} · $message',
                     key: ValueKey(
                       session.tool == EditorTool.vision
                           ? 'sight-status'

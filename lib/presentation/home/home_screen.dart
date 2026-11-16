@@ -5,6 +5,7 @@ import '../../domain/app_mode.dart';
 import '../theme/app_theme.dart';
 import '../editor/editor_controller.dart';
 import '../editor/editor_screen.dart';
+import '../vision/vision_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({required this.editorController, super.key});
@@ -43,9 +44,8 @@ class HomeScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    'Empieza con una cuadrícula a tu medida. '
-                    'Las herramientas de simulación y entrenamiento llegarán '
-                    'en próximas versiones.',
+                    'Construye tu escenario y consulta líneas de visión con '
+                    'explicaciones y referencias. Entrenador: próximamente.',
                   ),
                   const SizedBox(height: 32),
                   Semantics(
@@ -74,9 +74,17 @@ class HomeScreen extends StatelessWidget {
                                     ? () {
                                         Navigator.of(context).push(
                                           MaterialPageRoute<void>(
-                                            builder: (_) => EditorScreen(
-                                              controller: editorController,
-                                            ),
+                                            builder: (_) =>
+                                                mode == AppMode.editor
+                                                ? EditorScreen(
+                                                    controller:
+                                                        editorController,
+                                                  )
+                                                : VisionScreen(
+                                                    controller:
+                                                        editorController,
+                                                    mode: mode,
+                                                  ),
                                           ),
                                         );
                                       }
@@ -153,7 +161,7 @@ class _ModeCard extends StatelessWidget {
       ),
       AppMode.simulator => (
         'Simulador',
-        'Explora visión, alcance y movimiento.',
+        'Consulta líneas de visión y sus causas.',
         Icons.route_outlined,
       ),
       AppMode.trainer => (
@@ -168,10 +176,16 @@ class _ModeCard extends StatelessWidget {
       ),
     };
 
+    final openLabel = switch (mode) {
+      AppMode.editor => 'Abrir editor',
+      AppMode.simulator => 'Abrir simulador',
+      AppMode.referee => 'Abrir árbitro',
+      AppMode.trainer => 'Abrir entrenador',
+    };
     return Semantics(
       key: ValueKey('mode-${mode.id}'),
       label:
-          '$title. ${onOpen == null ? 'Próximamente' : 'Abrir editor'}. $description',
+          '$title. ${onOpen == null ? 'Próximamente' : openLabel}. $description',
       button: true,
       enabled: onOpen != null,
       onTap: onOpen,
@@ -212,7 +226,7 @@ class _ModeCard extends StatelessWidget {
                       const SizedBox(width: 8),
                       Flexible(
                         child: Text(
-                          onOpen == null ? 'Próximamente' : 'Abrir editor',
+                          onOpen == null ? 'Próximamente' : openLabel,
                           style: const TextStyle(color: AppTheme.muted),
                         ),
                       ),

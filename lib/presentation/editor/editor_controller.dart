@@ -13,6 +13,8 @@ import '../../domain/terrain/terrain.dart';
 import '../scenarios/workspace_controller.dart';
 import '../../application/ports/scenario_files.dart';
 import '../../application/board/sight_probe.dart';
+import '../../application/board/vision_analysis.dart';
+import '../../domain/rules/line_of_sight.dart';
 
 /// Adaptador de notificación: la sesión y las conversiones usan Dart puro.
 final class EditorController extends ValueNotifier<BoardSession> {
@@ -20,21 +22,40 @@ final class EditorController extends ValueNotifier<BoardSession> {
   final draft = ValueNotifier<LayerDraft?>(null);
   final history = EditorHistory();
   final sight = SightProbe();
+  final vision = VisionAnalysis();
+  String get rulesVersion =>
+      workspace?.current.rulesVersion ?? VisionContext.supportedVersion;
+  void _evaluateVision(BoardSession next) =>
+      vision.evaluate(next, sight, rulesVersion);
+  void updateVision(void Function(VisionAnalysis) change) {
+    change(vision);
+    _evaluateVision(value);
+    notifyListeners();
+  }
+
+  void _onWorkspace() {
+    _evaluateVision(value);
+    notifyListeners();
+  }
+
   @override
   set value(BoardSession next) {
     sight.evaluate(next);
+    _evaluateVision(next);
     super.value = next;
   }
 
   void setSightEndpoint(ProbeEndpoint endpoint, {required bool asOrigin}) {
     sight.setEndpoint(endpoint, asOrigin: asOrigin);
     sight.evaluate(value);
+    _evaluateVision(value);
     notifyListeners();
   }
 
   void updateSight(void Function(SightProbe) change) {
     change(sight);
     sight.evaluate(value);
+    _evaluateVision(value);
     notifyListeners();
   }
 
@@ -48,13 +69,14 @@ final class EditorController extends ValueNotifier<BoardSession> {
 
   void attachWorkspace(WorkspaceController workspace) {
     this.workspace = workspace;
-    workspace.addListener(notifyListeners);
+    workspace.addListener(_onWorkspace);
     notifyListeners();
   }
 
   void loadScenario(BoardSession session) {
     cancelDraft();
     sight.clear();
+    vision.clear();
     history.clear();
     _lastEdit = null;
     value = session;
@@ -101,7 +123,7 @@ final class EditorController extends ValueNotifier<BoardSession> {
   @override
   void dispose() {
     _closed = true;
-    workspace?.removeListener(notifyListeners);
+    workspace?.removeListener(_onWorkspace);
     workspace?.dispose();
     draft.dispose();
     super.dispose();
