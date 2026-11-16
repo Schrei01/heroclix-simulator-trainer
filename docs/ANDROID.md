@@ -53,11 +53,14 @@ ESTADO.md para saber qué se ejecutó realmente.
 2. Ejecutar `flutter devices` y anotar ID, modelo y versión Android.
 3. Instalar con `adb -s ID install -r build/app/outputs/flutter-apk/app-debug.apk`
    y abrir la app desde el launcher.
-4. Comprobar nombre, español y cuatro tarjetas con «Próximamente». Tocarlas no
-   abre otras pantallas. No debe aparecer el contador de la plantilla Flutter.
+4. Comprobar nombre, español y Editor operativo. Desde la etapa 06, Simulador y
+   Árbitro permiten consultar visión básica; Entrenador sigue «Próximamente».
+   Abrir Editor y editar un escenario.
 5. Girar vertical/horizontal y recorrer la pantalla. Repetir con texto ampliado
-   en accesibilidad de Android y TalkBack; los modos se anuncian deshabilitados.
-6. Deshabilitar Wi-Fi y datos y reiniciar la app. El inicio debe seguir completo.
+   en accesibilidad de Android y TalkBack; solo Entrenador se anuncia deshabilitado.
+6. Deshabilitar Wi-Fi y datos. Esperar confirmación de autoguardado, forzar cierre,
+   reabrir Editor y comprobar contenido. Probar biblioteca y exportar/importar JSON
+   con el selector nativo; exportar PNG y abrir Compartir (cancelar para la prueba).
 7. Registrar resultados reales en ESTADO.md; las pruebas de widgets no sustituyen
    estas pruebas de dispositivo.
 
@@ -93,3 +96,53 @@ Get-Item -LiteralPath '.\build\app\outputs\flutter-apk\app-release.apk'
 Antes de distribuir, verificar la firma con `apksigner verify --verbose` de
 Android Build Tools, instalar y repetir pruebas offline y de orientación.
 No se anuncia release, firma o instalación exitosa sin ejecutar esos pasos.
+
+## Geometría en el dispositivo (05)
+
+En Editor, desplazar la barra hasta Línea de visión · Geometría. Elegir A1 y D4,
+abrir Inspeccionar y revisar los tres vértices. Probar formulario, ocultar las
+capas, invertir extremos, cambiar zoom/orientación y editar una figura usada como
+extremo. Un muro tocado se informa geométricamente, sin resolver reglas. El
+procedimiento y resultados efectivos de cada entrega están en ESTADO.md.
+
+## Dictámenes de visión en el dispositivo (06)
+
+Instalar `build/releases/heroclix-prompt-06-fix-debug.apk` (0.7.1+8). En Editor crear
+figuras normales en A1 y D1, seleccionar sus extremos y abrir Dictamen de visión.
+Comprobar despejada; H en B1 debe producir obstaculizada, y B o muro atravesado,
+bloqueada. Desde Inicio abrir Árbitro y comprobar el mismo escenario con navegación
+y selección; Editar escenario permite volver a modificar el mundo.
+
+Abrir Registro y referencias, revisar las causas resaltadas y activar Efectos
+especiales: el resultado debe ser No evaluado. La evaluación no comprueba alcance
+ni legalidad completa del ataque. Las condiciones sin soporte y la tabla de casos
+con secciones oficiales están en [MATRIZ_REGLAS_VISION](MATRIZ_REGLAS_VISION.md).
+El recorrido realmente ejecutado, sus capturas y las interrupciones de System UI
+del emulador están registrados en [ESTADO](ESTADO.md); no equivalen a prueba en
+teléfono físico ni a una instalación release.
+
+Regresión 0.7.1: tablero de al menos 4 columnas por 6 filas; figuras normales en
+A1 y D6, bloqueado solo en B4, sin efectos especiales. Debe mostrar DESPEJADA;
+el registro compara B4 y C3. Añadir bloqueado en C3 debe producir BLOQUEADA y
+cambiarlo a obstaculizado, OBSTACULIZADA. Conservar B4 y poner bloqueado en B3
+también bloquea, porque B3 sí se atraviesa. Esta revisión no cambia el formato
+de escenarios ni requiere borrar datos de la app.
+
+## Distancias y objetivos en el dispositivo (07)
+
+Instalar `build/releases/heroclix-prompt-07-debug.apk` (0.8.0+9) sobre la versión
+anterior, sin borrar datos. En Editor usar Medir distancia y tocar A1/D6: cuenta
+5 casillas. El botón Distancia abre diferencias opcionales de filas/columnas y
+la referencia de conteo. No requiere que las casillas tengan figuras.
+
+Crear una figura normal en A1 con alcance 3 y otra en D1. Seleccionar A1 y usar
+Mostrar objetivos: D1 debe estar dentro y con visión despejada. Cambiar alcance
+a 2 debe clasificarla fuera; deshacer restaura 3. H en B1 produce obstaculizada;
+B o muro cruzado, bloqueada. Consultar detalle y referencias al elegir una fila.
+
+En Simulador/Árbitro, abrir Elegir análisis en la barra superior y alternar entre
+Visión, Medir distancia y Mostrar objetivos. Comprobar selección del origen desde
+la lista, filtros Enemigas/Aliadas/Todas, objetivo resaltado y regreso a Editor.
+No se valida un ataque completo. Una base 2×2 relevante mantiene dimensiones
+pendientes; no recibe un aprobado automático. Consultar ESTADO.md para distinguir
+estas instrucciones de los recorridos efectivamente realizados.

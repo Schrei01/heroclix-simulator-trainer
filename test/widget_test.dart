@@ -6,7 +6,7 @@ import 'package:heroclix_simulator_trainer/app.dart';
 import 'package:material_ui/material_ui.dart';
 
 void main() {
-  testWidgets('arranca en español y los cuatro modos siguen deshabilitados', (
+  testWidgets('arranca en español: editor, simulador y árbitro disponibles', (
     tester,
   ) async {
     final semantics = tester.ensureSemantics();
@@ -14,13 +14,25 @@ void main() {
       await tester.pumpWidget(const HeroClixApp());
 
       expect(find.text('HeroClix Simulator & Trainer'), findsOneWidget);
-      expect(find.text('Próximamente'), findsNWidgets(4));
+      expect(find.text('Próximamente'), findsOneWidget);
       expect(
         Localizations.localeOf(tester.element(find.byType(Scaffold))),
         const Locale('es'),
       );
 
-      for (final id in ['editor', 'simulator', 'trainer', 'referee']) {
+      final editor = tester.getSemantics(
+        find.byKey(const ValueKey('mode-editor')),
+      );
+      expect(editor.flagsCollection.isEnabled, Tristate.isTrue);
+      expect(editor.getSemanticsData().hasAction(SemanticsAction.tap), isTrue);
+      for (final id in ['simulator', 'referee']) {
+        final card = find.byKey(ValueKey('mode-$id'));
+        await tester.ensureVisible(card);
+        final node = tester.getSemantics(card);
+        expect(node.flagsCollection.isEnabled, Tristate.isTrue);
+        expect(node.getSemanticsData().hasAction(SemanticsAction.tap), isTrue);
+      }
+      for (final id in ['trainer']) {
         final card = find.byKey(ValueKey('mode-$id'));
         await tester.ensureVisible(card);
         final node = tester.getSemantics(card);

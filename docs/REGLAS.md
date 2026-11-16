@@ -34,3 +34,47 @@ movimiento, ataques ni excepciones. El inicio no emite dictámenes.
 
 No se distribuyen el PDF, texto completo, iconografía ni ilustraciones oficiales.
 La herramienta futura será de apoyo, no una decisión oficial de torneo.
+
+## Cobertura en 05
+
+Geometría exacta centro-a-centro operativa en el Editor: casillas interiores,
+bordes y vértices. Un contacto con muro/figura no se interpreta como veredicto.
+No se implementa ni valida una regla oficial adicional en esta etapa; la versión
+objetivo del documento permanece como referencia. GEOMETRIA.md describe el
+contrato matemático; la evaluación reglamentaria de visión corresponde a 06.
+
+## Validación para 06
+
+Consulta de la página y PDF oficiales iniciada el 2026-11-14, lectura/contratos
+verificados el 15 e integración cerrada el 16. Se mantiene 2026-07-01: la página
+continúa enlazando esa edición y los pies de las páginas 27, 39, 40, 43 y 44 la
+confirman. No se tomó el título histórico de metadatos como versión del contenido.
+La matriz MATRIZ_REGLAS_VISION.md enlaza secciones, decisiones, límites y pruebas.
+
+Implementado un perfil de visión para figuras genéricas normales, sin poderes,
+en tablero plano. Bases/elevaciones relevantes, condiciones declaradas fuera de
+cobertura e interpretaciones pendientes regresan No evaluado. Ese estado es una
+política de implementación, no un dictamen oficial de bloqueo. No se evalúa ataque
+completo ni alcance. Fuente y SHA-256 del PDF de consulta figuran en la matriz;
+no se distribuye el reglamento con la app ni con el repositorio.
+
+### Revisión de vértices oblicuos — 2026-11-16
+
+Se vuelve a consultar el enlace oficial y §16.8b, página impresa 44, ante el
+reporte A1–D6/B4. Se retira la limitación de 45° del perfil inicial: el texto
+operativo de esa sección prescribe comparar los dos lados de la intersección
+sin condicionar el procedimiento a la pendiente global. Con B4 bloqueado y
+C3 libre, el contacto puntual en (2,3) no bloquea. No se cambian la edición
+ni las reglas de obstáculos que la línea atraviesa por el interior.
+La matriz registra R23–R25 y corrige la expectativa anterior de R17.
+
+## Validación para 07 — 2026-11-16
+
+La página oficial sigue enlazando 2026-07-01. Revisión de §11.3a–b (conteo y
+comparación con alcance), §11.4a y §11.5 (misma fuente), y §11.2a/12.1 (condiciones
+de ataque que exceden esta consulta), páginas 26–28. Se conserva la edición.
+MATRIZ_DISTANCIAS_OBJETIVOS.md documenta fórmula derivada, límites por dimensión,
+prioridad de categorías y contratos D01–D02/T01–T11. Rango declarado no equivale
+a cálculo completo del valor modificado; aliados consultables no se declaran
+objetivos de ataque universalmente legales. Bases y excepciones siguen pendientes
+de 08. El motor de visión y la corrección oblicua de 0.7.1 se reutilizan sin cambios.

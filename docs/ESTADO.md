@@ -1,193 +1,163 @@
-# Estado real del proyecto — etapa 00
+# Estado actual — etapa 07
 
-Actualizado: 2026-11-14 (America/Bogota). Versión de app: `0.1.0+1`.
+2026-11-16 (America/Bogota). App **0.8.0+9**.
+Repositorio privado: https://github.com/Schrei01/heroclix-simulator-trainer.
+Rama: `codex/prompt-07`, sobre 06 corregida (`9697fc9`).
+Informes de 06: [inicial](ENTREGA_06.md), [corrección 0.7.1](ENTREGA_06_FIX.md).
 
-**Base de 00 implementada; APK debug, instalación y arranque en emulador Android verificados. Pendiente revisión del usuario.**
-No se ha iniciado la etapa 01.
+## A. Operativo y preparado
 
-## Operativo y preparado
+- Medir distancia entre dos casillas, incluidas vacías: horizontal, vertical,
+  diagonal, oblicua y origen igual a destino. Cuenta en ocho direcciones con
+  cero en origen, §11.3a; diferencias de filas/columnas opcionales en el informe.
+- Elegir figura de origen desde selección o lista. Mostrar las demás figuras con
+  filtro inicial Enemigas y opciones Aliadas/Todas, sin inferir permisos de ataque.
+- Distancia, alcance declarado y visión independientes. Categorías: en alcance
+  con visión despejada, en alcance con visión obstaculizada, visión bloqueada,
+  fuera de alcance y No evaluado. Se conserva una visión bloqueada aunque el
+  encabezado de lista indique fuera de alcance.
+- Seleccionar una fila resalta objetivo y línea, anota distancia/alcance y permite
+  abrir explicación, referencias y dimensiones pendientes. Se reutiliza el motor
+  de visión de 06, incluida la corrección A1–D6/B4 de 0.7.1.
+- Editar alcance 0–99 desde la lista o ficha; actualización de todos los objetivos,
+  persistencia existente y deshacer/rehacer. No interpreta modificadores de cartas.
+- Herramientas disponibles en Editor y mediante Elegir análisis en Simulador y
+  Árbitro. Sus tableros permiten navegar/elegir, sin mover piezas al tocar.
+- Caché de visión acotada al mundo/contexto y 256 pares. Cámara/filtro/selección no
+  recalculan visión; rango/nombre reutilizan obstáculos y actualizan comparación.
+- Preparadas entradas tipadas para extender capacidades; no se implementa 08.
+  Consulta, filtro y superposiciones transitorios. JSON conserva esquema 1.
 
-| Elemento | Estado |
+## B. Archivos principales
+
+- `lib/domain/rules/distance_service.dart`, `target_analysis_service.dart`.
+- `lib/application/board/tactical_analysis.dart`; adaptación de EditorController.
+- `lib/presentation/vision/tactical_controls.dart`; cambios de VisionScreen,
+  BoardCanvas, SightPainter, EditorScreen, catálogo visual de Inicio y herramientas.
+- `test/support/target_contract.dart`, `target_rules_test.dart`,
+  `target_state_test.dart`, `target_editor_test.dart`; expectativas anteriores de
+  disponibilidad de herramientas/título de Simulador actualizadas.
+- `tool/verify_targets.dart`, `benchmark_targets.dart`, nuevos renders en preview_test.
+- Pubspec 0.8.0+9, README, ARQUITECTURA, REGLAS, ANDROID, ROADMAP, DECISIONES,
+  MATRIZ_DISTANCIAS_OBJETIVOS, este informe y archivo histórico de 06 corregida.
+
+## C. Comandos y resultados reales
+
+Flutter 3.50.0, Dart 3.14.0, material_ui 1.11.0. Sin dependencias nuevas.
+Android minSdk 24, compile/target 36. Se conserva la configuración de 06.
+
+| Comando | Resultado |
 | --- | --- |
-| Arranque Flutter e inicio en español | Probado en widgets y emulador Android 17 |
-| Tema original y disposición adaptable | Probado en widgets y emulador vertical/horizontal |
-| Editor, Simulador, Entrenador y Árbitro | Tarjetas futuras, deshabilitadas y sin rutas |
-| Semántica de accesibilidad | Estado deshabilitado comprobado automáticamente |
-| Contrato de identificadores de modos | Dart puro, probado |
-| Módulos board/characters/terrain/geometry/rules/movement/training | Carpetas de arquitectura documentadas; sin funcionalidad |
-| Persistencia local | Solo interfaz LocalDocumentStore, sin adaptador |
-| Proyecto Android, nombre, icono original y firma configurable | Compilación debug verificada; firma debug válida |
-| Red, usuarios y servicios externos | No implementados; sin permisos de red en manifiestos |
-| Tablero y reglas del juego | No implementados, según alcance de 00 |
+| `dart run tool/verify_targets.dart` | **13/13 contratos aprobados** en Dart puro. |
+| `dart format --output=none --set-exit-if-changed lib test tool` | **85 archivos, 0 cambios**, 0,65 s. |
+| `flutter --no-version-check analyze --no-pub` | **No issues found**, 5,6 s. |
+| `flutter --no-version-check test --no-pub --reporter expanded` | **238 aprobadas**, 96 s. |
+| `flutter --no-version-check test tool/preview_test.dart --no-pub --reporter expanded` | **37 renders aprobados**, 26 s; seis nuevos revisados visualmente. |
+| `flutter --no-version-check build apk --debug --no-pub` | **Correcto**, 45,9 s. |
+| `aapt dump badging` / `dump permissions` | 0.8.0/código 9, SDK 24/36; sin INTERNET ni almacenamiento amplio. |
+| `apksigner verify --verbose --print-certs` | **Verifies**, v2 válida y mismo certificado que la entrega anterior. |
 
-## Entorno encontrado y preparado
+Las 30 pruebas nuevas son 13 contratos, 9 de estado y 8 de interfaz. Se mantienen
+las 208 previas. Cubren límites de alcance, dos objetivos, muro, figura intermedia,
+terrenos, bases/elevación/condiciones/versión sin soporte, ocupación incompatible,
+undo/redo, invalidación, carga, filtro, origen desde lista y ausencia de I/O por
+consultas. La regresión oblicua de 06 también se aplica al análisis combinado.
+Las expectativas y secciones están en MATRIZ_DISTANCIAS_OBJETIVOS.md.
 
-- Windows 10 Home x64 22H2, compilación 19045.6466.
-- Repositorio inicialmente vacío, rama master sin commits. Se conserva la raíz.
-- Flutter y Dart no estaban instalados en las rutas comprobadas ni en PATH.
-- Se descargó Flutter stable en
-  `C:\Users\ValinorPC\develop\flutter`, fuera del repositorio.
-- Flutter **3.50.0**, revisión `ab2912035e160d9cad6306df307576da6128ebdb`.
-- Dart **3.14.0**; DevTools **2.61.0**; analytics de la CLI deshabilitadas.
-- Java inicial: Oracle JDK **21.0.12.1**. Tras instalar Android Studio, Flutter
-  selecciona su JBR **OpenJDK 25.0.4**, usado en la compilación Gradle correcta.
-- No se cambió el PATH global: README explica cómo habilitarlo por terminal.
-- Android SDK y adb estaban ausentes en la primera entrega. En la reevaluación
-  del 2026-11-13 ya están instalados en
-  `C:\Users\ValinorPC\AppData\Local\Android\Sdk`.
-- Instalados y comprobados: Command-line Tools, plataforma API 36, Build Tools
-  **36.0.0**, Platform Tools y NDK **28.2.13676358**, la versión que usa el
-  proyecto. También están presentes API 37 y NDK 30; no sustituyen los valores
-  declarados por esta aplicación.
-- `flutter doctor -v` termina con **No issues found** y confirma todas las
-  licencias aceptadas. Se ejecutaron correctamente `aapt2 version` y el `clang`
-  del NDK requerido. Se inició un emulador temporal para las pruebas y se cerró
-  al completarlas. No hay un teléfono físico conectado.
-- Flutter detectó Windows, Chrome y Edge; no se añadieron esas plataformas al
-  proyecto ni se presentan como prueba de ejecución Android.
+UI comprobada en 320×568, 800×360 y 320×320 con texto al 300 %. En verificaciones
+intermedias fallaron compilaciones de helpers de prueba por tipos/constructores;
+se ajustaron a las interfaces reales. También se detectaron controles demasiado
+anchos/altos a texto ampliado: se acotaron al ancho visible, se compactaron filas
+con acceso al informe completo y se conservan hit tests fatales. La primera suite
+completa falló solo por la expectativa histórica de Distancia deshabilitada;
+se actualizó para comprobar Distancia/Objetivos disponibles y Movimiento futuro.
+Los resultados aprobados de la tabla corresponden a las ejecuciones finales.
 
-Valores de la plantilla de Flutter instalada, heredados por Gradle:
-`minSdk=24`, `targetSdk=36`, `compileSdk=36`, `ndkVersion=28.2.13676358`.
-Android Gradle Plugin `9.3.1`, Kotlin `2.4.20`, wrapper Gradle `9.5.0`.
-Compilación debug completada el 2026-11-14 con esos valores.
+### Rendimiento medido
 
-Dependencias directas de producción: Flutter y `material_ui 1.11.0` oficial.
-`cupertino_ui 1.1.6` y localizaciones del SDK llegan transitivamente por Material.
-Herramientas de pruebas: flutter_test y flutter_lints 6.0.0. El lockfile versionado
-conserva la resolución. No se forzaron actualizaciones de dependencias que el SDK
-mantiene restringidas.
+Dispositivo: PC de desarrollo Windows 10 Home 10.0.19045 x64, Intel Core i5-7200U @ 2,50 GHz,
+4 procesadores lógicos y 8 GB RAM; Dart 3.14.0. Ejecución del motor con
+`dart run tool/benchmark_targets.dart --mixed`, sin la suite Flutter ejecutándose
+a la vez. Figuras distribuidas determinísticamente por el tablero, terreno H/B,
+muros y figuras intermedias. No se colocan figuras sobre bloqueado.
 
-## Comandos ejecutados y resultados
+| Escenario | 20×20 / 40 figuras | 40×40 / 120 figuras |
+| --- | --- | --- |
+| Objetivos analizados | 39 | 119 |
+| Casillas de terreno / muros | 40 / 40 | 80 / 80 |
+| Primera llamada por escenario | 82,711 ms | 79,039 ms |
+| Mediana de 25 muestras sin caché | 7,562 ms | 65,222 ms |
+| Percentil 95 / máximo | 43,289 / 43,953 ms | 78,482 / 80,812 ms |
+| Media de 100 cambios de filtro con caché | 0,00698 ms | 0,00872 ms |
+| Actualizar alcance reutilizando visión | 0,333 ms | 0,954 ms |
+| Llamadas de visión antes/después de filtro y alcance | 39 / 39 | 119 / 119 |
 
-Se invocó Flutter por su ruta absoluta y con `--no-version-check`. Los siguientes
-comandos abreviados son equivalentes al habilitar el PATH como indica README.
+Muestras en orden dentro del mismo proceso JIT, sin reiniciar Dart para el
+segundo escenario. Son mediciones de CPU del motor; no son FPS, latencia total de
+UI ni tiempos de un teléfono/emulador Android. Una ejecución preliminar durante
+la suite produjo tiempos mayores por contención y no se usa como medición final.
+La herramienta permite repetir también la variante sin terreno/muros.
 
-| Comando | Resultado real |
-| --- | --- |
-| `flutter --version` | Flutter 3.50.0 y Dart 3.14.0 confirmados |
-| `flutter --disable-analytics --no-version-check` | Analytics deshabilitadas |
-| `flutter create --no-pub --platforms=android --org=com.valinor --project-name=heroclix_simulator_trainer --android-language=kotlin .` | Proyecto Android generado conservando archivos existentes |
-| `flutter pub get` | Correcto; dependencias resueltas y lockfile actualizado |
-| `dart format lib test tool` | Ejecutado, fuentes formateadas |
-| `dart format --output=none --set-exit-if-changed lib test tool` | Correcto; 10 archivos sin cambios |
-| `flutter analyze` | Repetido el 2026-11-14: correcto; No issues found |
-| `flutter test` | Repetido el 2026-11-14: **18 pruebas aprobadas** |
-| `flutter test tool/preview_test.dart` | **2 renders de revisión aprobados** |
-| `flutter doctor -v` | Reevaluación: **No issues found**, todas las licencias Android aceptadas |
-| `flutter devices` | Sin Android; solo Windows, Chrome y Edge |
-| `flutter build apk --debug` (primer intento, antes de instalar SDK) | **Falló, código 1:** `[!] No Android SDK found. Try setting the ANDROID_HOME environment variable.` |
-| `flutter build apk --debug` (reevaluación con SDK completo) | Se inició assembleDebug, pero se interrumpió durante la descarga inicial de Gradle, antes de compilar la app |
-| Descarga de Gradle 9.5.0 mediante curl desde la distribución oficial | Timeout de 240 segundos; recibidos 176897401 de 240667887 bytes. Archivo parcial sin instalar ni dar por verificado |
-| Reanudación de Gradle (2026-11-14) | Descarga completada; 240667887 bytes; SHA-256 coincide con el oficial |
-| `flutter pub get` (2026-11-14) | Correcto; acceso a pub.dev recuperado sin cambiar DNS del sistema |
-| `flutter build apk --debug` (2026-11-14) | **Correcto**, assembleDebug completado en 669,9 segundos |
-| `aapt dump badging` y `aapt dump permissions` | minSdk 24, target/compileSdk 36, tres ABI; APK sin permiso INTERNET |
-| `apksigner verify --verbose` | **Verifies**, firma APK v2 válida, un firmante debug |
-| `adb -s emulator-5554 install -r --no-incremental .../app-debug.apk` | **Success**, instalación real en Android 17 / API 37 |
-| Inicio, giro, desplazamiento y reinicio sin conectividad | Comprobados visualmente en el emulador; app en ejecución, sin crash registrado |
+Logs locales: `build/targets-pure-07-final.log`, `format-07-final.log`,
+`analyze-07-final.log`, `test-07-final.log`, `preview-07-final.log`, `build-07.log`,
+`performance-07-final.log`, `signature-07.log`. Fallos intermedios en targets-first,
+second, third, targets-ui-07-fourth y test-07-first-full, todos fuera de Git.
+Renders en `build/previews/prompt-07/`: distancia, diferencias, lista de cinco
+categorías, objetivo en horizontal, detalle y base sin soporte, además de las
+regresiones. Son renders Flutter, no capturas nativas de Android.
 
-Las 18 pruebas incluyen dos contratos de dominio, arranque/idioma/tarjetas
-deshabilitadas y 15 combinaciones: 320×568, 360×800, 800×360, 568×320 y
-1024×768, con escalas de texto 1, 2 y 3. Se recorre el contenido para comprobar
-que las tarjetas siguen accesibles y no aparecen desbordes.
+### APK definitivo
 
-La primera ejecución detectó APIs de Material obsoletas y un recurso de semántica
-sin liberar en una prueba. Se migró a Material oficial independiente y se corrigió
-la limpieza de la prueba; se repitieron análisis y tests hasta aprobarlos, sin
-desactivar comprobaciones.
+- `build/releases/heroclix-prompt-07-debug.apk`; salida estándar
+  `build/app/outputs/flutter-apk/app-debug.apk`.
+- Tamaño: **158211717 bytes** (aprox. 150,88 MiB).
+- SHA-256: `52ACB1A19449BEEF6B1AA92E0C3B9BDA41F33028DE2F8DAB051AFD40928E776A`.
+- Paquete `com.valinor.heroclixtrainer`, versión 0.8.0, código 9.
+- Firma de desarrollo conservada; se puede actualizar sin desinstalar ni borrar
+  datos. No se ha ejecutado esa instalación en dispositivo para esta entrega.
+- APK/evidencias/PDF excluidos de Git. Binarios de entregas anteriores conservados.
 
-Comprobaciones adicionales realizadas: nueve XML Android parseados; dominio y
-aplicación sin imports de Flutter, Material, dart:ui ni dart:io; código de app sin
-clientes ni URLs de red; manifiestos sin permisos de red ni bloqueo de orientación;
-Git ignora key.properties, keystores y claves privadas.
+## D. Comprobar manualmente
 
-## Capturas
+1. Instalar el APK sobre la app anterior. En Editor, Medir distancia y A1/D6:
+   5 casillas. Pulsar Distancia y activar diferencias: filas 5, columnas 3.
+2. Figuras normales A1/D1, alcance del origen 3: Mostrar objetivos debe indicar
+   distancia 3 y en alcance con visión despejada. Seleccionar D1 y abrir su resumen.
+3. Editar alcance a 2: fuera; subir a 4: dentro. Deshacer/rehacer actualiza todas
+   las filas. El alcance editado se guarda como dato del escenario.
+4. H en B1: obstaculizada; B o muro A1/B1: bloqueada. Figura intermedia también
+   bloquea. Alcance 2 con ese bloqueo conserva ambas dimensiones en el informe.
+5. Añadir aliada y otra enemiga lejana. Probar filtros; elegir origen desde la
+   lista sin selección previa; comprobar casilla/segmento/anotación del objetivo.
+6. En Simulador o Árbitro usar Elegir análisis; comprobar que tocar no mueve
+   figuras. Editar escenario permite modificarlas y regresar al análisis.
+7. Base múltiple de extremo: distancia/rango sin evaluar. Efectos especiales o
+   elevación relevante: conservar los límites del perfil, sin aprobado global.
+8. Borrar un extremo, cargar otra escena, girar y ampliar texto. Las barras son
+   desplazables; el informe conserva los textos completos que la lista abrevia.
 
-Renders generados por Flutter Test, **no por un dispositivo Android**:
+## E. Limitaciones, supuestos y pendientes
 
-- `build/previews/inicio_vertical.png`, 400×900, contenido desplazable.
-- `build/previews/inicio_horizontal.png`, 1000×700.
+- Perfil de figuras genéricas normales sin poderes, en tablero plano. El valor
+  declarado no incorpora modificadores, habilidades ni cartas interpretadas.
+- Distancia entre casillas no es movimiento. Altura, bases múltiples y excepciones
+  relevantes conservan dimensiones pendientes según la matriz; no se inicia 08.
+- Visible y en alcance no valida un ataque. No se comprueban acciones, adyacencia
+  para atacar, estados, poderes ni cantidad de objetivos. Aliados consultables no
+  equivalen a permiso universal para atacarlos.
+- Se conserva el resto de límites de 06: ocupación incompatible, versión sin
+  soporte y clasificación a sí mismo en H. El listado excluye al propio origen.
+- No se implementa movimiento, combate completo ni Entrenador.
+- No se realizó un recorrido nativo Android de 07, medición de FPS/Android ni
+  prueba física/release. La instalación nativa de 06 queda documentada en su archivo.
 
-Son archivos locales de build ignorados por Git. Para regenerarlos:
-`flutter test tool/preview_test.dart`. La revisión carga fuentes e iconos locales
-del SDK; no descarga assets en runtime de la aplicación.
+## F. Documentación y fuente
 
-## Lo que no se verificó
+ROADMAP, DECISIONES, ESTADO, README, ARQUITECTURA, ANDROID y REGLAS actualizados.
+MATRIZ_DISTANCIAS_OBJETIVOS enlaza reglas, contratos, decisiones y metodología de
+rendimiento. Fuentes oficiales consultadas el 2026-11-16; se conserva 2026-07-01.
+El informe de 06 corregida se archiva en ENTREGA_06_FIX.md.
 
-- Instalación y comportamiento en un teléfono físico y en otras versiones Android.
-- Recorrido completo con TalkBack y escalas de texto en Android real. Las escalas
-  1–3 sí están cubiertas por las pruebas de widgets.
-- Firma release: no hay keystore ni credenciales, y no se intentó un release.
+## G. Límite de etapa
 
-## APK debug verificado — 2026-11-14
-
-- Ruta: `C:\Users\ValinorPC\Documents\ChatGPT\App de heroclix\build\app\outputs\flutter-apk\app-debug.apk`.
-- Tamaño comprobado: **157880735 bytes (150,57 MiB)**.
-- SHA-256: `824A42ECE51C9E438CE41113B3C8CB2778966E43D17B8E9658F78067B73EEDF0`.
-- Identidad: `com.valinor.heroclixtrainer`, versión `0.1.0`, código `1`.
-- ABI: `arm64-v8a`, `armeabi-v7a`, `x86_64`.
-- minSdk **24**, targetSdk y compileSdk **36**, confirmados en el APK.
-- Firma **debug** válida; no es un release firmado para distribución final.
-- Manifiesto fusionado sin permiso INTERNET. Solo solicita el permiso privado
-  de receptores no exportados generado por AndroidX.
-
-El fallo temporal de resolución de pub.dev ya no se reproduce. Se reanudó la
-descarga parcial de Gradle, se comparó su SHA-256 con el publicado oficialmente
-y se completó la compilación sin cambiar versiones del SDK o dependencias.
-SHA-256 de la distribución Gradle 9.5.0 all:
-`A3C4BA4ACA8F0075688B9C5B18939FD28E8CB4357C227DA5C1D9F38343791439`.
-
-En el equipo se detectaron 8 GiB de RAM. La configuración de Gradle se ajustó
-a heap máximo 2 GiB, metaspace 768 MiB, caché de código 256 MiB y dos workers,
-en lugar de los límites de 8/4 GiB de la plantilla. El build pasó con estos límites.
-
-## Verificación de ejecución Android — 2026-11-14
-
-- AVD: **Medium Phone API 37.0**, imagen Google APIs / Play Store x86_64.
-- Emulador **37.2.13**, Android **17**, API **37**, aceleración WHPX.
-- Se inició sin ventana, sin snapshots y en modo `-read-only`, sin modificar
-  permanentemente los datos de la AVD del usuario. Se cerró al finalizar.
-- Instalación del APK: **Success**. Identidad y actividad corresponden al APK
-  inspeccionado, y la pantalla inicial en español se renderizó correctamente.
-- Se comprobó el giro vertical/horizontal y el desplazamiento para llegar a las
-  cuatro tarjetas. Todas muestran «Próximamente». No se habilitaron modos nuevos.
-- Se activó modo avión (`airplane_mode_on=1`), se deshabilitaron Wi-Fi y datos,
-  se cerró la app y se abrió de nuevo. El inicio y las tarjetas siguieron visibles.
-- El buffer de crashes estuvo vacío; en el log del proceso de la app no se
-  encontraron `FATAL EXCEPTION`, `Unhandled Exception` ni `RenderFlex overflow`.
-
-El arranque del emulador fue lento y aparecieron ANR de Pixel Launcher y System
-UI, ajenos al proceso de esta app. El host llegó a disponer de menos de 500 MiB
-de memoria física libre. Se redujo la resolución a **540×1200, densidad 210**,
-se desactivaron animaciones y se detuvieron servicios de Google del emulador
-temporal para completar la comprobación. No se cambiaron esos ajustes en el
-Windows del usuario ni en una AVD persistente. No se extrapolan tiempos de
-arranque o rendimiento de este entorno a teléfonos reales.
-
-En debug aparece el mensaje de que no se puede iniciar el servicio HTTP local
-de la VM Dart porque el APK no solicita INTERNET. Es la limitación de depuración
-documentada en ANDROID.md: la pantalla funciona y se comprobó sin hot reload.
-No se agregó permiso de red para ocultar este aviso.
-
-Capturas reales del emulador, guardadas localmente y revisadas:
-
-- `build/verification/inicio_android_vertical.png`.
-- `build/verification/inicio_android_horizontal.png`.
-- `build/verification/inicio_android_offline.png`.
-- `build/verification/modos_android_offline.png`.
-
-Los archivos de verificación de build se ignoran en Git. Son distintos de los
-renders de Flutter Test descritos arriba.
-
-## Procedimiento y siguiente paso
-
-El código, las pruebas y esta documentación están versionados para el repositorio
-privado https://github.com/Schrei01/heroclix-simulator-trainer, rama `main`.
-Los artefactos de build y credenciales siguen excluidos por `.gitignore`.
-
-SDK, licencias, Gradle y APK debug ya están listos; el recorrido básico en
-emulador también está verificado. Para probar en un teléfono, seguir
-docs/ANDROID.md y registrar modelo, versión Android y resultados reales aquí.
-
-Tras revisar esta entrega, la siguiente orden podrá autorizar el Prompt 01.
-**No se avanzó a esa etapa.**
+**No se inició Prompt 08.** Se espera una nueva orden tras revisar esta entrega.

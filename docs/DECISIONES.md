@@ -91,3 +91,223 @@ un teléfono físico; TalkBack y rendimiento real quedan pendientes.
 
 La fuente y fecha objetivo se registran en REGLAS.md. En esta etapa no se ha
 verificado ni implementado ninguna regla del juego.
+
+## Etapa 01 — 2026-11-14
+
+- La solicitud de ejecutar 01 autoriza continuar desde la base 00 validada.
+- Se trabaja en `codex/prompt-01`, sobre el mismo repositorio; no se inicia 02.
+- Versión de app: `0.2.0+2`. Solo Editor se habilita; los otros modos permanecen
+  futuros y todas las herramientas de edición salvo Seleccionar siguen deshabilitadas.
+- Dimensiones 2–40 por eje, 4×4 inicial. Columna desde A, después Z viene AA;
+  fila desde 1. Los índices del modelo empiezan en cero.
+- Cada celda mide 64 unidades de escena; esta es una convención de render,
+  no una medida reglamentaria ni la resolución física del teléfono.
+- Empates sobre líneas compartidas: derecha/abajo. Bordes externos derecho e
+  inferior excluidos. Se corrige redondeo al entero dentro de 1e-9 de casilla.
+- BoardSession inmutable centraliza tamaño, selección, visibilidad y cámara.
+  La adaptación a ValueNotifier y matrices de Flutter queda en presentación.
+- Zoom con pinza o botones, pan con un dedo, centrar sin cambiar escala y ajustar
+  vista completa son operaciones distintas. El rango de escala es 0,02–6.
+- Al girar se mantiene el punto central y el zoom. Volver al inicio no destruye
+  la sesión. Cerrar el proceso sí la reinicia; guardar sigue reservado a 04.
+- El teclado de los diálogos no redimensiona el canvas inferior. Los formularios
+  manejan sus propios insets y scroll; abrirlos no modifica la cámara de la sesión.
+  Se mantiene también el padding inferior del área segura cuando aparece el teclado;
+  la regresión simula tanto viewInsets como el cambio de padding de Android.
+- Cambiar tamaño preserva opciones de visualización, limpia selección y ajusta
+  cámara. Si hay una selección se solicita confirmación explícita antes de perderla;
+  cancelar o introducir valores inválidos conserva la sesión anterior completa.
+- Se conserva el informe y APK de 00 como entrega histórica. No se agregan reglas,
+  figuras, terreno, persistencia, historial ni dependencias externas en esta etapa.
+- Entrega validada con 52 pruebas, análisis estático, cinco renders y APK debug
+  firmado. En Android 17 se comprobó el recorrido offline hasta 40×40/AA20,
+  giro y conservación al volver al inicio. El detalle, hash y límites del entorno
+  constan en ESTADO.md. Se deja la rama de 01 para revisión, sin iniciar 02.
+
+## Etapa 02 — 2026-11-14
+
+- La orden del usuario autoriza continuar desde 01. Rama `codex/prompt-02`, app 0.3.0+3.
+- BoardSession posee figuras, equipos y contadores monotónicos locales. IDs `figure-N`
+  y etiquetas A…Z, AA… no se reciclan al borrar; editar conserva ambos. Nombres repetidos
+  son válidos. La identidad no depende del índice de una lista.
+- CharacterRepository inmutable deriva su índice de ocupación. Una sola función
+  valida toda la huella y los límites, excluyendo el propio ID al mover/editar.
+  Operaciones fallidas dejan el snapshot completo intacto.
+- Bases 1×1 y 2×2 en UI; Footprint admite rectángulos extensibles en dominio.
+  La 2×2 se ancla arriba a la izquierda y es representación de posición, no legalidad
+  reglamentaria. No se modelan todavía reglas especiales de bases (08).
+- Velocidad/alcance: enteros 0–99 como límite de entrada del producto, sin afirmar
+  que todo valor sea una característica reglamentaria válida. Nombre: 1–80 caracteres.
+- Azul/T1 liso y Rojo/T2 rayado iniciales. Equipos adicionales: nombre 1–40,
+  código estable T3…, paleta opaca y patrón seleccionables; nombres de equipo únicos
+  ignorando mayúsculas. El texto de código distingue equipos además del color.
+- Toque selecciona; Personajes crea en vacío mediante formulario. Pulsación larga
+  inicia arrastre de figura; pan rápido y pinza conservan la navegación. Preview
+  transitoria en canvas, ✓/× y explicación; commit único al soltar con revalidación.
+  Cancelar o añadir otro dedo descarta preview. Se conserva el desfase al tomar una
+  celda secundaria de una base 2×2.
+- Edición de posición y lista de figuras ofrecen alternativas accesibles al arrastre.
+  Duplicar asigna identidad nueva al guardar; cancelar no crea una figura. Un equipo
+  creado explícitamente permanece en la sesión aunque se cancele la ficha.
+- Eliminar exige confirmación; historial/deshacer queda para 04. Los snapshots
+  inmutables preparan esa etapa sin implementar un historial anticipadamente.
+- Reducir dimensiones se rechaza si una base quedaría fuera; ampliar conserva todas
+  las figuras. No se borran ni reubican silenciosamente.
+- Sin dependencias nuevas, red en runtime, ataques, reglas ni funciones de 03.
+
+## Etapa 03 — 2026-11-14
+
+- Orden del usuario autoriza continuar desde 02. Rama `codex/prompt-03`, app 0.4.0+4.
+- TerrainLayer, WallLayer y CharacterRepository son capas inmutables independientes.
+  Despejado/elevación 0 es el valor implícito. Pintar despejado conserva la elevación
+  preparada de la celda; Limpiar terreno reinicia toda su capa.
+- CellTerrain incluye elevación entera 0–40 como límite provisional del producto.
+  Sin controles ni interpretación de altura hasta 08.
+- Muros internos de longitud una casilla, eje/vértice normalizados; ID h:col:fila
+  o v:col:fila. Orden de casillas vecinas no cambia identidad. No se admiten muros
+  externos; hit fuera del área devuelve null y la UI explica la restricción.
+- Franja de toque 0,22 casillas; empates de distancia dentro de 1e-9 favorecen vertical.
+  Un trazo bloquea la orientación del primer borde para no crear ramas en vértices.
+- Terreno: un toque o trazo completo es una operación. La interpolación divide el
+  segmento en todos sus cruces de cuadrícula, independiente de los eventos recibidos.
+  El paso exacto por vértice no pinta las casillas cuyo interior no se atraviesa.
+- Previa transitoria separada del escenario. Segundo dedo, cancelación, cambio de
+  herramienta u orientación la descarta. Rectángulos requieren Aplicar o Cancelar;
+  coordenadas dan una alternativa al gesto. Con viewport menor de 240 unidades,
+  las acciones de previa usan diálogo desplazable para mantener accesibilidad.
+- Un dedo edita en herramientas de capa; dos dedos navegan. Seleccionar mantiene
+  el pan con un dedo y el arrastre largo de figuras. Pintar nunca arrastra figuras.
+- Bloqueado ocupado: decisión explícita Cancelar/Conservar para estudio, sin pérdida
+  de figuras. Conflictos derivados de terreno + ocupación, marcados con ! y texto
+  accesible. Crear/editar sobre bloqueado requiere casilla de estudio explícita;
+  arrastre ordinario lo rechaza y remite a la ficha. No es una evaluación de reglas.
+- Borrar elemento elige figura o muro; terreno se cambia a despejado. Tres limpiezas
+  independientes y confirmadas. Borrar/limpiar figuras no recicla sus IDs/etiquetas.
+- BoardEdit conserva referencias de capas antes/después por operación completada;
+  aplicar/revertir exige el estado esperado y dimensiones compatibles, preserva
+  cámara y no recicla identidades. El controlador solo expone el último comando
+  para preparar 04: no se implementa historial ni UI de deshacer.
+- LayerCodec es un fragmento de capas con layerSchemaVersion 1 y orden determinista,
+  validación de límites, tipos, duplicados e identidad de bordes. Solo memoria;
+  no se ha definido el esquema completo ni guardado/importación/exportación de 04.
+- Reducir tablero se rechaza si descartaría terreno o un muro dejaría de ser interno.
+  Las capas no se recortan silenciosamente. Ampliar y mover cámara las conservan.
+- H/puntos, B/rayas y muros de línea doble son indicadores independientes del color.
+  La leyenda explica semántica, controles y límites. No se implementa visión.
+
+## 2026-11-14 — Prompt 04
+
+- Documento completo schemaVersion 1, validación cerrada y sin migración implícita.
+  Referencia reglamentaria editable como metadato, sin motor de reglas. Formato,
+  campos y límites documentados en ESCENARIOS.md.
+- Biblioteca privada hasta 200 escenarios con identidad aleatoria independiente
+  del nombre; nombres repetidos permitidos. Importar/duplicar/guardar como generan
+  otra identidad. Guardar mantiene la actual. Eliminar pide confirmación.
+- Recuperación working.json separada, versionada y escrita en cola por revisión;
+  temporal + flush + rename. No se promete conservar una edición anterior a la
+  confirmación del indicador. Un fallo mantiene el mundo y ofrece reintento.
+- Recuperación futura/corrupta no se pisa automáticamente; reemplazo explícito la
+  archiva antes. Documento incompatible en biblioteca exige Guardar como.
+- Historial de 100 comandos completados con referencias inmutables, sin cámara,
+  selección ni snapshots por píxel. Nuevo/abrir/importar/guardar como reinicia pilas.
+  Undo/redo no recicla IDs. Borrar archivo de biblioteca no pertenece al historial.
+- Puente Android propio por MethodChannel, sin paquetes nuevos: SAF para archivos,
+  FileProvider de cache/exports para compartir, permiso de lectura temporal. Sin
+  INTERNET ni permisos de almacenamiento amplios. Cancelar no cambia el tablero.
+- PNG reusa painter sin controles; 2048 px por eje por defecto, 4096 opcional,
+  coordenadas/leyenda independientes. Se informa el coste aproximado de 64 MiB
+  crudos en 4K y el límite nativo de archivo PNG de 16 MiB.
+- Pruebas incluyen reinicio de controladores, fallos y carreras de I/O, esquema
+  desconocido, nombres iguales, 40×40 completo, navegación y PNG real. No se añade
+  geometría ni funciones reglamentarias de Prompt 05.
+
+## 2026-11-14 — Prompt 05
+
+- Segmentos centro-a-centro en unidades lógicas con racionales normalizados.
+  Igualdad/cortes/orden exactos, sin epsilon; doubles solo al proyectar al canvas.
+- Separar CellPass (interior) de contacto terminal de vértice. Un vértice emite
+  cuatro contactos de extremo de borde y las dos celdas solo de esquina; no se
+  infieren cuatro cruces interiores ni efectos de muros.
+- Secuencia determinista por t; cruces antes del intervalo que empieza allí.
+  Igual origen/destino es un punto fijo explícito, sin contactos de borde.
+- Extremo fijo o ligado a figura por ID y desplazamiento en su base. Borrado,
+  cambio de base o dimensión que invalide la referencia retira resultado y avisa.
+  Undo puede recuperarlo. 2×2 pide referencia explícita, evaluación completa en 08.
+- Hasta 16 candidatas explícitas con identidades únicas; no se generan combinaciones
+  de bases, se elige trayectoria ganadora ni se implementan reglas de 06/08.
+- Inspección transitoria fuera del documento/historial: sin cambio de esquema 1,
+  sin autoguardado de extremos, sin overlay de inspección en PNG del escenario.
+  Cambiar de documento la limpia. Zoom/giro no alteran resultado exacto.
+- Solo Editor incorpora la herramienta operativa. Simulador/Árbitro/Entrenador
+  conservan entrada futura. Panel y superposiciones describen geometría sin emitir
+  veredictos reglamentarios.
+- Contratos del motor compartidos entre runner Dart puro y tests Flutter, con
+  oráculo independiente de cajas abiertas para 2.916 pares de 6×9 y simetría de
+  todos los pares de 4×4. Sin paquetes nuevos.
+
+## 2026-11-16 — Prompt 06
+
+- Perfil basado en el Comprehensive Rulebook 07.01.2026 enlazado por WizKids;
+  se revisaron las páginas pertinentes y se creó MATRIZ_REGLAS_VISION.md.
+- Una entrada pública LineOfSightService.evaluate en Dart puro, snapshot inmutable,
+  contexto versionado y salida con explicaciones, eventos, referencias y causas.
+- En vértices diagonales, comparar ambos lados incluyendo terreno, ocupación y
+  muros incidentes; elegir el menos restrictivo. No confundir contacto con bloqueo.
+- Despejada/obstaculizada permiten visión; bloqueada la impide; No evaluada conserva
+  visibilidad desconocida. Ningún estado declara un ataque legal ni calcula alcance.
+- Fronteras conservadoras documentadas: poderes/tamaños, alturas y bases múltiples
+  relevantes, fuente remota, reglas de mapa, versión desconocida y casos ambiguos.
+  La etiqueta SCOPE distingue esas decisiones de una regla oficial.
+- Referencias a figuras siguen sus posiciones; invalidación también por terreno,
+  muros, dimensiones, extremos y versión. Borrar un extremo retira el resultado.
+- Simulador y Árbitro se habilitan para visión básica con el mismo escenario/motor;
+  selección/navegación en su tablero y edición explícita mediante otra vista.
+  Entrenador permanece futuro. No se inicia 07.
+- Inspección, perfil declarado y superposiciones transitorios; esquema JSON 1
+  sin modificaciones. La declaración de efectos se reinicia al cargar documento.
+- Se corrigió competencia entre viewports de rutas cubiertas y activas. No se
+  omiten avisos de hit test: controles probados a 300 % y en vistas pequeñas.
+
+### Corrección 0.7.1+8 — vértices oblicuos
+
+- Reporte del usuario: A1–D6, terreno bloqueado en B4, sin otras restricciones.
+  El rechazo por pendiente distinta de 45° daba No evaluada aunque C3 estaba libre.
+- Se reprodujo con R23 fallando antes de cambiar el servicio. Se elimina ese
+  rechazo y se aplica §16.8b a cualquier paso exacto por una intersección.
+  Su procedimiento no exige pendiente global de 45°; el párrafo introductorio
+  16.8 no se usa para restringirlo. Se mantiene la edición 2026-07-01.
+- El mismo segmento centro a centro y sus eventos exactos permanecen intactos;
+  no se busca una ruta alternativa ni se ignoran obstáculos interiores.
+- R17 se actualiza y R23–R25 comprueban el reporte, inversión de extremos,
+  nueve pares de terrenos, 16 combinaciones de muros, figuras laterales y
+  bloqueos interiores. Los límites de elevación/poderes/bases se mantienen.
+- Versión Android 0.7.1, código 8, sin migración ni dependencias nuevas.
+
+## 2026-11-16 — Prompt 07
+
+- Edición 2026-07-01 conservada tras revisar enlace oficial y §11.3a–b. Distancia
+  de casillas en ocho direcciones, empezando en cero. La fórmula del máximo de
+  diferencias absolutas se deriva de ese conteo, no de la longitud del segmento.
+- DistanceService y TargetAnalysisService en Dart puro. El segundo usa
+  VisionEvaluator/LineOfSightService de 06 y conserva distancia, comparación de
+  alcance y visión por separado, además de referencias y condiciones pendientes.
+- El alcance editable sigue siendo el valor declarado de la figura; no se
+  interpretan cartas/modificadores. Visible y en alcance no significa ataque legal.
+- Consulta de todas las demás figuras, con filtro inicial Enemigas y opciones
+  Aliadas/Todas. El filtro no decide qué objetivos permite un poder concreto.
+- No evaluado tiene prioridad si alguna dimensión necesaria no está resuelta.
+  Fuera de alcance tiene prioridad de lista sobre bloqueo, conservando el bloqueo
+  en su dimensión y explicación. Bases múltiples en extremos no reciben distancia
+  ni alcance completos; altura relevante mantiene pendiente la visión.
+- Caché acotada a 256 pares del mismo mundo/contexto. El rango no modifica los
+  obstáculos: editarlo reutiliza visión y actualiza comparaciones. Movimiento,
+  terreno/muros, huellas, versión y condiciones invalidan la caché pertinente.
+- Herramientas disponibles en Editor, Simulador y Árbitro; los dos últimos
+  mantienen navegación/selección y edición explícita del escenario. Controles
+  horizontales acotados al ancho disponible y filas compactas con informe completo
+  para acceso al 300 %. Se conservan comprobaciones fatales de hit test.
+- Consultas transitorias sin I/O, historial ni JSON; cambiar alcance usa el comando
+  normal de edición, undo/redo y persistencia existentes. Esquema 1 sin migración.
+- Rendimiento medido con Dart en el PC Windows del desarrollo; no se presentan
+  esos tiempos como FPS ni mediciones Android. Detalle y equipo en ESTADO.md.
+- 0.8.0+9, sin nuevas dependencias ni permisos. No se inicia 08.

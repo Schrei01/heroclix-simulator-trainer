@@ -3,9 +3,14 @@ import 'package:material_ui/material_ui.dart';
 import '../../application/home_catalog.dart';
 import '../../domain/app_mode.dart';
 import '../theme/app_theme.dart';
+import '../editor/editor_controller.dart';
+import '../editor/editor_screen.dart';
+import '../vision/vision_screen.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({required this.editorController, super.key});
+
+  final EditorController editorController;
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +35,7 @@ class HomeScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   const Text(
-                    'Tu próximo espacio de práctica táctica.',
+                    'Tu espacio de práctica táctica.',
                     style: TextStyle(
                       color: AppTheme.accent,
                       fontSize: 18,
@@ -39,15 +44,14 @@ class HomeScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    'Prepara escenarios, explora posiciones y aprende a tu '
-                    'ritmo. Las herramientas estarán disponibles en próximas '
-                    'versiones.',
+                    'Construye tu escenario y consulta distancias, alcance y visión con '
+                    'explicaciones y referencias. Entrenador: próximamente.',
                   ),
                   const SizedBox(height: 32),
                   Semantics(
                     header: true,
                     child: Text(
-                      'Herramientas en preparación',
+                      'Elige una herramienta',
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                   ),
@@ -61,10 +65,31 @@ class HomeScreen extends StatelessWidget {
                         spacing: 16,
                         runSpacing: 16,
                         children: [
-                          for (final mode in plannedModes)
+                          for (final mode in homeModes)
                             SizedBox(
                               width: width,
-                              child: _PlannedModeCard(mode: mode),
+                              child: _ModeCard(
+                                mode: mode,
+                                onOpen: availableModes.contains(mode)
+                                    ? () {
+                                        Navigator.of(context).push(
+                                          MaterialPageRoute<void>(
+                                            builder: (_) =>
+                                                mode == AppMode.editor
+                                                ? EditorScreen(
+                                                    controller:
+                                                        editorController,
+                                                  )
+                                                : VisionScreen(
+                                                    controller:
+                                                        editorController,
+                                                    mode: mode,
+                                                  ),
+                                          ),
+                                        );
+                                      }
+                                    : null,
+                              ),
                             ),
                         ],
                       );
@@ -73,7 +98,7 @@ class HomeScreen extends StatelessWidget {
                   const SizedBox(height: 28),
                   const Text(
                     'Sin cuentas ni conexión a internet. '
-                    'Esta versión presenta el inicio de la aplicación.',
+                    'Autoguardado local y biblioteca de escenarios en el editor.',
                   ),
                 ],
               ),
@@ -120,22 +145,23 @@ class _OfflineBadge extends StatelessWidget {
   }
 }
 
-class _PlannedModeCard extends StatelessWidget {
-  const _PlannedModeCard({required this.mode});
+class _ModeCard extends StatelessWidget {
+  const _ModeCard({required this.mode, required this.onOpen});
 
   final AppMode mode;
+  final VoidCallback? onOpen;
 
   @override
   Widget build(BuildContext context) {
     final (title, description, icon) = switch (mode) {
       AppMode.editor => (
         'Editor',
-        'Construye y guarda tus propios escenarios.',
+        'Construye escenarios con figuras, terreno y muros.',
         Icons.edit_outlined,
       ),
       AppMode.simulator => (
         'Simulador',
-        'Explora visión, alcance y movimiento.',
+        'Mide distancias y consulta alcance, objetivos y visión.',
         Icons.route_outlined,
       ),
       AppMode.trainer => (
@@ -150,46 +176,64 @@ class _PlannedModeCard extends StatelessWidget {
       ),
     };
 
+    final openLabel = switch (mode) {
+      AppMode.editor => 'Abrir editor',
+      AppMode.simulator => 'Abrir simulador',
+      AppMode.referee => 'Abrir árbitro',
+      AppMode.trainer => 'Abrir entrenador',
+    };
     return Semantics(
       key: ValueKey('mode-${mode.id}'),
-      label: '$title. Próximamente. $description',
+      label:
+          '$title. ${onOpen == null ? 'Próximamente' : openLabel}. $description',
       button: true,
-      enabled: false,
+      enabled: onOpen != null,
+      onTap: onOpen,
       child: ExcludeSemantics(
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: AppTheme.surface,
+        child: Material(
+          color: AppTheme.surface,
+          shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFF34465C)),
+            side: BorderSide(
+              color: onOpen == null
+                  ? const Color(0xFF34465C)
+                  : const Color(0xFF568A82),
+            ),
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(icon, color: AppTheme.accent, size: 28),
-                const SizedBox(height: 16),
-                Text(title, style: Theme.of(context).textTheme.titleLarge),
-                const SizedBox(height: 8),
-                Text(description),
-                const SizedBox(height: 20),
-                const Row(
-                  children: [
-                    Icon(
-                      Icons.schedule_outlined,
-                      size: 16,
-                      color: AppTheme.muted,
-                    ),
-                    SizedBox(width: 8),
-                    Flexible(
-                      child: Text(
-                        'Próximamente',
-                        style: TextStyle(color: AppTheme.muted),
+          child: InkWell(
+            onTap: onOpen,
+            borderRadius: BorderRadius.circular(20),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(icon, color: AppTheme.accent, size: 28),
+                  const SizedBox(height: 16),
+                  Text(title, style: Theme.of(context).textTheme.titleLarge),
+                  const SizedBox(height: 8),
+                  Text(description),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Icon(
+                        onOpen == null
+                            ? Icons.schedule_outlined
+                            : Icons.arrow_forward,
+                        size: 16,
+                        color: AppTheme.muted,
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Text(
+                          onOpen == null ? 'Próximamente' : openLabel,
+                          style: const TextStyle(color: AppTheme.muted),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),

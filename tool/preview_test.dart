@@ -1,13 +1,36 @@
 // Ejecutar explícitamente: flutter test tool/preview_test.dart
 // Capturas de render Flutter; no representan una prueba en Android real.
 import 'dart:io';
+import 'dart:convert';
 import 'dart:ui' as ui;
 
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:heroclix_simulator_trainer/app.dart';
+import 'package:heroclix_simulator_trainer/domain/board/board_dimensions.dart';
+import 'package:heroclix_simulator_trainer/domain/board/board_viewport.dart';
+import 'package:heroclix_simulator_trainer/domain/board/cell_coordinate.dart';
+import 'package:heroclix_simulator_trainer/domain/characters/character.dart';
+import 'package:heroclix_simulator_trainer/presentation/editor/editor_screen.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:heroclix_simulator_trainer/application/board/board_session.dart';
+import 'package:heroclix_simulator_trainer/application/board/layer_draft.dart';
+import 'package:heroclix_simulator_trainer/domain/terrain/terrain.dart';
+import 'package:heroclix_simulator_trainer/domain/terrain/edge_wall.dart';
+import 'package:heroclix_simulator_trainer/domain/terrain/editing_geometry.dart';
+
+import '../test/support/scenario_fakes.dart';
+
+import 'package:heroclix_simulator_trainer/application/board/sight_probe.dart';
+import 'package:heroclix_simulator_trainer/application/scenarios/scenario_document.dart';
+import 'package:heroclix_simulator_trainer/application/scenarios/scenario_codec.dart';
+
+import '../test/vision_state_test.dart' show visionSession, chooseVision;
+import '../test/support/vision_contract.dart' show vs;
+import '../test/support/vision_contract.dart' show vf;
+
+import 'package:heroclix_simulator_trainer/presentation/vision/tactical_controls.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -32,9 +55,124 @@ void main() {
     await iconLoader.load();
   });
 
-  for (final (name, size) in [
-    ('inicio_vertical', const Size(400, 900)),
-    ('inicio_horizontal', const Size(1000, 700)),
+  for (final (name, size, dimensions) in [
+    (
+      'tactical_distance',
+      const Size(400, 900),
+      BoardDimensions(rows: 8, columns: 8),
+    ),
+    (
+      'tactical_distance_report',
+      const Size(400, 900),
+      BoardDimensions(rows: 8, columns: 8),
+    ),
+    (
+      'tactical_list',
+      const Size(400, 900),
+      BoardDimensions(rows: 8, columns: 8),
+    ),
+    (
+      'tactical_target',
+      const Size(1000, 600),
+      BoardDimensions(rows: 8, columns: 8),
+    ),
+    (
+      'tactical_detail',
+      const Size(400, 900),
+      BoardDimensions(rows: 8, columns: 8),
+    ),
+    (
+      'tactical_unknown',
+      const Size(400, 900),
+      BoardDimensions(rows: 8, columns: 8),
+    ),
+    ('inicio_vertical', const Size(400, 900), null),
+    ('inicio_horizontal', const Size(1000, 700), null),
+    ('vision_clear', const Size(400, 900), BoardDimensions.initial),
+    ('vision_hindered', const Size(400, 900), BoardDimensions.initial),
+    ('vision_blocked', const Size(400, 900), BoardDimensions.initial),
+    ('vision_corner', const Size(1000, 600), BoardDimensions.initial),
+    ('vision_unknown', const Size(400, 900), BoardDimensions.initial),
+    ('vision_report', const Size(400, 900), BoardDimensions.initial),
+    ('vision_record', const Size(400, 900), BoardDimensions.initial),
+    ('vision_referee', const Size(400, 900), BoardDimensions.initial),
+    (
+      'vision_a1_d6',
+      const Size(400, 900),
+      BoardDimensions(rows: 6, columns: 4),
+    ),
+    ('geometria_vertical', const Size(400, 900), BoardDimensions.initial),
+    ('geometria_horizontal', const Size(1000, 600), BoardDimensions.initial),
+    ('geometria_inspector', const Size(400, 900), BoardDimensions.initial),
+    ('geometria_eventos', const Size(400, 900), BoardDimensions.initial),
+    ('geometria_base', const Size(400, 900), BoardDimensions.initial),
+    (
+      'geometria_40x40',
+      const Size(1000, 700),
+      BoardDimensions(rows: 40, columns: 40),
+    ),
+    (
+      'biblioteca_vertical',
+      const Size(400, 900),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
+    (
+      'guardar_como',
+      const Size(400, 900),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
+    (
+      'png_opciones',
+      const Size(400, 900),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
+    (
+      'autoguardado_error',
+      const Size(400, 900),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
+    (
+      'terreno_vertical',
+      const Size(400, 900),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
+    (
+      'terreno_horizontal',
+      const Size(1000, 600),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
+    ('leyenda', const Size(400, 900), BoardDimensions(rows: 4, columns: 4)),
+    ('conflicto', const Size(400, 900), BoardDimensions(rows: 4, columns: 4)),
+    (
+      'figuras_vertical',
+      const Size(400, 900),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
+    (
+      'figuras_horizontal',
+      const Size(1000, 600),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
+    (
+      'ficha_vertical',
+      const Size(400, 900),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
+    (
+      'editor_vertical',
+      const Size(400, 900),
+      BoardDimensions(rows: 8, columns: 12),
+    ),
+    (
+      'editor_horizontal',
+      const Size(1000, 600),
+      BoardDimensions(rows: 8, columns: 12),
+    ),
+    (
+      'editor_40x40',
+      const Size(1000, 700),
+      BoardDimensions(rows: 40, columns: 40),
+    ),
   ]) {
     testWidgets('renderiza $name', (tester) async {
       tester.view.devicePixelRatio = 1;
@@ -42,10 +180,342 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
       addTearDown(tester.view.resetPhysicalSize);
       final key = GlobalKey();
+      final store = MemoryStore();
+      // Cada render posee su propio almacenamiento, sin canal de plataforma.
+      final persistent = await persistentController(store);
+      await persistent.workspace!.save(name: 'Escenario de ejemplo');
       await tester.pumpWidget(
-        RepaintBoundary(key: key, child: const HeroClixApp()),
+        RepaintBoundary(
+          key: key,
+          child: HeroClixApp(controller: persistent),
+        ),
       );
       await tester.pumpAndSettle();
+      if (dimensions != null) {
+        await tester.ensureVisible(find.text('Abrir editor'));
+        await tester.tap(find.text('Abrir editor'));
+        await tester.pumpAndSettle();
+        final controller = tester
+            .widget<EditorScreen>(find.byType(EditorScreen))
+            .controller;
+        controller.changeDimensions(dimensions);
+        for (final (position, team, footprint) in [
+          ('A1', 'team-1', Footprint.single),
+          ('C1', 'team-2', Footprint.single),
+          ('B3', 'team-2', Footprint.square2),
+        ]) {
+          controller.saveCharacter(
+            CharacterDraft(
+              name: 'Figura de prueba',
+              teamId: team,
+              position: CellCoordinate.parse(position),
+              footprint: footprint,
+            ),
+          );
+        }
+        controller.attempt(
+          (session) => session
+              .paintTerrain([
+                CellCoordinate.parse('A1'),
+                CellCoordinate.parse('A2'),
+              ], TerrainType.hindering)
+              .paintTerrain(
+                [CellCoordinate.parse('D1'), CellCoordinate.parse('C4')],
+                TerrainType.blocking,
+                allowStudy: true,
+              )
+              .editWalls([
+                EdgeWall.between(
+                  CellCoordinate.parse('A1'),
+                  CellCoordinate.parse('B1'),
+                ),
+                EdgeWall.between(
+                  CellCoordinate.parse('B2'),
+                  CellCoordinate.parse('C2'),
+                ),
+                EdgeWall.between(
+                  CellCoordinate.parse('A2'),
+                  CellCoordinate.parse('A3'),
+                ),
+              ], erase: false),
+        );
+        await tester.pumpAndSettle();
+        final cell = CellCoordinate.parse(
+          dimensions.columns == 40
+              ? 'AA20'
+              : dimensions.columns == 4
+              ? 'D2'
+              : 'D6',
+        );
+        final point = controller.value.camera.sceneToViewport(
+          const BoardGeometry().cellCenter(cell, dimensions),
+        );
+        await tester.tapAt(
+          tester.getTopLeft(find.byKey(const ValueKey('board-viewport'))) +
+              Offset(point.x, point.y),
+        );
+        await tester.pumpAndSettle();
+        expect(controller.value.selectedCell, cell);
+        if (name.startsWith('figuras') || name.startsWith('ficha')) {
+          controller.selectCharacter(controller.value.characters.all.last.id);
+          await tester.pumpAndSettle();
+        }
+        if (name.startsWith('ficha')) {
+          await tester.tap(find.byKey(const ValueKey('edit-character')));
+          await tester.pumpAndSettle();
+        }
+        if (name.startsWith('terreno')) {
+          controller.setTool(EditorTool.terrain);
+          controller.configureLayers(rectangle: true);
+          await tester.pumpAndSettle();
+          await tester.ensureVisible(
+            find.byKey(const ValueKey('tool-terrain')),
+          );
+          controller.draft.value = LayerDraft(
+            tool: EditorTool.terrain,
+            type: TerrainType.hindering,
+            rectangle: true,
+            eraseWalls: false,
+            eraseLayer: EraseLayer.figures,
+            cells: const EditingGeometry().rectangle(
+              CellCoordinate.parse('A2'),
+              CellCoordinate.parse('C3'),
+            ),
+            pending: true,
+          );
+          await tester.pumpAndSettle();
+        }
+        if (name == 'leyenda') {
+          await tester.tap(find.byKey(const ValueKey('board-view-options')));
+          await tester.pumpAndSettle();
+          await tester.tap(find.text('Leyenda y capas'));
+          await tester.pumpAndSettle();
+        }
+        if (name == 'conflicto') {
+          controller.setTool(EditorTool.terrain);
+          controller.configureLayers(type: TerrainType.blocking);
+          await tester.pumpAndSettle();
+          final point = controller.value.camera.sceneToViewport(
+            const BoardGeometry().cellCenter(
+              CellCoordinate.parse('A1'),
+              dimensions,
+            ),
+          );
+          await tester.tapAt(
+            tester.getTopLeft(find.byKey(const ValueKey('board-viewport'))) +
+                Offset(point.x, point.y),
+          );
+          await tester.pumpAndSettle();
+        }
+        if (name == 'biblioteca_vertical') {
+          await controller.workspace!.save();
+          await controller.workspace!.duplicate(
+            controller.workspace!.current.id,
+            'Escenario de ejemplo',
+          );
+          await tester.tap(find.byKey(const ValueKey('scenario-library')));
+          await tester.pumpAndSettle();
+        }
+        if (name == 'guardar_como' || name == 'png_opciones') {
+          await tester.tap(find.byKey(const ValueKey('board-view-options')));
+          await tester.pumpAndSettle();
+          final item = find.byKey(
+            ValueKey(
+              name == 'guardar_como' ? 'save-as-scenario' : 'export-png',
+            ),
+          );
+          await tester.ensureVisible(item);
+          await tester.tap(item);
+          await tester.pumpAndSettle();
+        }
+        if (name == 'autoguardado_error') {
+          store.failWrite = true;
+          controller.saveCharacter(
+            CharacterDraft(
+              name: 'Otra figura',
+              teamId: 'team-1',
+              position: CellCoordinate.parse('D2'),
+            ),
+          );
+          await tester.pumpAndSettle();
+          await tester.ensureVisible(
+            find.byKey(const ValueKey('autosave-status')),
+          );
+          await tester.tap(find.byKey(const ValueKey('autosave-status')));
+          await tester.pumpAndSettle();
+        }
+        if (name.startsWith('geometria')) {
+          controller.setTool(EditorTool.vision);
+          controller.setSightEndpoint(
+            ProbeEndpoint.cell(CellCoordinate.parse('A1')),
+            asOrigin: true,
+          );
+          controller.setSightEndpoint(
+            ProbeEndpoint.cell(
+              CellCoordinate.parse(
+                name == 'geometria_40x40'
+                    ? 'AN39'
+                    : name == 'geometria_horizontal'
+                    ? 'D3'
+                    : 'D4',
+              ),
+            ),
+            asOrigin: false,
+          );
+          await tester.pumpAndSettle();
+          await tester.ensureVisible(find.byKey(const ValueKey('tool-vision')));
+          await tester.pumpAndSettle();
+          controller.resetCamera();
+          await tester.pumpAndSettle();
+          if (name == 'geometria_inspector' || name == 'geometria_eventos') {
+            final button = find.byKey(const ValueKey('sight-inspect'));
+            await tester.ensureVisible(button);
+            await tester.pumpAndSettle();
+            await tester.tap(button);
+            await tester.pumpAndSettle();
+            if (name == 'geometria_eventos') {
+              await tester.ensureVisible(
+                find.byKey(const ValueKey('sight-event-2')),
+              );
+              await tester.pumpAndSettle();
+            }
+          }
+          if (name == 'geometria_base') {
+            final point = controller.value.camera.sceneToViewport(
+              const BoardGeometry().cellCenter(
+                CellCoordinate.parse('C4'),
+                dimensions,
+              ),
+            );
+            await tester.tapAt(
+              tester.getTopLeft(find.byKey(const ValueKey('board-viewport'))) +
+                  Offset(point.x, point.y),
+            );
+            await tester.pumpAndSettle();
+          }
+        }
+        if (name.startsWith('tactical_')) {
+          final world = vs(
+            rows: 8,
+            columns: 8,
+            terrain: {'A2': TerrainType.blocking, 'B2': TerrainType.hindering},
+            extras: [
+              vf(3, 'H8'),
+              vf(4, 'D4', team: 'team-2'),
+              vf(5, 'A3', team: 'team-2'),
+              vf(6, 'F8', team: 'team-2'),
+              vf(7, 'G1', team: 'team-2', footprint: Footprint.square2),
+            ],
+          );
+          controller.loadScenario(visionSession(world));
+          if (name.startsWith('tactical_distance')) {
+            controller.setTool(EditorTool.distance);
+            controller.setSightEndpoint(
+              ProbeEndpoint.cell(CellCoordinate.parse('A1')),
+              asOrigin: true,
+            );
+            controller.setSightEndpoint(
+              ProbeEndpoint.cell(CellCoordinate.parse('D6')),
+              asOrigin: false,
+            );
+          } else {
+            controller.selectCharacter('figure-1');
+            controller.setTool(EditorTool.targets);
+            if (name != 'tactical_list') {
+              controller.selectTarget(
+                name == 'tactical_unknown' ? 'figure-7' : 'figure-4',
+              );
+            }
+          }
+          await tester.pumpAndSettle();
+          controller.resetCamera();
+          await tester.pumpAndSettle();
+          final context = tester.element(find.byType(EditorScreen));
+          if (name == 'tactical_list') showTargetList(context, controller);
+          if (name == 'tactical_detail') showTargetReport(context, controller);
+          if (name == 'tactical_distance_report') {
+            controller.updateTactical((t) => t.showDeltas = true);
+            showDistanceReport(context, controller);
+          }
+          await tester.pumpAndSettle();
+        }
+        if (name.startsWith('vision_')) {
+          final world = name == 'vision_a1_d6'
+              ? vs(target: 'D6', rows: 6, terrain: {'B4': TerrainType.blocking})
+              : name == 'vision_corner'
+              ? vs(
+                  target: 'B2',
+                  terrain: {
+                    'B1': TerrainType.blocking,
+                    'A2': TerrainType.hindering,
+                  },
+                )
+              : vs(
+                  terrain: {
+                    if (name != 'vision_clear' && name != 'vision_unknown')
+                      'B1': name == 'vision_blocked'
+                          ? TerrainType.blocking
+                          : TerrainType.hindering,
+                  },
+                );
+          controller.loadScenario(visionSession(world));
+          controller.workspace!.edited(controller.value);
+          chooseVision(controller);
+          controller.setTool(EditorTool.vision);
+          if (name == 'vision_unknown') {
+            controller.updateVision((v) => v.specialEffects = true);
+          }
+          await tester.pumpAndSettle();
+          controller.resetCamera();
+          await tester.pumpAndSettle();
+          if (name == 'vision_referee') {
+            await tester.tap(find.byTooltip('Atrás').last);
+            await tester.pumpAndSettle();
+            await tester.ensureVisible(find.text('Abrir árbitro'));
+            await tester.pumpAndSettle();
+            await tester.tap(find.text('Abrir árbitro'));
+            await tester.pumpAndSettle();
+            controller.resetCamera();
+            await tester.pumpAndSettle();
+          }
+          if (name == 'vision_report' || name == 'vision_record') {
+            await tester.tap(find.byKey(const ValueKey('board-view-options')));
+            await tester.pumpAndSettle();
+            await tester.tap(find.text('Dictamen de visión').last);
+            await tester.pumpAndSettle();
+            if (name == 'vision_record') {
+              final log = find.byKey(const ValueKey('vision-log'));
+              await tester.ensureVisible(log);
+              await tester.pumpAndSettle();
+              await tester.tap(log);
+              await tester.pumpAndSettle();
+              await tester.ensureVisible(
+                find.byKey(const ValueKey('vision-observation-2')),
+              );
+              await tester.pumpAndSettle();
+            }
+          }
+          await tester.runAsync(() async {
+            final doc = ScenarioDocument.fresh(
+              name: name,
+              session: visionSession(world),
+            );
+            const codec = ScenarioCodec();
+            final file = File('build/verification/prompt-07/$name.json');
+            await file.parent.create(recursive: true);
+            await file.writeAsString(codec.encode(doc));
+            await File('build/verification/prompt-07/$name-working.json')
+                .writeAsString(
+                  jsonEncode({
+                    'workspaceSchemaVersion': 1,
+                    'document': codec.toMap(doc),
+                    'dirty': true,
+                    'saved': false,
+                  }),
+                );
+          });
+        }
+      }
       expect(tester.takeException(), isNull);
 
       final boundary =
@@ -54,7 +524,7 @@ void main() {
         final image = await boundary.toImage();
         try {
           final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-          final output = File('build/previews/$name.png');
+          final output = File('build/previews/prompt-07/$name.png');
           await output.parent.create(recursive: true);
           await output.writeAsBytes(bytes!.buffer.asUint8List());
         } finally {

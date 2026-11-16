@@ -1,4 +1,7 @@
 # characters
 
-Módulo reservado: Figuras, equipos y ocupación (02).
-Sin implementación en la etapa 00. El código futuro deberá usar Dart puro, sin Flutter.
+Dominio Dart puro implementado en 02: Character con identidad y etiqueta estables,
+CharacterDraft validado, Team con código/color/patrón y Footprint extensible.
+CharacterRepository es una colección inmutable con índice de ocupación por celda.
+validatePlacement es la única validación de límites y colisión para crear, editar,
+mover y previsualizar. Ninguna operación emite un dictamen reglamentario.
