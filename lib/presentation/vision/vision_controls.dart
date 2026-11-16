@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../application/board/board_session.dart';
 import '../../domain/rules/line_of_sight.dart';
+import '../../domain/characters/vision_ability.dart';
 import '../editor/editor_controller.dart';
 import '../scenarios/scenario_dialogs.dart';
 
@@ -36,6 +37,15 @@ Future<void> showVisionReport(
       builder: (context, session, _) {
         final analysis = controller.vision, result = analysis.result;
         final status = result?.status ?? VisionStatus.notEvaluated;
+        final source =
+            session.characters.byId(
+              controller.sight.origin?.figureId ??
+                  controller.tactical.sourceId ??
+                  '',
+            ) ??
+            (result?.origin == null
+                ? null
+                : session.characters.at(result!.origin!.cell));
         return ScenarioFormDialog(
           title: 'Dictamen de visión',
           children: [
@@ -71,7 +81,7 @@ Future<void> showVisionReport(
               'Solo línea de visión. No comprueba alcance, acciones ni legalidad completa de un ataque.',
             ),
             const Text(
-              'Perfil básico: figuras genéricas normales, sin poderes, en tablero plano. Este apoyo no sustituye una decisión oficial de torneo.',
+              'Perfil verificado: elevaciones, bases reconocidas y mejoras de visión tipadas. Este apoyo no sustituye una decisión oficial de torneo.',
             ),
             Text('Reglamento verificado: ${controller.rulesVersion}.'),
             Text(
@@ -80,8 +90,74 @@ Future<void> showVisionReport(
             Text(
               'Destino: ${controller.sight.destination?.describe(session) ?? 'sin elegir'}',
             ),
+            if (result?.origin != null && result?.destination != null)
+              Text(
+                'Par evaluado: ${result!.origin!.cell.label} / ${result.destination!.cell.label}',
+              ),
+            Text(
+              'Capacidades de ficha del origen: ${source == null || source.abilities.isEmpty ? 'ninguna' : source.abilities.map((a) => a.label).join(', ')}',
+            ),
+            CheckboxListTile(
+              key: const ValueKey('vision-auto-references'),
+              contentPadding: EdgeInsets.zero,
+              title: const Text(
+                'Referencias automáticas',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              value: analysis.automaticReferences,
+              onChanged: session.tool == EditorTool.targets
+                  ? null
+                  : (v) => controller.updateVision(
+                      (a) => a.automaticReferences = v!,
+                    ),
+            ),
             const Text(
-              'Indica si hay poderes, tamaños, fuente remota o reglas particulares que no están modelados. Con efectos especiales, el dictamen queda No evaluado.',
+              'En Visión, busca pares permitidos de base; al desactivar usa la referencia manual. Objetivos siempre compara alcance y visión desde el mismo par.',
+            ),
+            CheckboxListTile(
+              key: const ValueKey('vision-laboratory'),
+              contentPadding: EdgeInsets.zero,
+              title: const Text(
+                'Laboratorio de capacidades',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              value: analysis.laboratoryAbilities != null,
+              onChanged: (v) => controller.updateVision(
+                (a) =>
+                    a.laboratoryAbilities = v! ? {...?source?.abilities} : null,
+              ),
+            ),
+            if (analysis.laboratoryAbilities != null) ...[
+              const Text(
+                'HIPÓTESIS TEMPORAL: sustituye las capacidades de la ficha solo para comparar. No se guarda ni modifica el personaje.',
+              ),
+              for (final ability in VisionAbility.values.where(
+                (a) => a.supported,
+              ))
+                CheckboxListTile(
+                  key: ValueKey('lab-${ability.name}'),
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(
+                    'IT ${ability.label}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  value: analysis.laboratoryAbilities!.contains(ability),
+                  onChanged: (checked) => controller.updateVision((a) {
+                    final next = {...a.laboratoryAbilities!};
+                    if (checked!) {
+                      next.add(ability);
+                    } else {
+                      next.remove(ability);
+                    }
+                    a.laboratoryAbilities = next;
+                  }),
+                ),
+            ],
+            const Text(
+              'Marca Efectos especiales solo si hay otras condiciones no modeladas. Las capacidades declaradas de la ficha se aplican automáticamente. Lo que no tiene soporte queda No evaluado.',
             ),
             CheckboxListTile(
               key: const ValueKey('vision-special-effects'),
@@ -108,6 +184,25 @@ Future<void> showVisionReport(
                   controller.updateVision((v) => v.showCauses = value!),
             ),
             if (result != null) ...[
+              if (result.references.length > 1)
+                ExpansionTile(
+                  key: const ValueKey('vision-reference-pairs'),
+                  tilePadding: EdgeInsets.zero,
+                  title: Text(
+                    'Pares de referencia (${result.references.length})',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  children: [
+                    for (final ref in result.references)
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          '${ref.origin.label} / ${ref.destination.label}: ${visionLabel(ref.status)} · D ${ref.distance ?? '?'}',
+                        ),
+                      ),
+                  ],
+                ),
               Text(
                 'Registro: ${result.trace?.events.length ?? 0} eventos geométricos · ${result.observations.length} comprobaciones',
                 key: const ValueKey('vision-log-summary'),

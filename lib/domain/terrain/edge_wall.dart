@@ -35,6 +35,11 @@ final class EdgeWall {
   }
   final EdgeAxis axis;
   final int column, row;
+  CellCoordinate get firstCell => CellCoordinate(
+    column: axis == EdgeAxis.vertical ? column - 1 : column,
+    row: axis == EdgeAxis.horizontal ? row - 1 : row,
+  );
+  CellCoordinate get secondCell => CellCoordinate(column: column, row: row);
   String get id => '${axis == EdgeAxis.vertical ? 'v' : 'h'}:$column:$row';
   bool isInternal(BoardDimensions dimensions) => axis == EdgeAxis.vertical
       ? column > 0 && column < dimensions.columns && row < dimensions.rows

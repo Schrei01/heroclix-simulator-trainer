@@ -2,6 +2,7 @@
 import 'package:heroclix_simulator_trainer/domain/board/board_dimensions.dart';
 import 'package:heroclix_simulator_trainer/domain/board/cell_coordinate.dart';
 import 'package:heroclix_simulator_trainer/domain/characters/character.dart';
+import 'package:heroclix_simulator_trainer/domain/characters/vision_ability.dart';
 import 'package:heroclix_simulator_trainer/domain/rules/line_of_sight.dart';
 import 'package:heroclix_simulator_trainer/domain/rules/line_of_sight_service.dart';
 import 'package:heroclix_simulator_trainer/domain/terrain/edge_wall.dart';
@@ -18,6 +19,8 @@ Character vf(
   String team = 'team-1',
   Footprint footprint = Footprint.single,
   int range = 4,
+  Iterable<VisionAbility> abilities = const [],
+  FigureSize size = FigureSize.normal,
 }) => Character(
   id: 'figure-$number',
   label: String.fromCharCode(64 + number),
@@ -27,6 +30,8 @@ Character vf(
     position: vc(position),
     footprint: footprint,
     range: range,
+    abilities: abilities,
+    size: size,
   ),
 );
 VisionSnapshot vs({
@@ -40,6 +45,7 @@ VisionSnapshot vs({
   bool source = true,
   bool destination = true,
   Footprint sourceBase = Footprint.single,
+  Footprint targetBase = Footprint.single,
   Map<String, int> elevations = const {},
 }) {
   final dimensions = BoardDimensions(rows: rows, columns: columns);
@@ -58,7 +64,7 @@ VisionSnapshot vs({
     dimensions: dimensions,
     characters: [
       if (source) vf(1, origin, footprint: sourceBase),
-      if (destination) vf(2, target, team: 'team-2'),
+      if (destination) vf(2, target, team: 'team-2', footprint: targetBase),
       ...extras,
     ],
     terrain: layer,
@@ -309,21 +315,25 @@ Map<String, void Function()> visionCases() => {
       ensure(r.canSee == null, 'visibilidad desconocida');
     }
   },
-  'R14 cobertura §16.5c elevación relevante': () {
-    for (final cell in ['A1', 'B1', 'D1']) {
-      final r = ve(vs(elevations: {cell: 1}));
-      status(r, VisionStatus.notEvaluated);
+  'R14 §16.5c elevación de extremos e intermedia': () {
+    for (final (cell, expected) in [
+      ('A1', VisionStatus.clear),
+      ('B1', VisionStatus.blocked),
+      ('D1', VisionStatus.clear),
+    ]) {
+      final r = ve(vs(elevations: {cell: 2}));
+      status(r, expected);
       hasRule(r, VisionRule.elevation);
     }
     status(ve(vs(elevations: {'A4': 2})), VisionStatus.clear);
   },
-  'R15 cobertura §24.2e bases múltiples relevantes': () {
+  'R15 §24.2e bases reconocidas y ocupación intermedia': () {
     status(
       ve(
         vs(target: 'D4', sourceBase: Footprint.square2),
         target: 'D4',
       ),
-      VisionStatus.notEvaluated,
+      VisionStatus.clear,
     );
     status(
       ve(
@@ -333,7 +343,7 @@ Map<String, void Function()> visionCases() => {
         ),
         target: 'D4',
       ),
-      VisionStatus.notEvaluated,
+      VisionStatus.blocked,
     );
     status(
       ve(vs(extras: [vf(3, 'A3', footprint: Footprint.square2)])),
@@ -500,10 +510,10 @@ Map<String, void Function()> visionCases() => {
     );
     status(
       ve(
-        vs(target: 'D6', rows: 6, terrain: {'B4': b}, elevations: {'C3': 1}),
+        vs(target: 'D6', rows: 6, terrain: {'B4': b}, elevations: {'C3': 2}),
         target: 'D6',
       ),
-      VisionStatus.notEvaluated,
+      VisionStatus.blocked,
     );
   },
   'R25 §16.8b A1–D6 dieciséis pares de muros incidentes': () {

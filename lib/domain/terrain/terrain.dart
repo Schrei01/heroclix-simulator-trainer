@@ -1,9 +1,10 @@
 import '../board/board_dimensions.dart';
 import '../board/cell_coordinate.dart';
+import 'edge_wall.dart';
 
 enum TerrainType { clear, hindering, blocking }
 
-/// Elevación preparada como dato; no habilita análisis de altura.
+/// El 0 histórico es un alias de suelo (nivel oficial 1), nunca un nivel oficial 0.
 final class CellTerrain {
   factory CellTerrain({
     TerrainType type = TerrainType.clear,
@@ -16,6 +17,7 @@ final class CellTerrain {
   static const clear = CellTerrain._(TerrainType.clear, 0);
   final TerrainType type;
   final int elevation;
+  int get level => elevation == 0 ? 1 : elevation;
   @override
   bool operator ==(Object other) =>
       other is CellTerrain &&
@@ -26,12 +28,16 @@ final class CellTerrain {
 }
 
 final class TerrainLayer {
-  const TerrainLayer.empty() : cells = const {};
-  TerrainLayer._(Map<CellCoordinate, CellTerrain> values)
-    : cells = Map.unmodifiable(values);
+  const TerrainLayer.empty() : cells = const {}, transitions = const {};
+  TerrainLayer._(
+    Map<CellCoordinate, CellTerrain> values, [
+    Iterable<EdgeWall> steps = const [],
+  ]) : cells = Map.unmodifiable(values),
+       transitions = Set.unmodifiable(steps);
   final Map<CellCoordinate, CellTerrain> cells;
+  final Set<EdgeWall> transitions;
   CellTerrain at(CellCoordinate cell) => cells[cell] ?? CellTerrain.clear;
-  bool get isEmpty => cells.isEmpty;
+  bool get isEmpty => cells.isEmpty && transitions.isEmpty;
   TerrainLayer paint(
     Iterable<CellCoordinate> targets,
     TerrainType type,
@@ -51,7 +57,7 @@ final class TerrainLayer {
         values[cell] = value;
       }
     }
-    return TerrainLayer._(values);
+    return TerrainLayer._(values, transitions);
   }
 
   TerrainLayer put(
@@ -66,6 +72,60 @@ final class TerrainLayer {
       {...cells}
         ..remove(cell)
         ..addAll(terrain == CellTerrain.clear ? {} : {cell: terrain}),
+      transitions,
+    );
+  }
+
+  TerrainLayer paintElevation(
+    Iterable<CellCoordinate> targets,
+    int level,
+    BoardDimensions dimensions,
+  ) {
+    RangeError.checkValueInInterval(level, 1, 40, 'level');
+    final values = {...cells};
+    for (final cell in targets) {
+      if (!dimensions.contains(cell)) {
+        throw RangeError('Casilla fuera del tablero.');
+      }
+      final value = CellTerrain(
+        type: at(cell).type,
+        elevation: level == 1 ? 0 : level,
+      );
+      if (value == CellTerrain.clear) {
+        values.remove(cell);
+      } else {
+        values[cell] = value;
+      }
+    }
+    final result = TerrainLayer._(values);
+    return TerrainLayer._(
+      result.cells,
+      transitions.where(
+        (e) =>
+            e.isInternal(dimensions) &&
+            result.at(e.firstCell).level != result.at(e.secondCell).level,
+      ),
+    );
+  }
+
+  TerrainLayer setTransition(
+    EdgeWall edge,
+    BoardDimensions dimensions, {
+    required bool remove,
+  }) {
+    if (!edge.isInternal(dimensions)) {
+      throw ArgumentError('Transición fuera del tablero.');
+    }
+    if (!remove && at(edge.firstCell).level == at(edge.secondCell).level) {
+      throw ArgumentError(
+        'Una transición de altura debe unir niveles distintos.',
+      );
+    }
+    return TerrainLayer._(
+      cells,
+      {...transitions}
+        ..remove(edge)
+        ..addAll(remove ? [] : [edge]),
     );
   }
 }

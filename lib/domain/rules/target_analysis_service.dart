@@ -69,8 +69,7 @@ final class TargetReport {
   final String? error;
 }
 
-/// Análisis preliminar de todas las demás figuras. El filtro de equipo es de
-/// consulta: no afirma que una figura aliada sea un objetivo legal de ataque.
+/// Misma referencia para alcance y visión (§11.5); bases según §24.2e.
 final class TargetAnalysisService {
   const TargetAnalysisService({
     this.vision = const LineOfSightService(),
@@ -91,68 +90,144 @@ final class TargetAnalysisService {
         error: 'Elige una figura de origen válida.',
       );
     }
-    final source = sources.single;
-    final targets = <TargetEvaluation>[];
-    for (final target in snapshot.characters) {
-      if (target.id == sourceId) continue;
-      final sight = vision.evaluate(
-        snapshot,
-        VisionEndpoint(source.position, figureId: source.id),
-        VisionEndpoint(target.position, figureId: target.id),
-        context,
-      );
-      final bases =
-          source.footprint != Footprint.single ||
-          target.footprint != Footprint.single;
-      final metric = bases
-          ? const DistanceMeasurement(
-              reason: 'Base múltiple: distancia y referencias pendientes de soporte (§24.2e).',
-            )
-          : distance.measure(
-              snapshot.dimensions,
-              source.position,
-              target.position,
-              rulesVersion: context.rulesVersion,
+    return TargetReport(
+      sourceId: sourceId,
+      targets: [
+        for (final target in snapshot.characters)
+          if (target.id != sourceId)
+            evaluateTarget(snapshot, sources.single, target, context),
+      ],
+    );
+  }
+
+  TargetEvaluation evaluateTarget(
+    VisionSnapshot snapshot,
+    Character source,
+    Character target,
+    VisionContext context, {
+    bool visionOnly = false,
+  }) {
+    final supported =
+        source.footprint.isSupported &&
+        target.footprint.isSupported &&
+        [source, target].every(
+          (f) =>
+              f.occupiedCells
+                  .map((c) => snapshot.terrain.at(c).level)
+                  .toSet()
+                  .length ==
+              1,
+        );
+    final origins = supported ? source.occupiedCells : [source.position];
+    final destinations = supported ? target.occupiedCells : [target.position];
+    final candidates = <TargetEvaluation>[];
+    for (final from in origins) {
+      for (final to in destinations) {
+        final sight = vision.evaluate(
+          snapshot,
+          VisionEndpoint(from, figureId: source.id),
+          VisionEndpoint(to, figureId: target.id),
+          context,
+        );
+        final metric = supported
+            ? distance.measure(
+                snapshot.dimensions,
+                from,
+                to,
+                rulesVersion: context.rulesVersion,
+              )
+            : const DistanceMeasurement(
+                reason: 'Base sin soporte o en niveles distintos: referencias no evaluadas.',
+              );
+        final unknown =
+            !metric.evaluated ||
+            context.features.isNotEmpty ||
+            (context.laboratoryAbilities ?? source.abilities).any(
+              (a) => !a.supported,
+            ) ||
+            sight.observations.any(
+              (o) =>
+                  o.rules.contains(VisionRule.occupancy) ||
+                  (o.effect == VisionEffect.unsupported && o.rules.length == 1),
             );
-      final rangeUnknown =
-          !metric.evaluated ||
-          context.features.isNotEmpty ||
-          sight.observations.any(
-            (o) =>
-                o.rules.contains(VisionRule.occupancy) ||
-                (o.effect == VisionEffect.unsupported && o.rules.length == 1),
-          );
-      final range = rangeUnknown
-          ? RangeStatus.notEvaluated
-          : metric.squares! <= source.range
-          ? RangeStatus.within
-          : RangeStatus.outside;
-      targets.add(
-        TargetEvaluation(
-          source: source,
-          target: target,
-          distance: metric,
-          range: range,
-          vision: sight,
-          evaluated: [
-            if (metric.evaluated)
-              'Distancia entre casillas: ${metric.squares}.',
-            if (range != RangeStatus.notEvaluated)
-              'Comparación con alcance declarado ${source.range}.',
-            if (sight.canSee != null) 'Visión bajo el perfil básico de 06.',
-          ],
-          pending: [
-            if (!metric.evaluated) metric.reason!,
-            if (range == RangeStatus.notEvaluated)
-              'Comparación de alcance no evaluada para este caso.',
-            if (sight.canSee == null) sight.explanation,
-            'Legalidad completa de ataque: acciones, poderes, estados, adyacencia y número de objetivos no comprobados.',
-            if (source.teamId == target.teamId)
-              'Mismo equipo: consultar el efecto concreto antes de atacar.',
-          ],
-        ),
-      );
+        final range = unknown
+            ? RangeStatus.notEvaluated
+            : metric.squares! <= source.range
+            ? RangeStatus.within
+            : RangeStatus.outside;
+        candidates.add(
+          TargetEvaluation(
+            source: source,
+            target: target,
+            distance: metric,
+            range: range,
+            vision: sight,
+            evaluated: [
+              if (metric.evaluated)
+                'Distancia del par ${from.label} / ${to.label}: ${metric.squares}.',
+              if (range != RangeStatus.notEvaluated)
+                'Comparación con alcance declarado ${source.range}.',
+              if (sight.canSee != null)
+                'Visión con elevación, bases y capacidades verificadas.',
+            ],
+            pending: [
+              if (!metric.evaluated) metric.reason!,
+              if (range == RangeStatus.notEvaluated)
+                'Comparación de alcance no evaluada para este caso.',
+              if (sight.canSee == null) sight.explanation,
+              'Legalidad completa de ataque: acciones, poderes no modelados, estados, adyacencia y número de objetivos no comprobados.',
+              if (source.teamId == target.teamId)
+                'Mismo equipo: consultar el efecto concreto antes de atacar.',
+            ],
+          ),
+        );
+      }
     }
-    return TargetReport(sourceId: sourceId, targets: targets);
+    final successes = candidates
+        .where(
+          (c) => visionOnly
+              ? c.vision.canSee == true
+              : c.status == TargetStatus.inRangeClear ||
+                    c.status == TargetStatus.inRangeHindered,
+        )
+        .toList();
+    final unknown = candidates
+        .where((c) => c.status == TargetStatus.notEvaluated)
+        .toList();
+    final choices = successes.isNotEmpty
+        ? successes
+        : unknown.isNotEmpty
+        ? unknown
+        : candidates.toList();
+    choices.sort((a, b) {
+      final status = visionOnly
+          ? a.vision.status.index.compareTo(b.vision.status.index)
+          : a.status.index.compareTo(b.status.index);
+      return status != 0
+          ? status
+          : (a.distance.squares ?? 999).compareTo(b.distance.squares ?? 999);
+    });
+    final chosen = choices.first;
+    final refs = [
+      for (final c in candidates)
+        VisionReference(
+          c.vision.origin!.cell,
+          c.vision.destination!.cell,
+          c.vision.status,
+          c.distance.squares,
+        ),
+    ];
+    return TargetEvaluation(
+      source: source,
+      target: target,
+      distance: chosen.distance,
+      range: chosen.range,
+      vision: chosen.vision.withReferences(refs),
+      evaluated: [
+        'Se consultaron ${candidates.length} pares; distancia y visión usan el mismo par elegido.',
+        ...chosen.evaluated,
+      ],
+      pending: chosen.pending,
+    );
   }
 }

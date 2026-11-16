@@ -28,14 +28,22 @@ final class EditorController extends ValueNotifier<BoardSession> {
   String get rulesVersion =>
       workspace?.current.rulesVersion ?? VisionContext.supportedVersion;
   void _evaluateVision(BoardSession next) {
-    vision.evaluate(next, sight, rulesVersion);
     tactical.sync(
       next,
       sight,
       VisionContext(
         rulesVersion: rulesVersion,
         features: [if (vision.specialEffects) VisionFeature.powersOrSizes],
+        laboratoryAbilities: vision.laboratoryAbilities,
       ),
+    );
+    vision.evaluate(
+      next,
+      sight,
+      rulesVersion,
+      selectedTarget: next.tool == EditorTool.targets
+          ? tactical.selected?.vision
+          : null,
     );
   }
 
@@ -55,8 +63,30 @@ final class EditorController extends ValueNotifier<BoardSession> {
       return;
     }
     tactical.selectedTargetId = id;
-    sight.setEndpoint(ProbeEndpoint.figure(source), asOrigin: true);
-    sight.setEndpoint(ProbeEndpoint.figure(id), asOrigin: false);
+    final selected = tactical.report?.targets
+        .where((t) => t.target.id == id)
+        .firstOrNull;
+    final sourceFigure = value.characters.byId(source);
+    final targetFigure = value.characters.byId(id);
+    if (sourceFigure == null || targetFigure == null) return;
+    final from = selected?.vision.origin?.cell ?? sourceFigure.position;
+    final to = selected?.vision.destination?.cell ?? targetFigure.position;
+    sight.setEndpoint(
+      ProbeEndpoint.figure(
+        source,
+        columnOffset: from.column - sourceFigure.position.column,
+        rowOffset: from.row - sourceFigure.position.row,
+      ),
+      asOrigin: true,
+    );
+    sight.setEndpoint(
+      ProbeEndpoint.figure(
+        id,
+        columnOffset: to.column - targetFigure.position.column,
+        rowOffset: to.row - targetFigure.position.row,
+      ),
+      asOrigin: false,
+    );
     vision.enabled = true;
     sight.evaluate(value);
     _evaluateVision(value);

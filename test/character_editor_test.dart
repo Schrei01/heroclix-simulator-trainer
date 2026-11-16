@@ -208,7 +208,7 @@ void main() {
     await press(tester, 'character-footprint');
     await tester.tap(find.text('2 × 2').last);
     await tester.pumpAndSettle();
-    expect(find.textContaining('no legalidad reglamentaria'), findsOneWidget);
+    expect(find.textContaining('El anclaje indica'), findsOneWidget);
     await press(tester, 'save-character');
     expect(controller.value.characters.isEmpty, isTrue);
     expect(find.textContaining('base completa'), findsOneWidget);

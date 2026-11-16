@@ -16,6 +16,7 @@ enum EditorTool {
   vision,
   distance,
   targets,
+  elevation,
 }
 
 enum EraseLayer { figures, walls }
@@ -338,6 +339,12 @@ final class BoardSession {
                   footprint: footprint,
                 )
                 .isValid &&
+            footprint
+                    .cellsAt(cell)
+                    .map((c) => terrain.at(c).level)
+                    .toSet()
+                    .length ==
+                1 &&
             !footprint
                 .cellsAt(cell)
                 .any((cell) => terrain.at(cell).type == TerrainType.blocking)) {
@@ -351,7 +358,8 @@ final class BoardSession {
   BoardSession changeDimensions(BoardDimensions next) {
     if (next == dimensions) return this;
     if (terrain.cells.keys.any((cell) => !next.contains(cell)) ||
-        walls.edges.values.any((edge) => !edge.isInternal(next))) {
+        walls.edges.values.any((edge) => !edge.isInternal(next)) ||
+        terrain.transitions.any((edge) => !edge.isInternal(next))) {
       throw const PlacementException(
         'El tamaño dejaría terreno o muros fuera de sus límites. Limpia esos elementos antes de reducir.',
       );
@@ -415,6 +423,15 @@ final class BoardSession {
             .toList(growable: false);
 
   void _checkFigureTerrain(CharacterDraft data, bool allowStudy) {
+    final levels = data.footprint
+        .cellsAt(data.position)
+        .map((c) => terrain.at(c).level)
+        .toSet();
+    if (levels.length > 1) {
+      throw const PlacementException(
+        'Una base normal debe ocupar un único nivel de elevación.',
+      );
+    }
     if (!allowStudy &&
         data.footprint
             .cellsAt(data.position)
@@ -437,7 +454,17 @@ final class BoardSession {
     );
     if (!result.isValid) return result;
     if (figure.footprint
-        .cellsAt(position!)
+            .cellsAt(position!)
+            .map((c) => terrain.at(c).level)
+            .toSet()
+            .length >
+        1) {
+      return const PlacementValidation.invalid(
+        'La base debe ocupar un único nivel de elevación.',
+      );
+    }
+    if (figure.footprint
+        .cellsAt(position)
         .any((cell) => terrain.at(cell).type == TerrainType.blocking)) {
       return const PlacementValidation.invalid(
         'Terreno bloqueado: usa la ficha para conservar una posición para estudio.',
@@ -460,9 +487,41 @@ final class BoardSession {
     return _copy(terrain: terrain.paint(targets, type, dimensions));
   }
 
-  BoardSession editWalls(Iterable<EdgeWall> edges, {required bool erase}) =>
-      _copy(walls: walls.edit(edges, dimensions, erase: erase));
-  BoardSession clearTerrain() => _copy(terrain: const TerrainLayer.empty());
+  BoardSession editWalls(Iterable<EdgeWall> edges, {required bool erase}) {
+    if (!erase && edges.any(terrain.transitions.contains)) {
+      throw const PlacementException(
+        'Retira la transición antes de añadir un muro en ese borde.',
+      );
+    }
+    return _copy(walls: walls.edit(edges, dimensions, erase: erase));
+  }
+
+  BoardSession paintElevation(Iterable<CellCoordinate> cells, int level) {
+    final next = terrain.paintElevation(cells, level, dimensions);
+    for (final f in characters.all) {
+      if (f.occupiedCells.map((c) => next.at(c).level).toSet().length > 1) {
+        throw const PlacementException(
+          'La edición dejaría una base en niveles distintos. Pinta su región completa.',
+        );
+      }
+    }
+    return _copy(terrain: next);
+  }
+
+  BoardSession setTransition(EdgeWall edge, {required bool remove}) {
+    if (!remove && walls.contains(edge)) {
+      throw const PlacementException(
+        'Un muro no puede compartir una transición.',
+      );
+    }
+    return _copy(
+      terrain: terrain.setTransition(edge, dimensions, remove: remove),
+    );
+  }
+
+  BoardSession clearTerrain() => _copy(
+    terrain: terrain.paint(terrain.cells.keys, TerrainType.clear, dimensions),
+  );
   BoardSession clearWalls() => _copy(walls: const WallLayer.empty());
   BoardSession clearCharacters() => _copy(
     characters: const CharacterRepository.empty(),
@@ -484,6 +543,12 @@ final class BoardSession {
         characters.all.any(
           (figure) =>
               figure.occupiedCells.any((cell) => !dimensions.contains(cell)),
+        ) ||
+        terrain.transitions.any(
+          (e) =>
+              !e.isInternal(dimensions) ||
+              walls.contains(e) ||
+              terrain.at(e.firstCell).level == terrain.at(e.secondCell).level,
         )) {
       throw const PlacementException(
         'Las capas no caben en el tablero actual.',

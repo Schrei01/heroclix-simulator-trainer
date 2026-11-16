@@ -20,7 +20,9 @@ Future<void> pickSightCell(
   ProbeEndpoint endpoint = ProbeEndpoint.cell(cell);
   if (figure != null) {
     var reference = cell;
-    if (figure.footprint != Footprint.single) {
+    if (figure.footprint != Footprint.single &&
+        (!controller.vision.enabled ||
+            !controller.vision.automaticReferences)) {
       final chosen = await showDialog<CellCoordinate>(
         context: context,
         builder: (context) => _ReferenceDialog(figure, cell),
@@ -54,7 +56,7 @@ class _ReferenceDialogState extends State<_ReferenceDialog> {
     title: 'Casilla de referencia · ${widget.figure.label}',
     children: [
       const Text(
-        'Base múltiple: se traza desde el centro de una casilla elegida. La evaluación completa de bases corresponde al Prompt 08.',
+        'Inspección de una referencia concreta. Para comparar la base completa activa Referencias automáticas en Dictamen de visión.',
       ),
       DropdownButtonFormField<CellCoordinate>(
         key: const ValueKey('sight-reference'),
@@ -95,6 +97,15 @@ class SightToolbar extends StatelessWidget {
     String short(ProbeEndpoint? endpoint) {
       if (endpoint == null) return 'sin elegir';
       try {
+        if (controller.vision.enabled &&
+            controller.vision.automaticReferences &&
+            endpoint.figureId != null) {
+          return controller.value.characters
+                  .byId(endpoint.figureId!)
+                  ?.position
+                  .label ??
+              'inválido';
+        }
         return endpoint.resolve(controller.value).label;
       } on ArgumentError {
         return 'inválido';

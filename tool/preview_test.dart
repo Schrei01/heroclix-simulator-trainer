@@ -31,6 +31,12 @@ import '../test/support/vision_contract.dart' show vs;
 import '../test/support/vision_contract.dart' show vf;
 
 import 'package:heroclix_simulator_trainer/presentation/vision/tactical_controls.dart';
+import 'package:heroclix_simulator_trainer/presentation/vision/vision_controls.dart';
+import 'package:heroclix_simulator_trainer/presentation/editor/elevation_controls.dart';
+import 'package:heroclix_simulator_trainer/domain/characters/vision_ability.dart';
+
+import '../test/support/advanced_vision_contract.dart' show capable;
+import '../test/support/target_contract.dart' show ranged;
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -56,6 +62,13 @@ void main() {
   });
 
   for (final (name, size, dimensions) in [
+    ('advanced_elevation', const Size(400, 900), BoardDimensions.initial),
+    ('advanced_base', const Size(400, 900), BoardDimensions.initial),
+    ('advanced_base_report', const Size(400, 900), BoardDimensions.initial),
+    ('advanced_laboratory', const Size(400, 900), BoardDimensions.initial),
+    ('advanced_record', const Size(1000, 700), BoardDimensions.initial),
+    ('advanced_form', const Size(400, 900), BoardDimensions.initial),
+    ('advanced_referee', const Size(400, 900), BoardDimensions.initial),
     (
       'tactical_distance',
       const Size(400, 900),
@@ -394,6 +407,106 @@ void main() {
             await tester.pumpAndSettle();
           }
         }
+        if (name.startsWith('advanced_')) {
+          final base = name.startsWith('advanced_base');
+          final elevated = [
+            'advanced_elevation',
+            'advanced_form',
+            'advanced_referee',
+          ].contains(name);
+          final world = base
+              ? ranged(
+                  vs(
+                    target: 'B3',
+                    targetBase: Footprint.rectangle(width: 1, height: 2),
+                    walls: [
+                      EdgeWall.between(
+                        CellCoordinate.parse('A2'),
+                        CellCoordinate.parse('B2'),
+                      ),
+                    ],
+                  ),
+                  2,
+                )
+              : elevated
+              ? capable(
+                  vs(
+                    elevations: {'A1': 2, 'A2': 2, 'B1': 2, 'B2': 2},
+                    terrain: {'D1': TerrainType.hindering},
+                  ),
+                  [VisionAbility.elevated],
+                )
+              : capable(
+                  vs(
+                    terrain: {
+                      'B1': TerrainType.hindering,
+                      'C1': TerrainType.blocking,
+                    },
+                  ),
+                  name == 'advanced_record' ? [VisionAbility.hindering] : [],
+                );
+          controller.loadScenario(visionSession(world));
+          if (elevated) {
+            controller.attempt(
+              (s) => s.setTransition(
+                EdgeWall.between(
+                  CellCoordinate.parse('B1'),
+                  CellCoordinate.parse('C1'),
+                ),
+                remove: false,
+              ),
+            );
+          }
+          chooseVision(controller);
+          controller.setTool(EditorTool.vision);
+          await tester.pumpAndSettle();
+          controller.resetCamera();
+          await tester.pumpAndSettle();
+          var context = tester.element(find.byType(EditorScreen));
+          if (name == 'advanced_referee') {
+            await tester.tap(find.byTooltip('Atrás').last);
+            await tester.pumpAndSettle();
+            await tester.ensureVisible(find.text('Abrir árbitro'));
+            await tester.tap(find.text('Abrir árbitro'));
+            await tester.pumpAndSettle();
+            controller.resetCamera();
+            await tester.pumpAndSettle();
+            context = tester.element(
+              find.byKey(const ValueKey('vision-report')),
+            );
+          }
+          if (name == 'advanced_laboratory') {
+            controller.updateVision(
+              (v) => v.laboratoryAbilities = {VisionAbility.blocking},
+            );
+          }
+          if ([
+            'advanced_base_report',
+            'advanced_laboratory',
+            'advanced_record',
+            'advanced_referee',
+          ].contains(name)) {
+            showVisionReport(context, controller);
+            await tester.pumpAndSettle();
+            if (name == 'advanced_record' || name == 'advanced_base_report') {
+              final key = name == 'advanced_record'
+                  ? 'vision-log'
+                  : 'vision-reference-pairs';
+              await tester.ensureVisible(find.byKey(ValueKey(key)));
+              await tester.tap(find.byKey(ValueKey(key)));
+              await tester.pumpAndSettle();
+            }
+            if (name == 'advanced_laboratory') {
+              await tester.ensureVisible(
+                find.byKey(const ValueKey('vision-laboratory')),
+              );
+            }
+          }
+          if (name == 'advanced_form') {
+            showElevationDialog(context, controller);
+            await tester.pumpAndSettle();
+          }
+        }
         if (name.startsWith('tactical_')) {
           final world = vs(
             rows: 8,
@@ -404,7 +517,13 @@ void main() {
               vf(4, 'D4', team: 'team-2'),
               vf(5, 'A3', team: 'team-2'),
               vf(6, 'F8', team: 'team-2'),
-              vf(7, 'G1', team: 'team-2', footprint: Footprint.square2),
+              vf(
+                7,
+                'G1',
+                team: 'team-2',
+                footprint: Footprint.square2,
+                size: FigureSize.giant,
+              ),
             ],
           );
           controller.loadScenario(visionSession(world));
@@ -501,10 +620,10 @@ void main() {
               session: visionSession(world),
             );
             const codec = ScenarioCodec();
-            final file = File('build/verification/prompt-07/$name.json');
+            final file = File('build/verification/prompt-08/$name.json');
             await file.parent.create(recursive: true);
             await file.writeAsString(codec.encode(doc));
-            await File('build/verification/prompt-07/$name-working.json')
+            await File('build/verification/prompt-08/$name-working.json')
                 .writeAsString(
                   jsonEncode({
                     'workspaceSchemaVersion': 1,
@@ -524,7 +643,7 @@ void main() {
         final image = await boundary.toImage();
         try {
           final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-          final output = File('build/previews/prompt-07/$name.png');
+          final output = File('build/previews/prompt-08/$name.png');
           await output.parent.create(recursive: true);
           await output.writeAsBytes(bytes!.buffer.asUint8List());
         } finally {

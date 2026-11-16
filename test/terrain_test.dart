@@ -310,7 +310,7 @@ void main() {
         jsonDecode(jsonEncode(codec.encode(state))) as Map<String, dynamic>;
     final corrupt = <Map<String, dynamic>>[];
     var map = fresh();
-    map['layerSchemaVersion'] = 2;
+    map['layerSchemaVersion'] = 999;
     corrupt.add(map);
     map = fresh();
     map['terrain'].add(map['terrain'].first);

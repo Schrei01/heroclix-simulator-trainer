@@ -1,5 +1,6 @@
 import '../board/cell_coordinate.dart';
 import '../characters/character.dart';
+import '../characters/vision_ability.dart';
 import '../geometry/sight_geometry.dart';
 import '../terrain/edge_wall.dart';
 import '../terrain/terrain.dart';
@@ -88,6 +89,10 @@ final class LineOfSightService implements VisionEvaluator {
     if (snapshot.terrain.cells.keys.any(
           (cell) => !snapshot.dimensions.contains(cell),
         ) ||
+        snapshot.terrain.transitions.any(
+          (e) =>
+              !e.isInternal(snapshot.dimensions) || snapshot.walls.contains(e),
+        ) ||
         snapshot.walls.edges.values.any(
           (edge) => !edge.isInternal(snapshot.dimensions),
         )) {
@@ -128,6 +133,38 @@ final class LineOfSightService implements VisionEvaluator {
     }
 
     final source = resolve(origin), target = resolve(destination);
+    final abilities =
+        context.laboratoryAbilities ?? source?.abilities ?? <VisionAbility>{};
+    if (target?.abilities.contains(VisionAbility.other) == true) {
+      unsupported(
+        'El destino declara otra excepción sin modelar.',
+        VisionRule.powers,
+        figures: [target!.id],
+      );
+    }
+    bool ignores(VisionAbility a) => abilities.contains(a);
+    for (final a in abilities.where((a) => !a.supported)) {
+      unsupported('Capacidad sin soporte: ${a.label}.', abilityRule(a));
+    }
+    for (final f in [source, target].whereType<Character>()) {
+      if (f.size != FigureSize.normal) {
+        unsupported(
+          'El tamaño ${f.size.label} de ${f.label} requiere excepciones no implementadas.',
+          VisionRule.size,
+          figures: [f.id],
+        );
+      }
+    }
+    if (context.laboratoryAbilities != null) {
+      observations.add(
+        VisionObservation(
+          effect: VisionEffect.none,
+          contributes: false,
+          description: 'HIPÓTESIS de laboratorio: se sustituyen temporalmente las capacidades del origen; la ficha no cambia.',
+          rules: [VisionRule.limit],
+        ),
+      );
+    }
     if (source == null) {
       unsupported(
         'El origen debe estar ocupado por una figura del perfil básico.',
@@ -162,31 +199,38 @@ final class LineOfSightService implements VisionEvaluator {
       for (final pass in trace.segments) pass.cell,
       for (final crossing in trace.crossings) ...crossing.cornerOnly,
     };
-    for (final cell in relevant) {
-      if (snapshot.terrain.at(cell).elevation != 0) {
-        unsupported(
-          'Elevación sin soporte en ${cell.label}. El perfil requiere un tablero plano sin alturas modeladas.',
-          VisionRule.elevation,
-          cells: [cell],
-        );
-      }
-    }
     final involved = {
       for (final cell in relevant)
         if (occupants[cell] != null) occupants[cell]!.id,
     };
     for (final id in involved) {
-      if (identities[id]!.footprint != Footprint.single) {
+      final figure = identities[id]!;
+      if (!figure.footprint.isSupported) {
         unsupported(
-          'La base múltiple de ${identities[id]!.label} requiere evaluación de referencias aún no implementada.',
+          'La base ${figure.footprint.label} de ${figure.label} no es un formato implementado.',
           VisionRule.multiBase,
           figures: [id],
           cells: identities[id]!.occupiedCells,
         );
       }
+      if (figure.size != FigureSize.giant &&
+          figure.size != FigureSize.colossal &&
+          figure.occupiedCells
+                  .map((c) => snapshot.terrain.at(c).level)
+                  .toSet()
+                  .length >
+              1) {
+        unsupported(
+          'La base normal de ${figure.label} ocupa niveles distintos.',
+          VisionRule.baseElevation,
+          figures: [id],
+          cells: figure.occupiedCells,
+        );
+      }
     }
     if (origin.cell == destination.cell &&
-        snapshot.terrain.at(origin.cell).type == TerrainType.hindering) {
+        snapshot.terrain.at(origin.cell).type == TerrainType.hindering &&
+        !ignores(VisionAbility.hindering)) {
       unsupported(
         'Línea a sí mismo sobre obstaculizado: clasificación no implementada; no se asume despejada.',
         VisionRule.self,
@@ -199,6 +243,55 @@ final class LineOfSightService implements VisionEvaluator {
       return result(VisionStatus.notEvaluated);
     }
     final sourceFigure = source!;
+    final sourceLevel = snapshot.terrain.at(origin.cell).level;
+    final targetLevel = snapshot.terrain.at(destination.cell).level;
+    final different = sourceLevel != targetLevel;
+    final low = sourceLevel < targetLevel ? sourceLevel : targetLevel;
+    observations.add(
+      VisionObservation(
+        effect: VisionEffect.none,
+        contributes: false,
+        description:
+            'Elevaciones: origen $sourceLevel, destino $targetLevel. ${different ? 'Se evalúa entre niveles distintos; solo el H de destino obstaculiza.' : 'Se evalúa en el mismo nivel.'}',
+        rules: [VisionRule.elevation, if (different) VisionRule.rim],
+      ),
+    );
+    List<EdgeWall> activeWalls(GridCrossing event, {CellCoordinate? side}) {
+      final active = <EdgeWall>[];
+      for (final contact in event.contacts) {
+        if (!contact.hasWall ||
+            (side != null && !_borders(contact.edge, side))) {
+          continue;
+        }
+        final edge = contact.edge;
+        final first = snapshot.terrain.at(edge.firstCell).level,
+            second = snapshot.terrain.at(edge.secondCell).level;
+        final bottom = first < second ? first : second,
+            top = first > second ? first : second;
+        final applicable = different
+            ? bottom <= low && top >= low
+            : top >= sourceLevel;
+        if (applicable && !ignores(VisionAbility.blocking)) {
+          active.add(edge);
+        } else {
+          observations.add(
+            VisionObservation(
+              effect: VisionEffect.none,
+              contributes: false,
+              description:
+                  'Muro ${edge.id}: ${applicable ? 'se ignora por IT Bloqueado' : 'fuera del nivel relevante'}; ocupa niveles $bottom a $top.',
+              rules: [
+                VisionRule.wallElevation,
+                if (applicable) VisionRule.improvedBlocking,
+              ],
+              edges: [edge],
+            ),
+          );
+        }
+      }
+      return active;
+    }
+
     VisionObservation inspectCell(
       CellCoordinate cell,
       int index, {
@@ -206,25 +299,54 @@ final class LineOfSightService implements VisionEvaluator {
     }) {
       final terrain = snapshot.terrain.at(cell), figure = occupants[cell];
       final atSource = cell == origin.cell;
+      final atTarget = cell == destination.cell;
+      final level = terrain.level;
       final endpointFigure =
           figure != null &&
           (figure.id == sourceFigure.id || figure.id == target?.id);
-      final blocksFigure = figure != null && !endpointFigure;
-      final hinder = terrain.type == TerrainType.hindering && !atSource;
-      final block = terrain.type == TerrainType.blocking || blocksFigure;
+      final figureRelevant = different
+          ? figure?.size == FigureSize.giant ||
+                figure?.size == FigureSize.colossal
+          : level >= sourceLevel && figure?.size != FigureSize.tiny;
+      final rawFigure = figure != null && !endpointFigure && figureRelevant;
+      final blocksFigure = rawFigure && !ignores(VisionAbility.characters);
+      final rawHinder =
+          terrain.type == TerrainType.hindering &&
+          !atSource &&
+          (different ? atTarget : level >= sourceLevel);
+      final hinder = rawHinder && !ignores(VisionAbility.hindering);
+      final rawBlocking =
+          terrain.type == TerrainType.blocking &&
+          (different ? level == low : level >= sourceLevel);
+      final terrainBlocks = rawBlocking && !ignores(VisionAbility.blocking);
+      final rawElevation = different
+          ? !atSource && !atTarget && level > low
+          : level > sourceLevel;
+      final elevationBlocks = rawElevation && !ignores(VisionAbility.elevated);
+      final block = terrainBlocks || blocksFigure || elevationBlocks;
       final effect = block
           ? VisionEffect.blocking
           : hinder
           ? VisionEffect.hindering
           : VisionEffect.none;
       final reasons = <String>[
-        if (terrain.type == TerrainType.blocking) 'terreno bloqueado',
+        'nivel $level',
+        if (elevationBlocks) 'terreno elevado bloquea',
+        if (rawElevation && !elevationBlocks)
+          'elevación ignorada por IT Elevación',
+        if (terrainBlocks) 'terreno bloqueado',
+        if (rawBlocking && !terrainBlocks)
+          'bloqueado ignorado por IT Bloqueado',
+        if (rawHinder && !hinder) 'obstaculizado ignorado por IT Obstaculizado',
         if (hinder) 'terreno obstaculizado',
         if (terrain.type == TerrainType.hindering && atSource)
           'obstaculizado de origen excluido',
         if (blocksFigure)
           'figura ${figure.label} (${figure.teamId == sourceFigure.teamId ? 'mismo equipo' : 'otro equipo'})',
         if (endpointFigure) 'figura de extremo excluida como obstáculo',
+        if (rawFigure && !blocksFigure) 'figura ignorada por IT Personajes',
+        if (figure != null && !endpointFigure && !figureRelevant)
+          'figura fuera de la restricción de altura/tamaño de esta línea',
       ];
       return VisionObservation(
         effect: effect,
@@ -234,6 +356,11 @@ final class LineOfSightService implements VisionEvaluator {
             '${side ? 'Lado' : 'Casilla'} ${cell.label}: ${reasons.isEmpty ? 'sin restricción' : reasons.join('; ')}.',
         rules: [
           VisionRule.center,
+          VisionRule.elevation,
+          if (rawElevation && !elevationBlocks) VisionRule.improvedElevated,
+          if (rawBlocking && !terrainBlocks) VisionRule.improvedBlocking,
+          if (rawHinder && !hinder) VisionRule.improvedHindering,
+          if (rawFigure && !blocksFigure) VisionRule.improvedCharacters,
           if (terrain.type == TerrainType.hindering) VisionRule.hindering,
           if (terrain.type == TerrainType.blocking) VisionRule.blocking,
           if (figure != null) VisionRule.character,
@@ -248,15 +375,12 @@ final class LineOfSightService implements VisionEvaluator {
       if (event is CellPass) {
         observations.add(inspectCell(event.cell, index));
       } else if (event is GridCrossing && !event.isVertex) {
-        final walls = event.contacts
-            .where((contact) => contact.hasWall)
-            .map((contact) => contact.edge)
-            .toList();
+        final walls = activeWalls(event);
         observations.add(
           VisionObservation(
             effect: walls.isEmpty ? VisionEffect.none : VisionEffect.blocking,
             description: walls.isEmpty
-                ? 'Borde ${event.contacts.single.edge.id}: sin muro.'
+                ? 'Borde ${event.contacts.single.edge.id}: ${event.contacts.any((c) => c.hasWall) ? 'el muro no impide esta línea; ver exclusión registrada' : 'sin muro'}.'
                 : 'La línea cruza el muro ${walls.single.id} en ${event.point}.',
             rules: [VisionRule.wall],
             eventIndex: index,
@@ -269,12 +393,7 @@ final class LineOfSightService implements VisionEvaluator {
         final sides = <VisionObservation>[];
         for (final cell in event.cornerOnly) {
           final cellObservation = inspectCell(cell, index, side: true);
-          final walls = event.contacts
-              .where(
-                (contact) => contact.hasWall && _borders(contact.edge, cell),
-              )
-              .map((contact) => contact.edge)
-              .toList();
+          final walls = activeWalls(event, side: cell);
           final effect = walls.isNotEmpty
               ? VisionEffect.blocking
               : cellObservation.effect;

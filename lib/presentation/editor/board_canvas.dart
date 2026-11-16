@@ -15,6 +15,7 @@ import '../../domain/terrain/editing_geometry.dart';
 import 'layer_actions.dart';
 import 'sight_controls.dart';
 import 'sight_painter.dart';
+import 'elevation_controls.dart';
 
 class BoardCanvas extends StatefulWidget {
   const BoardCanvas({
@@ -214,7 +215,8 @@ class _BoardCanvasState extends State<BoardCanvas> {
         widget.controller.value.editsLayers ||
         widget.controller.value.tool == EditorTool.vision ||
         widget.controller.value.tool == EditorTool.distance ||
-        widget.controller.value.tool == EditorTool.targets) {
+        widget.controller.value.tool == EditorTool.targets ||
+        widget.controller.value.tool == EditorTool.elevation) {
       return;
     }
     final cell = _cell(details.localPosition);
@@ -432,12 +434,30 @@ class _BoardCanvasState extends State<BoardCanvas> {
                 onTapUp: (details) {
                   if (!_blockTap) {
                     final cell = _cell(details.localPosition);
+                    if (!widget.readOnly &&
+                        session.tool == EditorTool.elevation) {
+                      if (cell != null) {
+                        if (session.selectedCell != cell) {
+                          widget.controller.tap(
+                            BoardPoint(
+                              details.localPosition.dx,
+                              details.localPosition.dy,
+                            ),
+                          );
+                        }
+                        showElevationDialog(context, widget.controller);
+                      }
+                      return;
+                    }
                     if (session.tool == EditorTool.targets) {
                       final figure = cell == null
                           ? null
                           : session.characters.at(cell);
                       if (figure != null) {
-                        if (widget.controller.tactical.sourceId == null) {
+                        if (session.characters.byId(
+                              widget.controller.tactical.sourceId ?? '',
+                            ) ==
+                            null) {
                           widget.controller.setTargetSource(figure.id);
                         } else {
                           widget.controller.selectTarget(figure.id);
@@ -526,7 +546,11 @@ class _BoardCanvasState extends State<BoardCanvas> {
                               layerPreview: widget.controller.draft.value,
                             ),
                             foregroundPainter: SightPainter(
-                              widget.controller.sight.trace,
+                              widget.controller.vision.enabled &&
+                                      session.tool != EditorTool.distance &&
+                                      widget.controller.vision.result != null
+                                  ? widget.controller.vision.result!.trace
+                                  : widget.controller.sight.trace,
                               line: widget.controller.sight.showLine,
                               cells: widget.controller.sight.showCells,
                               contacts: widget.controller.sight.showContacts,

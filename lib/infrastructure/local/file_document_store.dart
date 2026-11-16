@@ -23,7 +23,8 @@ final class FileDocumentStore implements LocalDocumentStore {
   Future<File> _file(String id) async {
     if (id != 'working' &&
         !ScenarioDocument.validId(id) &&
-        !RegExp(r'^recovery-s-[a-f0-9]{32}$').hasMatch(id)) {
+        !RegExp(r'^recovery-s-[a-f0-9]{32}$').hasMatch(id) &&
+        !RegExp(r'^schema1-(working|s-[a-f0-9]{32})$').hasMatch(id)) {
       throw ArgumentError('ID de almacenamiento inválido.');
     }
     final root = await _directory(),

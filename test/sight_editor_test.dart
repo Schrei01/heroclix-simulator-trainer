@@ -91,7 +91,7 @@ void main() {
     await tester.tapAt(cellPosition(tester, controller, 'B2'));
     await tester.pumpAndSettle();
     expect(
-      find.textContaining('La evaluación completa de bases'),
+      find.textContaining('Inspección de una referencia concreta'),
       findsOneWidget,
     );
     await tester.tap(find.text('Cancelar'));

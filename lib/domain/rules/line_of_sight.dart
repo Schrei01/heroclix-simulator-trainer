@@ -1,6 +1,7 @@
 import '../board/board_dimensions.dart';
 import '../board/cell_coordinate.dart';
 import '../characters/character.dart';
+import '../characters/vision_ability.dart';
 import '../geometry/sight_geometry.dart';
 import '../terrain/edge_wall.dart';
 import '../terrain/terrain.dart';
@@ -25,6 +26,16 @@ enum VisionRule {
   occupancy('V10', '13.2', 35),
   powers('V11', '19.3', 54),
   specialMap('V12', '15.6', 38),
+  rim('E02', '16.5d', 42),
+  wallElevation('E03', '16.5e', 42),
+  baseElevation('E04', '16.5g', 42),
+  size('E05', '21.2b', 60),
+  improvedElevated('I01', '27.6a', 87),
+  improvedHindering('I02', '27.6b', 87),
+  improvedBlocking('I03', '27.6c', 87),
+  improvedCharacters('I04', '27.6e', 87),
+  destroyBlocking('I05', '27.6d', 87),
+  adjacent('I06', '27.6f', 87),
   limit('SCOPE', 'Límite de implementación', null);
 
   const VisionRule(this.id, this.section, this.page);
@@ -40,10 +51,40 @@ final class VisionContext {
   VisionContext({
     this.rulesVersion = supportedVersion,
     Iterable<VisionFeature> features = const [],
-  }) : features = Set.unmodifiable(features);
+    Iterable<VisionAbility>? laboratoryAbilities,
+  }) : features = Set.unmodifiable(features),
+       laboratoryAbilities = laboratoryAbilities == null
+           ? null
+           : Set.unmodifiable(laboratoryAbilities);
   static const supportedVersion = '2026-07-01';
   final String rulesVersion;
   final Set<VisionFeature> features;
+  final Set<VisionAbility>? laboratoryAbilities;
+  String get laboratoryKey => laboratoryAbilities == null
+      ? 'ficha'
+      : ((laboratoryAbilities!.map((a) => a.index).toList()..sort()).join(','));
+}
+
+VisionRule abilityRule(VisionAbility ability) => switch (ability) {
+  VisionAbility.elevated => VisionRule.improvedElevated,
+  VisionAbility.hindering => VisionRule.improvedHindering,
+  VisionAbility.blocking => VisionRule.improvedBlocking,
+  VisionAbility.characters => VisionRule.improvedCharacters,
+  VisionAbility.destroyBlocking => VisionRule.destroyBlocking,
+  VisionAbility.adjacent => VisionRule.adjacent,
+  VisionAbility.other => VisionRule.powers,
+};
+
+final class VisionReference {
+  const VisionReference(
+    this.origin,
+    this.destination,
+    this.status,
+    this.distance,
+  );
+  final CellCoordinate origin, destination;
+  final VisionStatus status;
+  final int? distance;
 }
 
 /// Copia de la colección e instancias inmutables; no depende de la sesión/UI.
@@ -100,12 +141,25 @@ final class VisionEvaluation {
     required this.destination,
     required Iterable<VisionObservation> observations,
     this.trace,
-  }) : observations = List.unmodifiable(observations);
+    Iterable<VisionReference> references = const [],
+  }) : observations = List.unmodifiable(observations),
+       references = List.unmodifiable(references);
   final VisionStatus status;
   final VisionContext context;
   final VisionEndpoint? origin, destination;
   final GeometricTrace? trace;
   final List<VisionObservation> observations;
+  final List<VisionReference> references;
+  VisionEvaluation withReferences(Iterable<VisionReference> values) =>
+      VisionEvaluation(
+        status: status,
+        context: context,
+        origin: origin,
+        destination: destination,
+        trace: trace,
+        observations: observations,
+        references: values,
+      );
   bool? get canSee => switch (status) {
     VisionStatus.clear || VisionStatus.hindered => true,
     VisionStatus.blocked => false,

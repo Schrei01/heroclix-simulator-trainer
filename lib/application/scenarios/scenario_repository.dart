@@ -76,6 +76,7 @@ final class ScenarioRepository {
         'La biblioteca admite como máximo 200 escenarios.',
       );
     }
+    await _backupLegacy(document.id);
     await store.write(document.id, codec.encode(document));
   }
 
@@ -93,15 +94,41 @@ final class ScenarioRepository {
     }
   }
 
-  Future<void> saveWorking(WorkingScenario working) => store.write(
-    'working',
-    jsonEncode({
-      'workspaceSchemaVersion': 1,
-      'document': codec.toMap(working.document),
-      'dirty': working.dirty,
-      'saved': working.saved,
-    }),
-  );
+  Future<void> _backupLegacy(String id) async {
+    final raw = await store.read(id);
+    if (raw == null) return;
+    Object? parsed;
+    try {
+      parsed = ScenarioCodec.parseBounded(raw, limit: 3 * 1024 * 1024);
+    } on FormatException {
+      return;
+    }
+    final document = id == 'working' && parsed is Map
+        ? parsed['document']
+        : parsed;
+    if (document is Map &&
+        document['schemaVersion'] is int &&
+        document['schemaVersion'] == 1) {
+      codec.fromMap(document);
+      if (await store.read('schema1-$id') == null) {
+        await store.write('schema1-$id', raw);
+      }
+    }
+  }
+
+  Future<void> saveWorking(WorkingScenario working) async {
+    await _backupLegacy('working');
+    await store.write(
+      'working',
+      jsonEncode({
+        'workspaceSchemaVersion': 1,
+        'document': codec.toMap(working.document),
+        'dirty': working.dirty,
+        'saved': working.saved,
+      }),
+    );
+  }
+
   Future<WorkingScenario?> readWorking() async {
     final raw = await store.read('working');
     if (raw == null) return null;

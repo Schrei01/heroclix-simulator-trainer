@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "metadata": {
+    "id": "s-646a4b3246767a87b889e4449b313ecd",
+    "name": "vision_hindered",
+    "rulesVersion": "2026-07-01",
+    "createdAt": "2026-11-16T19:46:47.982827Z",
+    "modifiedAt": "2026-11-16T19:46:47.982827Z"
+  },
+  "board": {
+    "rows": 4,
+    "columns": 4
+  },
+  "teams": [
+    {
+      "id": "team-1",
+      "code": "T1",
+      "name": "Azul",
+      "color": 4284790262,
+      "pattern": "solid"
+    },
+    {
+      "id": "team-2",
+      "code": "T2",
+      "name": "Rojo",
+      "color": 4294937216,
+      "pattern": "stripes"
+    }
+  ],
+  "characters": [
+    {
+      "id": "figure-1",
+      "label": "A",
+      "name": "Figura 1",
+      "teamId": "team-1",
+      "position": "A1",
+      "footprint": {
+        "width": 1,
+        "height": 1
+      },
+      "speed": 6,
+      "range": 4
+    },
+    {
+      "id": "figure-2",
+      "label": "B",
+      "name": "Figura 2",
+      "teamId": "team-2",
+      "position": "D1",
+      "footprint": {
+        "width": 1,
+        "height": 1
+      },
+      "speed": 6,
+      "range": 4
+    }
+  ],
+  "terrain": [
+    {
+      "cell": "B1",
+      "type": "hindering",
+      "elevation": 0
+    }
+  ],
+  "walls": [],
+  "counters": {
+    "nextCharacter": 3,
+    "nextTeam": 3
+  }
+}

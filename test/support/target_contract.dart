@@ -35,6 +35,8 @@ VisionSnapshot ranged(VisionSnapshot world, int range) => VisionSnapshot(
                 footprint: f.footprint,
                 speed: f.speed,
                 range: range,
+                abilities: f.abilities,
+                size: f.size,
               ),
             ),
   ],
@@ -151,17 +153,19 @@ Map<String, void Function()> targetCases() => {
     );
   },
   'T06 SCOPE bases elevación poderes y versión': () {
-    final base = targets(vs(sourceBase: Footprint.square2)).targets.single;
+    final base = targets(
+      vs(sourceBase: Footprint.rectangle(width: 3, height: 3)),
+    ).targets.single;
     ensure(
       base.status == TargetStatus.notEvaluated &&
           base.distance.squares == null &&
           base.range == RangeStatus.notEvaluated,
       'base no aprueba distancia',
     );
-    final height = targets(vs(elevations: {'B1': 1})).targets.single;
+    final height = targets(vs(elevations: {'B1': 2})).targets.single;
     ensure(
-      height.status == TargetStatus.notEvaluated &&
-          height.vision.canSee == null &&
+      height.status == TargetStatus.blocked &&
+          height.vision.canSee == false &&
           height.distance.squares == 3,
       'distancia de casillas conocida, visión de altura pendiente',
     );

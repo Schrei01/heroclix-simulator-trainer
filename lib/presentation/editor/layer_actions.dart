@@ -134,7 +134,9 @@ Future<void> clearLayer(
   final confirmed = await confirmLayerAction(
     context,
     '¿Limpiar solo $layer?',
-    'Se eliminará el contenido de esta capa. Las otras capas se conservarán. No hay deshacer en esta versión.',
+    layer == 'terreno'
+        ? 'Se limpian los tipos de terreno. Alturas, transiciones, figuras y muros se conservan. Puedes recuperar los tipos con Deshacer.'
+        : 'Se elimina el contenido de esta capa y se conservan las otras. Puedes recuperarlo con Deshacer.',
     'Limpiar',
     'confirm-clear-layer',
   );
