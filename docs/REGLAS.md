@@ -88,3 +88,14 @@ WizKids es de 2023; solo se usan las definiciones que coinciden con el texto 202
 La matriz MATRIZ_CAPACIDADES_VISION.md distingue soporte y fronteras pendientes,
 orden de composición, pares de referencias y expectativas sintéticas derivadas
 del texto. No son diagramas oficiales copiados ni se interpreta texto de cartas.
+
+## Validación para 09 — 2026-11-16
+
+La página oficial continúa enlazando Comprehensive Rulebook 2026-07-01. Se revisan
+§10 (pp. 24–25), ocupación §13.2 (p. 35), movimiento por terreno y muros
+§16.2a/16.3a/16.4a (pp. 39–40), altura y transición §16.5a/16.7b (pp. 41/43),
+esquinas/adyacencia §16.8a/c (p. 44), bases §24.2b/d (pp. 69–70) y mejoras
+§27.5a/b/e/f (p. 86). Se usa la regla actual de H sin costo adicional. La separación
+con dado, IM exterior/destrucción, tamaños y otros efectos no resueltos no se dan
+por aprobados. MATRIZ_MOVIMIENTO.md vincula M01–M27 y casos sintéticos derivados
+con estos apartados; no los presenta como diagramas oficiales publicados.

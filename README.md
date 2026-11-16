@@ -1,13 +1,13 @@
 # HeroClix Simulator & Trainer
 
-Aplicación Android Flutter/Dart, offline y en español. Versión **0.9.0+10**.
-La entrega 08 está en la rama `codex/prompt-08` del repositorio privado
+Aplicación Android Flutter/Dart, offline y en español. Versión **0.10.0+11**.
+La entrega 09 está en la rama `codex/prompt-09` del repositorio privado
 [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer).
 
 ```powershell
 git clone https://github.com/Schrei01/heroclix-simulator-trainer.git
 cd heroclix-simulator-trainer
-git switch codex/prompt-08
+git switch codex/prompt-09
 ```
 
 ## Qué existe
@@ -28,8 +28,36 @@ de 100 operaciones, JSON versionado y PNG del tablero. La etapa 05 añade geomet
 exacta. La etapa 06 incorpora visión reglamentaria básica en Editor, Simulador y
 Árbitro, compartiendo escenario y motor. La etapa 07 añade distancias, comparación
 con alcance declarado y consulta de objetivos. La etapa 08 incorpora alturas,
-transiciones y cuatro mejoras de visión tipadas. Entrenador, ataques completos y
-rutas de movimiento siguen pendientes.
+transiciones y cuatro mejoras de visión tipadas. La etapa 09 añade rutas de
+movimiento verificadas, alternativas y comparación de posiciones. Entrenador y
+ataques completos siguen pendientes.
+
+## Ensayar movimiento
+
+1. En **Simulador → Elegir análisis → Movimiento reglamentario**, elige la figura
+   desde el informe o toca su casilla. También está disponible en Editor.
+2. Cierra el informe con **Volver al tablero** y toca casillas vecinas sucesivas.
+   No se rellenan saltos. El camino numera pasos y superpone origen/destino de
+   ensayo; la figura sigue en su posición inicial.
+3. El informe muestra ruta válida, inválida o no evaluada, costo, presupuesto de
+   velocidad declarada, motivo y regla de cada paso. H no añade costo; cruzar
+   altura puede permitir entrar pero obligar a terminar. La separación con dado
+   permanece No evaluada.
+4. Introduce un destino y pulsa **Buscar alternativas verificadas**. Se ofrecen
+   hasta tres rutas dentro del presupuesto, con costo y recorrido. Seleccionar
+   una solo cambia el ensayo. **Visión y alcance antes / después** compara ambos
+   snapshots usando los motores existentes.
+5. **Confirmar movimiento** aplica únicamente una ruta válida y crea una operación
+   de Deshacer/Rehacer. **Cancelar ensayo** o **Volver al inicio** permiten ensayar
+   sin modificar la posición. Cerrar el informe conserva el ensayo en el tablero.
+6. En la ficha, **Improved Movement** permite declarar Elevación, Bloqueado/muros,
+   Personajes o Atravesar personajes. Actúan de forma independiente. Personajes
+   concede separación automática; Atravesar sigue requiriendo separación.
+
+Las bases usan traslación sin giro y ancla fija, comprobando toda la huella. Otras
+maniobras, tamaños especiales y poderes sin soporte quedan No evaluados; consulta
+[SOPORTADAS / NO SOPORTADAS de movimiento](docs/MATRIZ_MOVIMIENTO.md). El arrastre
+libre del Editor sirve para montar escenarios y no valida una ruta reglamentaria.
 
 ## Alturas, bases y capacidades
 
@@ -52,7 +80,7 @@ rutas de movimiento siguen pendientes.
    registro por eventos. Otras capacidades/tamaños o formas sin soporte quedan
    pendientes. Revisa [SOPORTADAS / NO SOPORTADAS](docs/MATRIZ_CAPACIDADES_VISION.md).
 
-La exportación JSON usa esquema 2 y abre también archivos de esquema 1. Antes de
+La exportación JSON usa esquema 3 y abre también archivos de esquema 1/2. Antes de
 reemplazar un documento antiguo se guarda una copia exacta privada; abrirlo no
 lo sobrescribe. Los campos y capas anteriores se conservan.
 
@@ -147,7 +175,7 @@ en el PNG del escenario. Detalles matemáticos en [GEOMETRIA](docs/GEOMETRIA.md)
 - **Deshacer/Rehacer** está en la barra de herramientas desplazable. Incluye
   figuras, equipos, terreno, muros, limpiezas y dimensiones. Abrir, importar, nuevo
   o guardar como reinicia el historial. Cámara, selección y herramientas no entran.
-- JSON legible de esquema 2, con lectura de 1, máximo 2 MiB; importar valida todo antes de sustituir
+- JSON legible de esquema 3, con lectura de 1/2, máximo 2 MiB; importar valida todo antes de sustituir
   el tablero y crea un ID nuevo. Una versión desconocida falla sin modificarlo.
 - PNG usa el tablero completo, sin controles, con coordenadas/leyenda opcionales.
   Máximo 2048 px por eje por defecto o 4096 px con la opción de alta resolución.
@@ -212,7 +240,9 @@ dart run tool/verify_geometry.dart
 dart run tool/verify_vision.dart
 dart run tool/verify_targets.dart
 dart run tool/verify_advanced_vision.dart
+dart run tool/verify_movement.dart
 dart run tool/benchmark_targets.dart --mixed
+dart run tool/benchmark_movement.dart
 dart format --output=none --set-exit-if-changed lib test tool
 flutter --no-version-check analyze
 flutter --no-version-check test
@@ -222,7 +252,7 @@ flutter --no-version-check build apk --debug
 
 `--no-version-check` evita una consulta de actualización del SDK; no cambia su
 versión ni omite análisis o pruebas. Los renders se escriben en
-`build/previews/prompt-08/`; son capturas Flutter, no de un dispositivo.
+`build/previews/prompt-09/`; son capturas Flutter, no de un dispositivo.
 
 Preparación Android y firma release en [ANDROID.md](docs/ANDROID.md).
 El APK debug y sus resultados/hash se registran en [ESTADO.md](docs/ESTADO.md).
@@ -232,9 +262,10 @@ No se incluyen binarios, credenciales ni claves en Git.
 
 - `lib/domain/board`: dimensiones, coordenadas y cámara en Dart puro.
 - `lib/domain/characters`: figuras, equipos, huellas y ocupación.
-- `lib/domain/terrain`: terreno, elevación preparada, muros normalizados y hit tests.
+- `lib/domain/terrain`: terreno, elevación, transiciones, muros y hit tests.
 - `lib/domain/geometry`: fracciones exactas, segmentos y eventos de intersección.
 - `lib/domain/rules`: perfil versionado de visión, observaciones y referencias.
+- `lib/domain/movement`: validación de pasos, rutas, paradas y búsqueda verificada.
 - `lib/application/board`: sesión inmutable, comandos reversibles e historial acotado.
 - `lib/application/scenarios`: documento, codec y repositorio de escenarios.
 - `lib/infrastructure/local`: archivos privados y puente nativo Android.
@@ -243,7 +274,7 @@ No se incluyen binarios, credenciales ni claves en Git.
 - `lib/presentation/vision`: informe y vistas de Simulador/Árbitro.
 - `test`: contratos de dominio, gestos, confirmaciones, accesibilidad y regresiones.
 
-`ScenarioCodec` define el documento completo con `schemaVersion: 1` y utiliza
+`ScenarioCodec` define el documento completo con `schemaVersion: 3` y utiliza
 `LayerCodec` para validar las capas. El formato externo se documenta con sus
 límites; cámara, controles y borradores no forman parte del archivo.
 
@@ -258,6 +289,6 @@ de herramientas y compilación durante el desarrollo sí puede necesitar interne
 Informes anteriores: [00](docs/ENTREGA_00.md), [01](docs/ENTREGA_01.md),
 [02](docs/ENTREGA_02.md), [03](docs/ENTREGA_03.md), [04](docs/ENTREGA_04.md),
 [05](docs/ENTREGA_05.md), [06 inicial](docs/ENTREGA_06.md),
-[06 corregida](docs/ENTREGA_06_FIX.md), [07](docs/ENTREGA_07.md).
+[06 corregida](docs/ENTREGA_06_FIX.md), [07](docs/ENTREGA_07.md), [08](docs/ENTREGA_08.md).
 
-**No se inició Prompt 09.** Requiere una nueva orden tras revisar esta entrega.
+**No se inició Prompt 10.** Requiere una nueva orden tras revisar esta entrega.

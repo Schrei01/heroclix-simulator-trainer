@@ -1,6 +1,6 @@
-# Escenarios e intercambio — esquema 2 (lectura de 1/2)
+# Escenarios e intercambio — esquema 3 (lectura de 1/2/3)
 
-Introducido en 04 y ampliado en 08, app 0.9.0+10. Formato UTF-8 JSON legible, máximo
+Introducido en 04 y ampliado en 08–09, app 0.10.0+11. Formato UTF-8 JSON legible, máximo
 2 MiB, profundidad máxima 16 y 20.000 contenedores antes de decodificar.
 Se rechazan campos desconocidos/incompletos, tipos incorrectos, coordenadas fuera
 del tablero, identidades duplicadas, figuras solapadas y versiones desconocidas.
@@ -10,11 +10,11 @@ No se modifica el tablero hasta validar y escribir su recuperación completa.
 
 | Campo | Contenido |
 | --- | --- |
-| `schemaVersion` | Entero 2 al exportar; se importa también 1 mediante migración compatible |
+| `schemaVersion` | Entero 3 al exportar; importa también 1/2 mediante migración compatible |
 | `metadata` | `id`, `name`, `rulesVersion`, `createdAt`, `modifiedAt` |
 | `board` | `rows`, `columns`: enteros independientes 2–40 |
 | `teams` | Lista de `id`, `code`, `name`, `color`, `pattern` |
-| `characters` | Lista de `id`, `label`, `name`, `teamId`, `position`, `footprint`, `speed`, `range`, `visionAbilities`, `size` |
+| `characters` | Lista de `id`, `label`, `name`, `teamId`, `position`, `footprint`, `speed`, `range`, `visionAbilities`, `size`, `movementAbilities` |
 | `terrain` | Lista de `cell`, `type`, `elevation`; 0 histórico es alias del suelo 1 |
 | `walls` | Lista de `id`, `axis`, `column`, `row`; solo bordes internos unitarios |
 | `transitions` | Lista de `axis`, `column`, `row`, con vecinos internos de altura distinta y sin muro compartido |
@@ -44,15 +44,23 @@ Muros: eje `horizontal`/`vertical`, ID canónico `h:columna:fila` o `v:columna:f
 El orden exportado es determinista; la cámara, selección, herramientas, previas
 y el historial no pertenecen al documento. Tampoco se serializa el laboratorio.
 
-## Migración 1 a 2
+## Migración 1/2 a 3
 
-Abrir un esquema 1 no modifica su archivo. Se conservan sus campos/capas y se
-añaden capacidades vacías, tamaño Normal y transiciones vacías. Antes de su primer
-reemplazo se escribe una copia exacta `schema1-ID.json` o `schema1-working.json`,
+Abrir un esquema 1/2 no modifica su archivo. Se conservan sus campos/capas;
+1 recibe capacidades de visión vacías, tamaño Normal y transiciones vacías.
+1/2 reciben `movementAbilities` vacías. Antes de su primer reemplazo se escribe
+una copia exacta `schema1-ID.json` o `schema2-ID.json` (también `working`),
 fuera del índice de biblioteca. Un fallo del respaldo impide sobrescribir el
 antiguo. Esas copias usan IDs validados en el mismo directorio privado; no son
 rutas proporcionadas por el usuario. Pruebas con un JSON real de 07 y con el
-adaptador de archivos en disco: `test/scenario_migration_test.dart`.
+adaptador de archivos en disco: `test/scenario_migration_test.dart` y
+`test/movement_migration_test.dart`. Las capas mantienen `layerSchemaVersion: 2`.
+Ruta, alternativas, snapshot de comparación y ensayo de movimiento no se serializan.
+
+`movementAbilities` es una lista sin duplicados: `elevated`, `blocking`,
+`characters`, `moveThrough`, `outdoorBlocking`, `destroyBlocking`, `other`.
+Las tres últimas se conservan como datos sin soporte reglamentario completo.
+Edición de alcance, duplicado y movimiento conservan todas las capacidades.
 
 ## Biblioteca y recuperación
 

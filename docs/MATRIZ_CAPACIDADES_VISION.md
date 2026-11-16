@@ -1,5 +1,8 @@
 # Cobertura de visión — etapa 08
 
+El movimiento y el esquema de documento 3 añadidos en 09 se documentan en
+[MATRIZ_MOVIMIENTO.md](MATRIZ_MOVIMIENTO.md). Este perfil de visión se conserva.
+
 Fuentes oficiales consultadas el **2026-11-16**:
 [WizKids](https://wizkids.com/heroclix/gameplay/rules-format/),
 [Comprehensive Rulebook 2026-07-01](https://wizkids.com/wp-content/uploads/2026/07/HeroClix%20Comprehensive%20Rules%2007.01.26.pdf)

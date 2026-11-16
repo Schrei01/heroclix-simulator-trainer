@@ -338,3 +338,34 @@ verificado ni implementado ninguna regla del juego.
   visual corrigió el pie para mostrar el par real y separó los números de transición.
 - Se conserva el modo offline y la configuración Android, sin dependencias nuevas.
   Versión 0.9.0+10. No se inicia 09.
+
+## 2026-11-16 — Prompt 09
+
+- Se conserva la edición oficial 2026-07-01: §10.2/10.5/10.7/10.8, §13.2,
+  §16.2a/16.3a/16.4a/16.5a/16.7b/16.8a/c, §24.2d y §27.5a/b/e/f.
+  H no tiene costo adicional; cruzar altura obliga a terminar salvo excepción.
+- MovementRulesService separa paso, traslación y ruta; RoutePlanner usa BFS de
+  costo unitario. Reutiliza aristas/adyacencia por consulta y valida completa cada
+  alternativa ofrecida. Hasta tres por distinto primer paso, ordenadas por costo.
+  Ausencia de resultado no demuestra imposibilidad bajo poderes fuera del perfil.
+- IM Elevación, Bloqueado, Personajes y Atravesar son independientes. Solo
+  Personajes concede separación automática. La separación con dado queda
+  No evaluada: no se inventa una tirada ni un éxito. No se añade permiso de acción.
+- Bases: referencia fija en ancla superior izquierda, traslación sin giro y toda
+  la huella comprobada. §24.2d admite maniobras más amplias; una restricción en
+  otra parte que requiera otra referencia/giro queda No evaluada, no ilegalidad
+  general. Destino sobre B/figura/muro, fuera o mixto normal sí es inválido.
+- Perfil conservador con figuras Normal. Tamaños especiales, vuelo, destrucción,
+  clasificación exterior y efectos arbitrarios conservan No evaluado. Mejoras de
+  visión no conceden movimiento ni viceversa. Capacidades persistentes en ficha.
+- Ensayo en memoria y snapshot inicial inmutable; comparaciones recalculan visión
+  y alcance de la ficha en un snapshot futuro. Cancelar/reset no mueven; confirmar
+  revalida el contenido actual y aplica un único comando reversible. Carga,
+  edición o salida de herramienta limpian ensayo; cámara no escribe ni lo borra.
+- Editor mantiene arrastre libre para montar escenas. Simulador ofrece Movimiento
+  reglamentario; tocar allí construye ruta y no reposiciona libremente.
+- Esquema 3, lectura 1/2/3, IM vacías al migrar. Copia exacta previa de esquema 1/2
+  y working, fuera del índice. Fallo de respaldo protege original. Capas siguen 2.
+- UI desplazable a texto ampliado, sin silenciar hit tests. Se acotó el encabezado
+  del registro para poder abrirlo al 300 % en 320×320. No se crean dependencias,
+  permisos ni solicitudes de red en runtime. Versión 0.10.0+11. No se inicia 10.

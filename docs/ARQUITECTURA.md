@@ -46,8 +46,8 @@ siempre es CellCoordinate, nunca un Offset o píxel de pantalla.
 
 `LocalDocumentStore` define leer/escribir/eliminar/listar. FileDocumentStore
 implementa archivos privados con límites y reemplazo mediante temporal/rename.
-ScenarioRepository separa biblioteca de recuperación; ScenarioCodec valida el
-documentos 1/2 y exporta esquema 2. WorkspaceController serializa I/O y revisiones,
+ScenarioRepository separa biblioteca de recuperación; ScenarioCodec valida
+documentos 1/2/3 y exporta esquema 3. WorkspaceController serializa I/O y revisiones,
 conserva la sesión ante fallos y publica una nueva solo después de protegerla.
 LayerCodec sigue validando terreno/bordes como parte del documento completo.
 
@@ -225,3 +225,31 @@ archivo. ScenarioRepository conserva bytes anteriores antes de reemplazar un
 esquema 1; FileDocumentStore acepta solo IDs de respaldo validados y los excluye
 de biblioteca. No se cambia el directorio privado existente. Modo árbitro usa el
 informe compartido con pares, reglas, eventos y modificaciones.
+
+## Movimiento en 09
+
+MovementRulesService implementa paso, traslación de base y validación de ruta en
+Dart puro. La ruta contiene coordenadas lógicas, origen incluido; eventos registran
+paso, casilla, regla y motivo. Distingue paso permitido, parada obligatoria,
+invalidez y condición sin soporte. La velocidad declarada es el presupuesto.
+
+RoutePlanner realiza búsquedas BFS por primer paso, con costo 1 y memoización de
+aristas/adyacencia dentro de la consulta. No expande estados que deben terminar.
+Los destinos ilegales pueden ser prefijos transitables con la mejora correcta.
+Cada alternativa se valida otra vez como ruta completa antes de ofrecerse.
+
+MovementAnalysis conserva snapshot original, ruta, resultado, alternativas y
+comparaciones antes/después. Usa TargetAnalysisService/LineOfSightService de
+06–08 sobre un mundo futuro separado; no escribe. EditorController invalida por
+cambio de contenido y revalida al confirmar; aplica moveCharacter mediante el
+historial existente. Cancelar/reset no hacen operaciones de contenido.
+
+MovementToolbar/MovementDialog muestran estado, presupuesto, motivos, capacidades
+y comparación. BoardCanvas añade casillas al ensayo incluso en Simulador de
+lectura; MovementPainter solo proyecta ruta numerada y las huellas original/final.
+El arrastre libre del Editor es independiente de la validez reglamentaria.
+
+ScenarioCodec exporta documento 3 y lee 1/2/3. Añade movementAbilities, preservadas
+al mover, duplicar y editar alcance. ScenarioRepository respalda exactamente 1/2
+antes del primer reemplazo; FileDocumentStore admite IDs schema1/schema2 validados.
+LayerCodec mantiene esquema 2. No hay persistencia de rutas ni posiciones de ensayo.

@@ -167,3 +167,26 @@ Visión automática puede ver B4, pero Objetivos no debe aprobar: la referencia 
 está bloqueada y B4 queda a distancia 3. Subir alcance a 3 permite el par B4.
 El Árbitro muestra pares y registro. Este procedimiento debe contrastarse con los
 resultados efectivamente ejecutados en ESTADO.md; no equivale a una prueba física.
+
+## Movimiento en dispositivo (09)
+
+Instalar `build/releases/heroclix-prompt-09-debug.apk` (0.10.0+11) sobre la anterior.
+El certificado se conserva; consultar ESTADO.md para distinguir procedimientos de
+verificaciones efectivamente realizadas. No desinstalar si se quieren conservar datos.
+
+Montar una figura normal A1, velocidad 4, muros A1/B1 y A2/B2. Simulador → Elegir
+análisis → Movimiento reglamentario: elegir figura, Volver al tablero y tocar
+A2, A3, B3, C2, C1 requiere cinco pasos y excede velocidad. Buscar destino C1
+encuentra alternativa de cuatro pasos; su costo supera la distancia directa 2.
+Seleccionarla deja la figura en A1; solo Confirmar la desplaza. Deshacer desde el
+Editor restaura A1. Cancelar ensayo debe conservar A1 e historial.
+
+Con enemigo D2, ruta A1/B1/C1 puede terminar en C1, pero continuar a D1 es inválido
+por entrar en adyacencia. Si se comienza ya adyacente a un enemigo, sin IM Personajes
+queda No evaluada por separación pendiente. IM Atravesar no concede separación.
+En la ficha, declarar las cuatro mejoras por separado y comprobar sus límites.
+
+Aplicar altura 2 a B1/C1: A1/B1 puede terminar; A1/B1/C1 no puede continuar salvo
+transición A1/B1 o IM Elevación. H en B1 no cambia el costo. En el informe abrir
+Pasos y reglas y Visión/alcance antes/después. Girar y ampliar texto al 300 %;
+comprobar acceso a botones desplazando el informe. Las rutas no se guardan en JSON.
