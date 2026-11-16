@@ -107,7 +107,7 @@ procedimiento y resultados efectivos de cada entrega están en ESTADO.md.
 
 ## Dictámenes de visión en el dispositivo (06)
 
-Instalar `build/releases/heroclix-prompt-06-debug.apk` (0.7.0+7). En Editor crear
+Instalar `build/releases/heroclix-prompt-06-fix-debug.apk` (0.7.1+8). En Editor crear
 figuras normales en A1 y D1, seleccionar sus extremos y abrir Dictamen de visión.
 Comprobar despejada; H en B1 debe producir obstaculizada, y B o muro atravesado,
 bloqueada. Desde Inicio abrir Árbitro y comprobar el mismo escenario con navegación
@@ -120,3 +120,10 @@ con secciones oficiales están en [MATRIZ_REGLAS_VISION](MATRIZ_REGLAS_VISION.md
 El recorrido realmente ejecutado, sus capturas y las interrupciones de System UI
 del emulador están registrados en [ESTADO](ESTADO.md); no equivalen a prueba en
 teléfono físico ni a una instalación release.
+
+Regresión 0.7.1: tablero de al menos 4 columnas por 6 filas; figuras normales en
+A1 y D6, bloqueado solo en B4, sin efectos especiales. Debe mostrar DESPEJADA;
+el registro compara B4 y C3. Añadir bloqueado en C3 debe producir BLOQUEADA y
+cambiarlo a obstaculizado, OBSTACULIZADA. Conservar B4 y poner bloqueado en B3
+también bloquea, porque B3 sí se atraviesa. Esta revisión no cambia el formato
+de escenarios ni requiere borrar datos de la app.

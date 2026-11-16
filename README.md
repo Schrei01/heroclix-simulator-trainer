@@ -1,6 +1,6 @@
 # HeroClix Simulator & Trainer
 
-Aplicación Android Flutter/Dart, offline y en español. Versión **0.7.0+7**.
+Aplicación Android Flutter/Dart, offline y en español. Versión **0.7.1+8**.
 La entrega 06 está en la rama `codex/prompt-06` del repositorio privado
 [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer).
 
@@ -52,6 +52,10 @@ Los nombres de las figuras no se interpretan como fichas oficiales ni poderes.
 Este apoyo no sustituye una decisión oficial de torneo.
 
 Fuentes, límites y casos esperados: [MATRIZ_REGLAS_VISION](docs/MATRIZ_REGLAS_VISION.md).
+
+La revisión 0.7.1 corrige los cruces exactos por vértices de líneas oblicuas:
+A1–D6 con B4 bloqueado y C3 libre da **despejada**. Se aplica el lado menos
+restrictivo de §16.8b también cuando la pendiente no es de 45°.
 
 ## Inspeccionar una trayectoria
 
@@ -195,6 +199,6 @@ de herramientas y compilación durante el desarrollo sí puede necesitar interne
 [REGLAS](docs/REGLAS.md) y [ANDROID](docs/ANDROID.md).
 Informes anteriores: [00](docs/ENTREGA_00.md), [01](docs/ENTREGA_01.md),
 [02](docs/ENTREGA_02.md), [03](docs/ENTREGA_03.md), [04](docs/ENTREGA_04.md),
-[05](docs/ENTREGA_05.md).
+[05](docs/ENTREGA_05.md), [06 inicial](docs/ENTREGA_06.md).
 
 **No se inició Prompt 07.** Requiere una nueva orden tras revisar esta entrega.

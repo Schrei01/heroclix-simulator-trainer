@@ -267,3 +267,18 @@ verificado ni implementado ninguna regla del juego.
   sin modificaciones. La declaración de efectos se reinicia al cargar documento.
 - Se corrigió competencia entre viewports de rutas cubiertas y activas. No se
   omiten avisos de hit test: controles probados a 300 % y en vistas pequeñas.
+
+### Corrección 0.7.1+8 — vértices oblicuos
+
+- Reporte del usuario: A1–D6, terreno bloqueado en B4, sin otras restricciones.
+  El rechazo por pendiente distinta de 45° daba No evaluada aunque C3 estaba libre.
+- Se reprodujo con R23 fallando antes de cambiar el servicio. Se elimina ese
+  rechazo y se aplica §16.8b a cualquier paso exacto por una intersección.
+  Su procedimiento no exige pendiente global de 45°; el párrafo introductorio
+  16.8 no se usa para restringirlo. Se mantiene la edición 2026-07-01.
+- El mismo segmento centro a centro y sus eventos exactos permanecen intactos;
+  no se busca una ruta alternativa ni se ignoran obstáculos interiores.
+- R17 se actualiza y R23–R25 comprueban el reporte, inversión de extremos,
+  nueve pares de terrenos, 16 combinaciones de muros, figuras laterales y
+  bloqueos interiores. Los límites de elevación/poderes/bases se mantienen.
+- Versión Android 0.7.1, código 8, sin migración ni dependencias nuevas.

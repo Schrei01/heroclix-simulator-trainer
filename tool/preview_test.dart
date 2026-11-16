@@ -63,6 +63,11 @@ void main() {
     ('vision_report', const Size(400, 900), BoardDimensions.initial),
     ('vision_record', const Size(400, 900), BoardDimensions.initial),
     ('vision_referee', const Size(400, 900), BoardDimensions.initial),
+    (
+      'vision_a1_d6',
+      const Size(400, 900),
+      BoardDimensions(rows: 6, columns: 4),
+    ),
     ('geometria_vertical', const Size(400, 900), BoardDimensions.initial),
     ('geometria_horizontal', const Size(1000, 600), BoardDimensions.initial),
     ('geometria_inspector', const Size(400, 900), BoardDimensions.initial),
@@ -357,7 +362,9 @@ void main() {
           }
         }
         if (name.startsWith('vision_')) {
-          final world = name == 'vision_corner'
+          final world = name == 'vision_a1_d6'
+              ? vs(target: 'D6', rows: 6, terrain: {'B4': TerrainType.blocking})
+              : name == 'vision_corner'
               ? vs(
                   target: 'B2',
                   terrain: {

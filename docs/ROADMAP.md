@@ -11,7 +11,7 @@ y una nueva orden antes de iniciar la siguiente. Estado al 2026-11-16.
 | 03 | Terreno, muros y capas de edición | Validada; continuación a 04 autorizada por el usuario |
 | 04 | Persistencia local, JSON/PNG y deshacer/rehacer | Validada; continuación a 05 autorizada por el usuario |
 | 05 | Geometría exacta de segmentos e intersecciones | Validada; continuación a 06 autorizada por el usuario |
-| 06 | Visión reglamentaria explicable y árbitro básico | Implementada; perfil acotado, 205 tests y 30 renders; verificación en ESTADO.md |
+| 06 | Visión reglamentaria explicable y árbitro básico | Implementada; 0.7.1 corrige vértices oblicuos, 208 tests; verificación en ESTADO.md |
 | 07 | Distancias, alcance y análisis de objetivos | Pendiente |
 | 08 | Elevaciones, bases múltiples y capacidades verificadas | Pendiente |
 | 09 | Validación y búsqueda de rutas de movimiento | Pendiente |

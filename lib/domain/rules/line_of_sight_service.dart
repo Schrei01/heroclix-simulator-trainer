@@ -185,14 +185,6 @@ final class LineOfSightService implements VisionEvaluator {
         );
       }
     }
-    final dx = (destination.cell.column - origin.cell.column).abs(),
-        dy = (destination.cell.row - origin.cell.row).abs();
-    if (dx != dy && trace.crossings.any((crossing) => crossing.isVertex)) {
-      unsupported(
-        'Paso por vértice con pendiente distinta de la diagonal perfecta: caso no resuelto por este perfil.',
-        VisionRule.limit,
-      );
-    }
     if (origin.cell == destination.cell &&
         snapshot.terrain.at(origin.cell).type == TerrainType.hindering) {
       unsupported(
@@ -272,6 +264,8 @@ final class LineOfSightService implements VisionEvaluator {
           ),
         );
       } else if (event is GridCrossing) {
+        // §16.8b se aplica al paso exacto por una intersección. La pendiente
+        // global no cambia las dos casillas laterales ni sus muros incidentes.
         final sides = <VisionObservation>[];
         for (final cell in event.cornerOnly) {
           final cellObservation = inspectCell(cell, index, side: true);

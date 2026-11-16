@@ -355,10 +355,10 @@ Map<String, void Function()> visionCases() => {
       status(ve(vs(extras: [extra])), VisionStatus.notEvaluated);
     }
   },
-  'R17 cobertura §16.8 vértices no diagonales perfectos': () {
+  'R17 §16.8b vértices con pendiente distinta de 45 grados': () {
     status(
       ve(vs(target: 'D10', rows: 10, columns: 4), target: 'D10'),
-      VisionStatus.notEvaluated,
+      VisionStatus.clear,
     );
     status(
       ve(vs(target: 'E3', rows: 3, columns: 6), target: 'E3'),
@@ -420,6 +420,129 @@ Map<String, void Function()> visionCases() => {
           'evento existente',
         );
       }
+    }
+  },
+  'R23 §16.8b regresión A1–D6 con B4 bloqueado': () {
+    final world = vs(
+      target: 'D6',
+      rows: 6,
+      terrain: {'B4': TerrainType.blocking},
+    );
+    for (final (origin, target) in [('A1', 'D6'), ('D6', 'A1')]) {
+      final r = ve(world, origin: origin, target: target);
+      status(r, VisionStatus.clear);
+      ensure(r.canSee == true, 'el contacto aislado con B4 no bloquea');
+      final vertex = r.trace!.crossings.singleWhere((c) => c.isVertex);
+      ensure(
+        vertex.cornerOnly.toSet().containsAll([vc('B4'), vc('C3')]),
+        'B4 y C3 son laterales; no se atraviesa su interior',
+      );
+      ensure(
+        !r.trace!.segments.any((s) => s.cell == vc('B4')),
+        'B4 solo toca el vértice',
+      );
+      hasRule(r, VisionRule.corner);
+      ensure(
+        r.observations.any(
+          (o) =>
+              o.contributes &&
+              o.rules.contains(VisionRule.corner) &&
+              o.effect == VisionEffect.none &&
+              o.cells.contains(vc('C3')),
+        ),
+        'el registro identifica el lado C3 sin restricción',
+      );
+    }
+  },
+  'R24 §16.8b A1–D6 nueve pares laterales y otras restricciones': () {
+    const c = TerrainType.clear,
+        h = TerrainType.hindering,
+        b = TerrainType.blocking;
+    for (final (one, two, expected) in [
+      (c, c, VisionStatus.clear),
+      (c, h, VisionStatus.clear),
+      (c, b, VisionStatus.clear),
+      (h, c, VisionStatus.clear),
+      (h, h, VisionStatus.hindered),
+      (h, b, VisionStatus.hindered),
+      (b, c, VisionStatus.clear),
+      (b, h, VisionStatus.hindered),
+      (b, b, VisionStatus.blocked),
+    ]) {
+      final world = vs(target: 'D6', rows: 6, terrain: {'B4': one, 'C3': two});
+      for (final (origin, target) in [('A1', 'D6'), ('D6', 'A1')]) {
+        status(ve(world, origin: origin, target: target), expected);
+      }
+    }
+    // El lado libre del vértice no evita bloqueos realmente atravesados.
+    for (final cell in ['B3', 'C4']) {
+      status(
+        ve(
+          vs(target: 'D6', rows: 6, terrain: {'B4': b, cell: b}),
+          target: 'D6',
+        ),
+        VisionStatus.blocked,
+      );
+    }
+    status(
+      ve(
+        vs(target: 'D6', rows: 6, extras: [vf(3, 'B4')]),
+        target: 'D6',
+      ),
+      VisionStatus.clear,
+    );
+    status(
+      ve(
+        vs(target: 'D6', rows: 6, extras: [vf(3, 'B4'), vf(4, 'C3')]),
+        target: 'D6',
+      ),
+      VisionStatus.blocked,
+    );
+    status(
+      ve(
+        vs(target: 'D6', rows: 6, terrain: {'B4': b}, elevations: {'C3': 1}),
+        target: 'D6',
+      ),
+      VisionStatus.notEvaluated,
+    );
+  },
+  'R25 §16.8b A1–D6 dieciséis pares de muros incidentes': () {
+    // Primero los dos bordes de B4; después los dos de C3.
+    final edges = [
+      EdgeWall.between(vc('B3'), vc('B4')),
+      EdgeWall.between(vc('B4'), vc('C4')),
+      EdgeWall.between(vc('B3'), vc('C3')),
+      EdgeWall.between(vc('C3'), vc('C4')),
+    ];
+    const expected = [
+      VisionStatus.clear,
+      VisionStatus.clear,
+      VisionStatus.clear,
+      VisionStatus.clear,
+      VisionStatus.clear,
+      VisionStatus.blocked,
+      VisionStatus.blocked,
+      VisionStatus.blocked,
+      VisionStatus.clear,
+      VisionStatus.blocked,
+      VisionStatus.blocked,
+      VisionStatus.blocked,
+      VisionStatus.clear,
+      VisionStatus.blocked,
+      VisionStatus.blocked,
+      VisionStatus.blocked,
+    ];
+    for (var mask = 0; mask < 16; mask++) {
+      final world = vs(
+        target: 'D6',
+        rows: 6,
+        walls: [
+          for (var i = 0; i < 4; i++)
+            if (mask & (1 << i) != 0) edges[i],
+        ],
+      );
+      status(ve(world, target: 'D6'), expected[mask]);
+      status(ve(world, origin: 'D6', target: 'A1'), expected[mask]);
     }
   },
 };

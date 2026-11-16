@@ -57,3 +57,13 @@ cobertura e interpretaciones pendientes regresan No evaluado. Ese estado es una
 política de implementación, no un dictamen oficial de bloqueo. No se evalúa ataque
 completo ni alcance. Fuente y SHA-256 del PDF de consulta figuran en la matriz;
 no se distribuye el reglamento con la app ni con el repositorio.
+
+### Revisión de vértices oblicuos — 2026-11-16
+
+Se vuelve a consultar el enlace oficial y §16.8b, página impresa 44, ante el
+reporte A1–D6/B4. Se retira la limitación de 45° del perfil inicial: el texto
+operativo de esa sección prescribe comparar los dos lados de la intersección
+sin condicionar el procedimiento a la pendiente global. Con B4 bloqueado y
+C3 libre, el contacto puntual en (2,3) no bloquea. No se cambian la edición
+ni las reglas de obstáculos que la línea atraviesa por el interior.
+La matriz registra R23–R25 y corrige la expectativa anterior de R17.

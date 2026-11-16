@@ -1,7 +1,7 @@
 # Matriz de reglas de visión — Prompt 06
 
 Fuente primaria consultada el 2026-11-14; contratos comprobados el 15 e integración
-verificada el 16:
+verificada el 16; corrección de vértices oblicuos comprobada el mismo día:
 [página oficial](https://wizkids.com/heroclix/gameplay/rules-format/) y
 [Comprehensive Rulebook 07.01.2026](https://wizkids.com/wp-content/uploads/2026/07/HeroClix%20Comprehensive%20Rules%2007.01.26.pdf).
 La página sigue enlazando esa edición. Los pies de las páginas pertinentes dicen
@@ -27,7 +27,7 @@ de ocupación, elevación, habilidades y bases múltiples. La página de
 | V04 | Obstaculizado cuenta en destino; normalmente se excluye origen. | 16.2b / 39 | Fuente propia ordinaria; R02, R06, R21. |
 | V05 | Bloqueado atravesado impide la línea. | 16.3b / 40 | Sin excepciones de poderes o destrucción; R03, R07, R11. |
 | V06 | Un muro cruzado bloquea. | 16.4b / 40 | Interior del borde; R04. Vértices mediante V07. |
-| V07 | En intersecciones se usa el lado menos restrictivo. | 16.8b / 44 | Comparar celdas laterales, figuras y sus muros incidentes; R08–R10. |
+| V07 | En intersecciones se usa el lado menos restrictivo. | 16.8b / 44 | Comparar celdas laterales, figuras y sus muros incidentes, incluso en líneas oblicuas; R08–R10, R17, R23–R25. |
 | V08 | La elevación puede cambiar la visión. | 16.5c / 42 | Fuera de cobertura; R14. |
 | V09 | Las bases múltiples tienen reglas de referencia propias. | 24.2e / 70 | Se difiere su evaluación; R15. |
 | V10 | La ocupación superpuesta o sobre bloqueado es incompatible. | 13.2 / 35 | Rechazar dictamen de escena de estudio incompatible; R07, R16. |
@@ -62,12 +62,15 @@ calculan llamando al algoritmo bajo prueba. Cada identificador nombra un test.
 | R14 | Elevación relevante: No evaluada; fuera de trayectoria no la invalida. | SCOPE; 16.5c |
 | R15 | Base múltiple relevante: No evaluada; ajena a la trayectoria no la invalida. | SCOPE; 24.2e |
 | R16 | IDs/referencias inválidas, límites o figuras superpuestas: No evaluada. | SCOPE; 13.2 |
-| R17 | A1–D10 pasa por vértices sin diagonal perfecta: No evaluada; A1–E3 despejada sin ese problema. | SCOPE; 16.8 / 43 |
+| R17 | A1–D10 pasa por varios vértices en una línea oblicua: despejada; A1–E3 también despejada. | 16.8b / 44 |
 | R18 | Sí mismo en C: despejada; en H: clasificación No evaluada. | 11.4b y SCOPE |
 | R19 | Origen vacío: No evaluada; objetivo vacío C/H: despejada/obstaculizada. | SCOPE; 11.4, 16.2b |
 | R20 | A1–AN40 plano despejado: despejada; registro inmutable. | 11.4 |
 | R21 | Invertir A1(H)–D1 cambia la clasificación al cambiar origen/destino. | 16.2b |
 | R22 | Alcance anotado 0 no cambia este diagnóstico de visión. | Separación de 11.3 y 11.4; alcance en 07 |
+| R23 | A1–D6 con B4 bloqueado: despejada en ambos sentidos. La línea solo toca B4 en el vértice (2,3); C3 libre es el lado menos restrictivo. | 16.8b / 44 |
+| R24 | A1–D6, nueve pares C/H/B en B4/C3, ambos sentidos: tabla de menor restricción. Una figura lateral deja paso si el otro lado está libre; ambas bloquean. Bloqueado realmente atravesado en B3 o C4 bloquea; elevación relevante sigue No evaluada. | 16.8b, 11.4c, 16.3b; SCOPE para elevación |
+| R25 | A1–D6, 16 subconjuntos de cuatro muros incidentes, ambos sentidos: bloqueada solo si ambos lados están cerrados. | 16.8b, 16.4b |
 
 ## Alcance de implementación y pendientes explícitos
 
@@ -77,8 +80,8 @@ oficial adicional. No se deducen poderes o tamaños de los nombres escritos.
 La casilla de origen debe contener una figura. El destino puede ser figura o
 casilla; elegir una casilla vacía no declara que exista un objetivo de ataque.
 
-Se inspeccionan interiores y laterales de vértices relevantes. Para un vértice
-perfectamente diagonal, cada lado combina terreno, figura y los dos bordes de
+Se inspeccionan interiores y laterales de vértices relevantes. En todo paso exacto
+por un vértice, cada lado combina terreno, figura y los dos bordes de
 esa celda que inciden en el vértice. Luego se elige el lado menos restrictivo.
 El registro conserva ambos lados, aunque solo el elegido contribuya al dictamen.
 El resultado de la trayectoria completa toma la restricción mayor entre sus pasos.
@@ -87,9 +90,15 @@ que el resultado final. La dirección importa para el H de los extremos.
 
 No se resuelven en 06: elevación relevante distinta de 0, bases múltiples
 relevantes, poderes/tamaños declarados, fuentes remotas, reglas especiales de mapa,
-versión no admitida, ocupación incompatible, clasificación de línea a sí mismo
-en H y vértices con pendiente no perfecta. Para los dos últimos no se extrapola
-una interpretación de las frases 11.4b/16.2b y 16.8 sin verificación adicional.
+versión no admitida, ocupación incompatible y clasificación de línea a sí mismo
+en H. Para este último no se extrapola una interpretación de 11.4b/16.2b.
+
+Corrección 0.7.1+8: se retira el rechazo global de vértices con pendiente distinta
+de 45°. El párrafo introductorio 16.8 menciona diagonales perfectas, pero el
+procedimiento de 16.8b se refiere al paso por una intersección y no impone esa
+condición. Se aplica ese procedimiento a los dos lados que identifica la geometría
+exacta. No se curva ni desvía el segmento; solo se clasifica su contacto puntual.
+R23 reprodujo el error de 0.7.0+7 antes de corregir el motor.
 
 No evaluado tiene precedencia conservadora aunque haya un bloqueo aparente,
 pues una excepción pendiente podría cambiarlo. No equivale a bloqueado.
@@ -109,5 +118,5 @@ frontera de soporte, no indican que esas reglas ya estén implementadas.
   la caché. Cámara, selección y visibilidad no recomputan el dictamen.
 - Archivo JSON conserva esquema 1; el perfil declarado y las superposiciones son
   transitorios. Al cargar otra escena se limpian extremos, resultado y declaración.
-- `dart run tool/verify_vision.dart` ejecuta R01–R22 sin Flutter. La suite Flutter
+- `dart run tool/verify_vision.dart` ejecuta R01–R25 sin Flutter. La suite Flutter
   reutiliza los contratos y añade estado, navegación, accesibilidad y regresiones.
