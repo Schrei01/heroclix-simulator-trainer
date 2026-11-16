@@ -1,6 +1,6 @@
-# Escenarios e intercambio — esquema 1
+# Escenarios e intercambio — esquema 2 (lectura de 1/2)
 
-Implementado en Prompt 04, app 0.5.0+5. Formato UTF-8 JSON legible, máximo
+Introducido en 04 y ampliado en 08, app 0.9.0+10. Formato UTF-8 JSON legible, máximo
 2 MiB, profundidad máxima 16 y 20.000 contenedores antes de decodificar.
 Se rechazan campos desconocidos/incompletos, tipos incorrectos, coordenadas fuera
 del tablero, identidades duplicadas, figuras solapadas y versiones desconocidas.
@@ -10,13 +10,14 @@ No se modifica el tablero hasta validar y escribir su recuperación completa.
 
 | Campo | Contenido |
 | --- | --- |
-| `schemaVersion` | Entero 1; no hay migración de otras versiones |
+| `schemaVersion` | Entero 2 al exportar; se importa también 1 mediante migración compatible |
 | `metadata` | `id`, `name`, `rulesVersion`, `createdAt`, `modifiedAt` |
 | `board` | `rows`, `columns`: enteros independientes 2–40 |
 | `teams` | Lista de `id`, `code`, `name`, `color`, `pattern` |
-| `characters` | Lista de `id`, `label`, `name`, `teamId`, `position`, `footprint`, `speed`, `range` |
-| `terrain` | Lista de `cell`, `type`, `elevation`; despejado/nivel 0 es implícito |
+| `characters` | Lista de `id`, `label`, `name`, `teamId`, `position`, `footprint`, `speed`, `range`, `visionAbilities`, `size` |
+| `terrain` | Lista de `cell`, `type`, `elevation`; 0 histórico es alias del suelo 1 |
 | `walls` | Lista de `id`, `axis`, `column`, `row`; solo bordes internos unitarios |
+| `transitions` | Lista de `axis`, `column`, `row`, con vecinos internos de altura distinta y sin muro compartido |
 | `counters` | `nextCharacter`, `nextTeam`: identidad siguiente, sin reutilización |
 
 El ID de escenario tiene forma `s-` seguida de 32 dígitos hexadecimales aleatorios.
@@ -28,15 +29,30 @@ Equipos: 1–32, nombres únicos de hasta 40 unidades, `team-N`/`TN`, color ente
 ARGB opaco (0xff000000–0xffffffff) y patrón `solid`, `stripes` o `dots`.
 Figuras: `figure-N`, etiqueta derivada
 de N (A…Z, AA…), nombre hasta 80, equipo existente, coordenada A1…AN40,
-`footprint: {width, height}` igual a 1×1 o 2×2, velocidad/alcance enteros 0–99.
+`footprint: {width, height}` con enteros 1–40; formatos soportados en la matriz
+de capacidades. Otros formatos se preservan sin evaluarlos. Velocidad/alcance: 0–99.
 Se valida toda la huella; no puede salir del tablero ni solapar otra figura.
 Los contadores deben superar cualquier ID existente; máximo 1.000.000.000.
 
-Terreno: `clear`, `hindering`, `blocking`; elevación entera 0–40 como dato preparado.
+Terreno: `clear`, `hindering`, `blocking`; elevación entera 0–40. El editor muestra
+el nivel efectivo 1–40. Tipo, nivel y transiciones son propiedades independientes.
+`visionAbilities` usa IDs tipados, únicos y conocidos; `size` es `normal`, `tiny`,
+`giant` o `colossal`. Tamaño y huella no se infieren uno del otro. Las condiciones
+sin interpretación soportada se conservan como datos y producen No evaluado.
 Muros: eje `horizontal`/`vertical`, ID canónico `h:columna:fila` o `v:columna:fila`,
 índices desde cero. LayerCodec valida los límites y no permite duplicar bordes.
 El orden exportado es determinista; la cámara, selección, herramientas, previas
-y el historial no pertenecen al documento.
+y el historial no pertenecen al documento. Tampoco se serializa el laboratorio.
+
+## Migración 1 a 2
+
+Abrir un esquema 1 no modifica su archivo. Se conservan sus campos/capas y se
+añaden capacidades vacías, tamaño Normal y transiciones vacías. Antes de su primer
+reemplazo se escribe una copia exacta `schema1-ID.json` o `schema1-working.json`,
+fuera del índice de biblioteca. Un fallo del respaldo impide sobrescribir el
+antiguo. Esas copias usan IDs validados en el mismo directorio privado; no son
+rutas proporcionadas por el usuario. Pruebas con un JSON real de 07 y con el
+adaptador de archivos en disco: `test/scenario_migration_test.dart`.
 
 ## Biblioteca y recuperación
 

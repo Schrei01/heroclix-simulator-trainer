@@ -311,3 +311,30 @@ verificado ni implementado ninguna regla del juego.
 - Rendimiento medido con Dart en el PC Windows del desarrollo; no se presentan
   esos tiempos como FPS ni mediciones Android. Detalle y equipo en ESTADO.md.
 - 0.8.0+9, sin nuevas dependencias ni permisos. No se inicia 08.
+
+## 2026-11-16 — Prompt 08
+
+- Se conserva Comprehensive Rulebook 2026-07-01; §16.5/16.7, §24.2 y §27.6.
+  La PAC oficial enlazada (2023) confirma las cuatro mejoras usadas; no se adoptan
+  excepciones que requieren mapa indoor/outdoor o resolución de ataques.
+- Composición independiente de nivel, H/B, muro y figura, seguida de restricciones
+  por vértice. Cada mejora ignora solo su componente, con referencia y explicación.
+- Huellas 1×1, 1×2/2×1, 2×2, 2×4/4×2 y 3×6/6×3; tamaño de personaje independiente.
+  Se consultan pares, hasta 324. La distancia y visión de Objetivos proceden del
+  mismo par. Visión automática no depende del alcance; inspección manual permanece.
+- Normal como extremo; otros tamaños/capacidades no modeladas conservan SCOPE.
+  El registro diferencia límites del producto de restricciones reglamentarias.
+- Altura de casilla/región, bordes derivados y transición de altura canónica.
+  El 0 legado sigue siendo alias del suelo 1, para no perder datos originales.
+  Limpiar tipo conserva altura/transiciones; modificar nivel puede retirar las
+  transiciones que ya no conectan alturas distintas. Historial por operación.
+- Cuatro mejoras declaradas en ficha, conservadas por duplicado, movimiento y
+  edición de alcance. Laboratorio explícito, temporal, sin modificar personaje/JSON.
+- Esquema 2 con lectura de 1/2; respaldo exacto antes de reemplazar legado y sin
+  escritura al abrir. Si el respaldo falla, el documento anterior se conserva.
+- Caché incluye tamaño, capacidades y laboratorio, acotada a 1024 pares del mundo.
+- Barra corta sin virtualización de sus botones: permite conservar accesibilidad
+  y localizar controles al desplazarse. No se silencian hit tests. La revisión
+  visual corrigió el pie para mostrar el par real y separó los números de transición.
+- Se conserva el modo offline y la configuración Android, sin dependencias nuevas.
+  Versión 0.9.0+10. No se inicia 09.

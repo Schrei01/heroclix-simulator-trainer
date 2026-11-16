@@ -76,5 +76,15 @@ de ataque que exceden esta consulta), páginas 26–28. Se conserva la edición.
 MATRIZ_DISTANCIAS_OBJETIVOS.md documenta fórmula derivada, límites por dimensión,
 prioridad de categorías y contratos D01–D02/T01–T11. Rango declarado no equivale
 a cálculo completo del valor modificado; aliados consultables no se declaran
-objetivos de ataque universalmente legales. Bases y excepciones siguen pendientes
-de 08. El motor de visión y la corrección oblicua de 0.7.1 se reutilizan sin cambios.
+objetivos de ataque universalmente legales. En 07, bases y excepciones quedaron
+pendientes de 08. Se reutilizó la corrección oblicua de 0.7.1.
+
+## Validación para 08 — 2026-11-16
+
+Se revisan nuevamente las fuentes oficiales, manteniendo 2026-07-01: elevación
+§16.5c–g (p. 42), transiciones §16.7 (p. 43), tamaños intermedios §21.2b (p. 60),
+bases §24.2/a/e (pp. 69–70), y mejoras §27.6a/b/c/e (p. 87). La PAC enlazada por
+WizKids es de 2023; solo se usan las definiciones que coinciden con el texto 2026.
+La matriz MATRIZ_CAPACIDADES_VISION.md distingue soporte y fronteras pendientes,
+orden de composición, pares de referencias y expectativas sintéticas derivadas
+del texto. No son diagramas oficiales copiados ni se interpreta texto de cartas.

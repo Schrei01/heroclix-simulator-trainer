@@ -143,6 +143,27 @@ B o muro cruzado, bloqueada. Consultar detalle y referencias al elegir una fila.
 En Simulador/Árbitro, abrir Elegir análisis en la barra superior y alternar entre
 Visión, Medir distancia y Mostrar objetivos. Comprobar selección del origen desde
 la lista, filtros Enemigas/Aliadas/Todas, objetivo resaltado y regreso a Editor.
-No se valida un ataque completo. Una base 2×2 relevante mantiene dimensiones
-pendientes; no recibe un aprobado automático. Consultar ESTADO.md para distinguir
+No se valida un ataque completo. En la entrega 07 una base 2×2 relevante mantenía
+dimensiones pendientes; el soporte añadido en 08 se describe abajo. Consultar ESTADO.md para distinguir
 estas instrucciones de los recorridos efectivamente realizados.
+
+## Elevaciones, bases y mejoras (08)
+
+Instalar `build/releases/heroclix-prompt-08-debug.apk` (0.9.0+10) sin desinstalar.
+Abrir un escenario de 0.8 y comprobar figuras, terreno, muros y alcance antes de
+editar. La lectura no sobrescribe; los guardados nuevos usan esquema 2 con copia
+exacta previa de los archivos de esquema 1.
+
+En Editor, Alturas y transiciones permite casilla/región y nivel 1–40. Probar A1/B2
+como región elevada 2 y una transición B1/C1, con C1 en suelo. Revisar números,
+borde, undo/redo y PNG. Limpiar tipo de terreno debe conservar esos niveles.
+
+En la ficha declarar una mejora de visión y comparar su obstáculo con otro tipo.
+En Dictamen activar Laboratorio, cambiar una mejora y comprobar HIPÓTESIS; la
+ficha guardada debe permanecer igual. Restablecer desactivando Laboratorio.
+
+Con origen A1 y objetivo de base 1×2 anclada en B3, muro entre A2/B2 y alcance 2,
+Visión automática puede ver B4, pero Objetivos no debe aprobar: la referencia B3
+está bloqueada y B4 queda a distancia 3. Subir alcance a 3 permite el par B4.
+El Árbitro muestra pares y registro. Este procedimiento debe contrastarse con los
+resultados efectivamente ejecutados en ESTADO.md; no equivale a una prueba física.

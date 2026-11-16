@@ -1,13 +1,13 @@
 # HeroClix Simulator & Trainer
 
-Aplicación Android Flutter/Dart, offline y en español. Versión **0.8.0+9**.
-La entrega 07 está en la rama `codex/prompt-07` del repositorio privado
+Aplicación Android Flutter/Dart, offline y en español. Versión **0.9.0+10**.
+La entrega 08 está en la rama `codex/prompt-08` del repositorio privado
 [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer).
 
 ```powershell
 git clone https://github.com/Schrei01/heroclix-simulator-trainer.git
 cd heroclix-simulator-trainer
-git switch codex/prompt-07
+git switch codex/prompt-08
 ```
 
 ## Qué existe
@@ -15,7 +15,8 @@ git switch codex/prompt-07
 Editor con tablero 4×4 inicial, filas/columnas independientes de 2 a 40,
 coordenadas A1…AN40, selección, zoom, pinza y pan. Figuras genéricas con identidad
 estable, etiquetas A…Z, AA…, equipos con código/color/patrón y ficha editable.
-Bases 1×1/2×2 con ocupación completa validada; duplicar y borrar con confirmación.
+Bases 1×1, 1×2, 2×2, 2×4 y 3×6, con rotaciones ortogonales y ocupación completa;
+duplicar y borrar con confirmación. La huella y el tamaño de personaje son datos distintos.
 
 La etapa 03 añade terreno despejado, obstaculizado y bloqueado; muros sobre bordes
 internos; trazo y relleno rectangular con vista previa; borrado por capa y tres
@@ -26,8 +27,34 @@ La etapa 04 añade biblioteca local, recuperación automática de sesión, histo
 de 100 operaciones, JSON versionado y PNG del tablero. La etapa 05 añade geometría
 exacta. La etapa 06 incorpora visión reglamentaria básica en Editor, Simulador y
 Árbitro, compartiendo escenario y motor. La etapa 07 añade distancias, comparación
-con alcance declarado y consulta de objetivos. Entrenador, ataques completos y
+con alcance declarado y consulta de objetivos. La etapa 08 incorpora alturas,
+transiciones y cuatro mejoras de visión tipadas. Entrenador, ataques completos y
 rutas de movimiento siguen pendientes.
+
+## Alturas, bases y capacidades
+
+1. En Editor abre **Alturas y transiciones** desde las herramientas o las opciones.
+   Indica una casilla o región y un nivel de 1 a 40. El suelo es nivel 1; las
+   alturas muestran E2, E3… y bordes. Añade transiciones entre dos vecinos de
+   distinta altura sin muro compartido. Pintar altura conserva H/B; limpiar tipos
+   de terreno conserva altura y transiciones. Hay Deshacer/Rehacer.
+2. Selecciona una figura, pulsa el lápiz de la barra inferior y declara sus mejoras
+   **Improved Targeting**: Elevación, Obstaculizado, Bloqueado/muros o Personajes.
+   Cada una afecta solo a su componente. No se interpretan nombres ni cartas.
+3. En **Dictamen de visión**, **Referencias automáticas** compara la base completa.
+   El informe indica el par elegido y permite ver los demás. Al desactivarlo se
+   inspecciona una referencia manual. Objetivos siempre compara alcance y visión
+   desde el mismo par; no mezcla dos líneas diferentes para aprobar un objetivo.
+4. **Laboratorio de capacidades** sustituye temporalmente las capacidades del origen
+   para comparar resultados. La etiqueta HIPÓTESIS lo identifica; no cambia la
+   ficha guardada y se limpia al abrir otra escena.
+5. El **Modo árbitro** muestra alturas, capacidades, excepciones aplicadas y el
+   registro por eventos. Otras capacidades/tamaños o formas sin soporte quedan
+   pendientes. Revisa [SOPORTADAS / NO SOPORTADAS](docs/MATRIZ_CAPACIDADES_VISION.md).
+
+La exportación JSON usa esquema 2 y abre también archivos de esquema 1. Antes de
+reemplazar un documento antiguo se guarda una copia exacta privada; abrirlo no
+lo sobrescribe. Los campos y capas anteriores se conservan.
 
 ## Medir distancia y consultar objetivos
 
@@ -49,10 +76,10 @@ Estados: en alcance con visión despejada, en alcance con visión obstaculizada,
 visión bloqueada, fuera de alcance y no evaluado. Distancia, alcance y visión
 se conservan como dimensiones independientes. **Visible y en alcance no significa
 ataque legal.** El filtro de aliados no concede permiso de ataque.
-Bases múltiples en extremos dejan distancia/rango sin evaluar; elevación relevante
-deja la visión pendiente. Más detalles en [MATRIZ_DISTANCIAS_OBJETIVOS](docs/MATRIZ_DISTANCIAS_OBJETIVOS.md).
+Bases reconocidas y alturas se evalúan según el perfil de 08; formas o condiciones
+sin soporte conservan dimensiones pendientes. Más detalles en [MATRIZ_DISTANCIAS_OBJETIVOS](docs/MATRIZ_DISTANCIAS_OBJETIVOS.md).
 La consulta y sus superposiciones no se guardan ni se exportan en PNG; el alcance
-editado sí pertenece al escenario. No cambia el esquema JSON 1.
+editado sí pertenece al escenario, junto con capacidades, altura y transiciones.
 
 ## Consultar un dictamen de visión
 
@@ -66,9 +93,10 @@ editado sí pertenece al escenario. No cambia el esquema JSON 1.
    trazar visión; eso no declara que un ataque sea legal.
 4. El informe explica causas y muestra **Registro y referencias**, con reglas,
    eventos consultados y elementos decisivos. Puedes ocultar sus resaltados.
-5. El perfil cubre figuras genéricas normales, sin poderes, en tablero plano.
+5. El perfil cubre extremos de tamaño Normal, alturas, bases reconocidas y las
+   cuatro mejoras declaradas de visión.
    Marca **Efectos especiales** si el caso requiere condiciones no modeladas.
-   Elevación relevante, bases múltiples, versión desconocida y otros límites
+   Tamaños de extremos sin soporte, versión desconocida y otros límites
    descritos en la matriz producen **No evaluado**.
 
 En esquinas se comparan ambos lados, incluidas figuras y muros incidentes;
@@ -89,8 +117,8 @@ restrictivo de §16.8b también cuando la pendiente no es de 45°.
    Toca origen y destino, casillas o figuras. El asterisco indica el próximo extremo.
 2. **Origen/Destino** permite elegir de nuevo uno. **Coordenadas / figuras** ofrece
    un formulario para coordenadas fijas o figuras que seguirán su posición.
-   Al tocar una base 2×2 se pide una casilla de referencia explícita; la evaluación
-   completa de bases corresponde a 08.
+   En inspección geométrica o referencia manual, una base múltiple permite elegir
+   una casilla concreta. En Visión automática el motor compara las referencias.
 3. **Inspeccionar geometría** muestra puntos exactos, tramos dentro de casillas y
    eventos ordenados. Azul/círculo: borde o interior; lila/rombo: vértice. Las dos
    casillas laterales tocadas solo en esquina llevan marcas sin relleno interior.
@@ -119,7 +147,7 @@ en el PNG del escenario. Detalles matemáticos en [GEOMETRIA](docs/GEOMETRIA.md)
 - **Deshacer/Rehacer** está en la barra de herramientas desplazable. Incluye
   figuras, equipos, terreno, muros, limpiezas y dimensiones. Abrir, importar, nuevo
   o guardar como reinicia el historial. Cámara, selección y herramientas no entran.
-- JSON legible de esquema 1, máximo 2 MiB; importar valida todo antes de sustituir
+- JSON legible de esquema 2, con lectura de 1, máximo 2 MiB; importar valida todo antes de sustituir
   el tablero y crea un ID nuevo. Una versión desconocida falla sin modificarlo.
 - PNG usa el tablero completo, sin controles, con coordenadas/leyenda opcionales.
   Máximo 2048 px por eje por defecto o 4096 px con la opción de alta resolución.
@@ -170,9 +198,10 @@ legalidad reglamentaria. También se requiere optar explícitamente por estudio 
 ficha si se crea o edita una figura sobre bloqueado. El arrastre ordinario rechaza
 ese destino y remite a la ficha. Obstaculizado no elimina ni desplaza figuras.
 
-La base 2×2 se ancla arriba a la izquierda. Es representación de posición, no
-legalidad reglamentaria. Elevación está preparada como dato 0–40 en dominio;
-no existe editor ni análisis de altura en esta etapa.
+Las bases se anclan arriba a la izquierda y la huella completa valida ocupación.
+El editor admite colocación sobre un único nivel; las combinaciones que requieren
+excepciones no modeladas permanecen pendientes. El 0 histórico de elevación se
+conserva como alias interno del suelo (nivel oficial 1); el editor muestra 1–40.
 
 ## Ejecutar y verificar
 
@@ -182,6 +211,7 @@ flutter --no-version-check pub get
 dart run tool/verify_geometry.dart
 dart run tool/verify_vision.dart
 dart run tool/verify_targets.dart
+dart run tool/verify_advanced_vision.dart
 dart run tool/benchmark_targets.dart --mixed
 dart format --output=none --set-exit-if-changed lib test tool
 flutter --no-version-check analyze
@@ -192,7 +222,7 @@ flutter --no-version-check build apk --debug
 
 `--no-version-check` evita una consulta de actualización del SDK; no cambia su
 versión ni omite análisis o pruebas. Los renders se escriben en
-`build/previews/prompt-07/`; son capturas Flutter, no de un dispositivo.
+`build/previews/prompt-08/`; son capturas Flutter, no de un dispositivo.
 
 Preparación Android y firma release en [ANDROID.md](docs/ANDROID.md).
 El APK debug y sus resultados/hash se registran en [ESTADO.md](docs/ESTADO.md).
@@ -228,6 +258,6 @@ de herramientas y compilación durante el desarrollo sí puede necesitar interne
 Informes anteriores: [00](docs/ENTREGA_00.md), [01](docs/ENTREGA_01.md),
 [02](docs/ENTREGA_02.md), [03](docs/ENTREGA_03.md), [04](docs/ENTREGA_04.md),
 [05](docs/ENTREGA_05.md), [06 inicial](docs/ENTREGA_06.md),
-[06 corregida](docs/ENTREGA_06_FIX.md).
+[06 corregida](docs/ENTREGA_06_FIX.md), [07](docs/ENTREGA_07.md).
 
-**No se inició Prompt 08.** Requiere una nueva orden tras revisar esta entrega.
+**No se inició Prompt 09.** Requiere una nueva orden tras revisar esta entrega.

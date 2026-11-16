@@ -47,7 +47,7 @@ siempre es CellCoordinate, nunca un Offset o píxel de pantalla.
 `LocalDocumentStore` define leer/escribir/eliminar/listar. FileDocumentStore
 implementa archivos privados con límites y reemplazo mediante temporal/rename.
 ScenarioRepository separa biblioteca de recuperación; ScenarioCodec valida el
-documento completo de esquema 1. WorkspaceController serializa I/O y revisiones,
+documentos 1/2 y exporta esquema 2. WorkspaceController serializa I/O y revisiones,
 conserva la sesión ante fallos y publica una nueva solo después de protegerla.
 LayerCodec sigue validando terreno/bordes como parte del documento completo.
 
@@ -184,7 +184,7 @@ restricciones comprobadas/pendientes y referencias. No produce permiso de ataque
 TacticalAnalysis es estado transitorio en aplicación, coordinado por el mismo
 EditorController. Cambios del mundo, extremos, alcance, versión o condiciones
 actualizan resultados; cámara y selección no escriben ni invalidan el mundo.
-TacticalVisionCache limita a 256 pares del mismo mundo/contexto. Compara las
+En 07, TacticalVisionCache limitaba a 256 pares del mismo mundo/contexto. Compara las
 figuras mediante registros tipados de identidad, posición, huella, equipo y etiqueta;
 rango/nombre no afectan los obstáculos. Cambiarlos reutiliza visión y recalcula
 distancia/comparación/lista. El filtro también reutiliza resultados.
@@ -194,4 +194,34 @@ mediante Elegir análisis con el mismo controlador. TacticalControls representa
 resultados ya calculados; editar alcance pasa por saveCharacter y el historial.
 SightPainter proyecta anotación y contorno del objetivo; no calcula distancia ni
 alcance. El exportador PNG usa BoardPainter y excluye análisis transitorios.
-No cambia el esquema JSON 1. Al cargar se limpian origen, objetivo, filtro y caché.
+En 07 se conservó el esquema JSON 1. Al cargar se limpian origen, objetivo, filtro y caché.
+
+## Elevación, referencias y capacidades en 08
+
+CellTerrain mantiene tipo y elevación separados; `level` interpreta el 0 legado
+como suelo 1. TerrainLayer añade transiciones canónicas entre vecinos. Los bordes
+de altura se derivan de niveles, sin guardarlos como muros. Editar altura conserva
+tipo; limpiar tipo conserva altura y transiciones. Historial y validación usan
+las mismas capas inmutables. La edición de región copia el mapa una vez.
+
+CharacterDraft guarda VisionAbility tipadas y FigureSize independiente de Footprint.
+Se conservan al mover, duplicar, editar alcance y serializar. El motor consume
+las cuatro mejoras verificadas; otras condiciones generan SCOPE. El laboratorio
+es una sustitución inmutable de capacidades en VisionContext, transitoria.
+
+LineOfSightService compone terreno, nivel, ocupación y capacidades antes de evaluar
+cada lado de un vértice. Registra exclusiones y restricciones activas. Geometría
+permanece sin reglas. TargetAnalysisService consulta pares de huella (hasta 324),
+usando una referencia común para distancia/visión. VisionAnalysis puede buscar
+una línea visible sin depender de alcance; en Objetivos recibe el resultado del
+par coherente elegido por TacticalAnalysis. Canvas y pie muestran esa traza real.
+
+La caché tipada incorpora capacidades, tamaño y contexto de laboratorio; máximo
+1024 pares de un mundo. Cámara/filtro y cambios de rango conservan visión cuando
+los obstáculos no cambian. No se calcula en los widgets ni en el painter.
+
+ScenarioCodec/LayerCodec exportan esquema 2 y leen 1/2. La lectura no modifica el
+archivo. ScenarioRepository conserva bytes anteriores antes de reemplazar un
+esquema 1; FileDocumentStore acepta solo IDs de respaldo validados y los excluye
+de biblioteca. No se cambia el directorio privado existente. Modo árbitro usa el
+informe compartido con pares, reglas, eventos y modificaciones.
