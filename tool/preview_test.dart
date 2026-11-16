@@ -28,6 +28,9 @@ import 'package:heroclix_simulator_trainer/application/scenarios/scenario_codec.
 
 import '../test/vision_state_test.dart' show visionSession, chooseVision;
 import '../test/support/vision_contract.dart' show vs;
+import '../test/support/vision_contract.dart' show vf;
+
+import 'package:heroclix_simulator_trainer/presentation/vision/tactical_controls.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -53,6 +56,36 @@ void main() {
   });
 
   for (final (name, size, dimensions) in [
+    (
+      'tactical_distance',
+      const Size(400, 900),
+      BoardDimensions(rows: 8, columns: 8),
+    ),
+    (
+      'tactical_distance_report',
+      const Size(400, 900),
+      BoardDimensions(rows: 8, columns: 8),
+    ),
+    (
+      'tactical_list',
+      const Size(400, 900),
+      BoardDimensions(rows: 8, columns: 8),
+    ),
+    (
+      'tactical_target',
+      const Size(1000, 600),
+      BoardDimensions(rows: 8, columns: 8),
+    ),
+    (
+      'tactical_detail',
+      const Size(400, 900),
+      BoardDimensions(rows: 8, columns: 8),
+    ),
+    (
+      'tactical_unknown',
+      const Size(400, 900),
+      BoardDimensions(rows: 8, columns: 8),
+    ),
     ('inicio_vertical', const Size(400, 900), null),
     ('inicio_horizontal', const Size(1000, 700), null),
     ('vision_clear', const Size(400, 900), BoardDimensions.initial),
@@ -361,6 +394,51 @@ void main() {
             await tester.pumpAndSettle();
           }
         }
+        if (name.startsWith('tactical_')) {
+          final world = vs(
+            rows: 8,
+            columns: 8,
+            terrain: {'A2': TerrainType.blocking, 'B2': TerrainType.hindering},
+            extras: [
+              vf(3, 'H8'),
+              vf(4, 'D4', team: 'team-2'),
+              vf(5, 'A3', team: 'team-2'),
+              vf(6, 'F8', team: 'team-2'),
+              vf(7, 'G1', team: 'team-2', footprint: Footprint.square2),
+            ],
+          );
+          controller.loadScenario(visionSession(world));
+          if (name.startsWith('tactical_distance')) {
+            controller.setTool(EditorTool.distance);
+            controller.setSightEndpoint(
+              ProbeEndpoint.cell(CellCoordinate.parse('A1')),
+              asOrigin: true,
+            );
+            controller.setSightEndpoint(
+              ProbeEndpoint.cell(CellCoordinate.parse('D6')),
+              asOrigin: false,
+            );
+          } else {
+            controller.selectCharacter('figure-1');
+            controller.setTool(EditorTool.targets);
+            if (name != 'tactical_list') {
+              controller.selectTarget(
+                name == 'tactical_unknown' ? 'figure-7' : 'figure-4',
+              );
+            }
+          }
+          await tester.pumpAndSettle();
+          controller.resetCamera();
+          await tester.pumpAndSettle();
+          final context = tester.element(find.byType(EditorScreen));
+          if (name == 'tactical_list') showTargetList(context, controller);
+          if (name == 'tactical_detail') showTargetReport(context, controller);
+          if (name == 'tactical_distance_report') {
+            controller.updateTactical((t) => t.showDeltas = true);
+            showDistanceReport(context, controller);
+          }
+          await tester.pumpAndSettle();
+        }
         if (name.startsWith('vision_')) {
           final world = name == 'vision_a1_d6'
               ? vs(target: 'D6', rows: 6, terrain: {'B4': TerrainType.blocking})
@@ -423,10 +501,10 @@ void main() {
               session: visionSession(world),
             );
             const codec = ScenarioCodec();
-            final file = File('build/verification/prompt-06/$name.json');
+            final file = File('build/verification/prompt-07/$name.json');
             await file.parent.create(recursive: true);
             await file.writeAsString(codec.encode(doc));
-            await File('build/verification/prompt-06/$name-working.json')
+            await File('build/verification/prompt-07/$name-working.json')
                 .writeAsString(
                   jsonEncode({
                     'workspaceSchemaVersion': 1,
@@ -446,7 +524,7 @@ void main() {
         final image = await boundary.toImage();
         try {
           final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-          final output = File('build/previews/prompt-06/$name.png');
+          final output = File('build/previews/prompt-07/$name.png');
           await output.parent.create(recursive: true);
           await output.writeAsBytes(bytes!.buffer.asUint8List());
         } finally {

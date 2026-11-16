@@ -14,6 +14,7 @@ import 'layer_actions.dart';
 import '../scenarios/scenario_actions.dart';
 import 'sight_controls.dart';
 import '../vision/vision_controls.dart';
+import '../vision/tactical_controls.dart';
 
 enum _ViewAction {
   grid,
@@ -329,6 +330,9 @@ class EditorScreen extends StatelessWidget {
                 if (session.editsLayers) LayerToolbar(controller: controller),
                 if (session.tool == EditorTool.vision)
                   SightToolbar(controller: controller),
+                if (session.tool == EditorTool.distance ||
+                    session.tool == EditorTool.targets)
+                  TacticalToolbar(controller: controller),
                 Expanded(
                   child: LayoutBuilder(
                     builder: (context, constraints) {
@@ -480,7 +484,8 @@ class _ToolBar extends StatelessWidget {
       ('terrain', 'Terrenos', Icons.terrain_outlined),
       ('walls', 'Muros', Icons.view_column_outlined),
       ('vision', 'Línea de visión · Geometría', Icons.visibility_outlined),
-      ('distance', 'Distancia', Icons.straighten_outlined),
+      ('distance', 'Medir distancia', Icons.straighten_outlined),
+      ('targets', 'Mostrar objetivos', Icons.radar_outlined),
       ('movement', 'Movimiento', Icons.route_outlined),
       ('erase', 'Borrar elemento', Icons.backspace_outlined),
     ];
@@ -548,7 +553,11 @@ class _ToolBar extends StatelessWidget {
                           ),
                         );
                         if (controller.value.editsLayers) return;
-                        if (id == 'vision') return;
+                        if (id == 'targets') {
+                          showTargetList(context, controller);
+                          return;
+                        }
+                        if (id == 'vision' || id == 'distance') return;
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(

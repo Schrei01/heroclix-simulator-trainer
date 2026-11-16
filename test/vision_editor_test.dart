@@ -152,7 +152,7 @@ void main() {
     'simulador reutiliza evaluación y el tablero solo selecciona extremos',
     (tester) async {
       final controller = await openRules(tester, mode: 'simulator');
-      expect(find.text('Simulador · Visión'), findsOneWidget);
+      expect(find.text('Simulador · Análisis'), findsOneWidget);
       final before = controller.vision.result;
       await press(tester, 'vision-fit');
       expect(controller.vision.result, same(before));

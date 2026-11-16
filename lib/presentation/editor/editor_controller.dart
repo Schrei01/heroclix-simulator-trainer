@@ -15,6 +15,7 @@ import '../../application/ports/scenario_files.dart';
 import '../../application/board/sight_probe.dart';
 import '../../application/board/vision_analysis.dart';
 import '../../domain/rules/line_of_sight.dart';
+import '../../application/board/tactical_analysis.dart';
 
 /// Adaptador de notificación: la sesión y las conversiones usan Dart puro.
 final class EditorController extends ValueNotifier<BoardSession> {
@@ -23,10 +24,45 @@ final class EditorController extends ValueNotifier<BoardSession> {
   final history = EditorHistory();
   final sight = SightProbe();
   final vision = VisionAnalysis();
+  final tactical = TacticalAnalysis();
   String get rulesVersion =>
       workspace?.current.rulesVersion ?? VisionContext.supportedVersion;
-  void _evaluateVision(BoardSession next) =>
-      vision.evaluate(next, sight, rulesVersion);
+  void _evaluateVision(BoardSession next) {
+    vision.evaluate(next, sight, rulesVersion);
+    tactical.sync(
+      next,
+      sight,
+      VisionContext(
+        rulesVersion: rulesVersion,
+        features: [if (vision.specialEffects) VisionFeature.powersOrSizes],
+      ),
+    );
+  }
+
+  void updateTactical(void Function(TacticalAnalysis) change) {
+    change(tactical);
+    _evaluateVision(value);
+    notifyListeners();
+  }
+
+  void enableTargets() => updateTactical((t) {
+    t.enabled = true;
+    t.sourceId ??= value.selectedCharacterId ?? sight.origin?.figureId;
+  });
+  void selectTarget(String id) {
+    final source = tactical.sourceId;
+    if (source == null || value.characters.byId(id) == null || source == id) {
+      return;
+    }
+    tactical.selectedTargetId = id;
+    sight.setEndpoint(ProbeEndpoint.figure(source), asOrigin: true);
+    sight.setEndpoint(ProbeEndpoint.figure(id), asOrigin: false);
+    vision.enabled = true;
+    sight.evaluate(value);
+    _evaluateVision(value);
+    value = value.selectCharacter(id);
+  }
+
   void updateVision(void Function(VisionAnalysis) change) {
     change(vision);
     _evaluateVision(value);
@@ -77,6 +113,7 @@ final class EditorController extends ValueNotifier<BoardSession> {
     cancelDraft();
     sight.clear();
     vision.clear();
+    tactical.clear();
     history.clear();
     _lastEdit = null;
     value = session;
@@ -142,7 +179,17 @@ final class EditorController extends ValueNotifier<BoardSession> {
   void resetCamera() => value = value.resetCamera();
   void setTool(EditorTool tool) {
     cancelDraft();
+    if (tool == EditorTool.targets) enableTargets();
     value = value.setTool(tool);
+  }
+
+  void setTargetSource(String id) {
+    sight.clear();
+    updateTactical((t) {
+      t.enabled = true;
+      t.sourceId = id;
+      t.selectedTargetId = null;
+    });
   }
 
   void selectCharacter(String id) => value = value.selectCharacter(id);

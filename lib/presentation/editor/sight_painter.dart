@@ -15,11 +15,15 @@ final class SightPainter extends CustomPainter {
     required this.contacts,
     this.evaluation,
     this.showCauses = true,
+    this.annotation,
+    this.highlightTarget = false,
   });
   final GeometricTrace? trace;
   final bool line, cells, contacts;
   final VisionEvaluation? evaluation;
   final bool showCauses;
+  final String? annotation;
+  final bool highlightTarget;
   static const pathColor = Color(0xffb3d5ff);
   static const vertexColor = Color(0xffdbb8ff);
   Offset _point(LogicalPoint point) => Offset(
@@ -137,6 +141,18 @@ final class SightPainter extends CustomPainter {
       );
       _label(canvas, 'O', start + const Offset(-15, -16));
       _label(canvas, 'D', end + const Offset(15, 16));
+      if (annotation != null) {
+        _label(canvas, annotation!, (start + end) / 2 + const Offset(0, -16));
+      }
+      if (highlightTarget) {
+        canvas.drawRect(
+          Rect.fromCenter(center: end, width: extent - 8, height: extent - 8),
+          Paint()
+            ..color = tint
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 4,
+        );
+      }
     }
     if (contacts) {
       for (final crossing in result.crossings) {
@@ -224,5 +240,7 @@ final class SightPainter extends CustomPainter {
       oldDelegate.cells != cells ||
       oldDelegate.contacts != contacts ||
       oldDelegate.evaluation != evaluation ||
-      oldDelegate.showCauses != showCauses;
+      oldDelegate.showCauses != showCauses ||
+      oldDelegate.annotation != annotation ||
+      oldDelegate.highlightTarget != highlightTarget;
 }

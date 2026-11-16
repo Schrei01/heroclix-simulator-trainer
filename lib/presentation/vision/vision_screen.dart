@@ -11,6 +11,7 @@ import '../editor/board_canvas.dart';
 import '../editor/sight_controls.dart';
 import '../scenarios/scenario_actions.dart';
 import 'vision_controls.dart';
+import 'tactical_controls.dart';
 
 /// Vista del mismo escenario y motor. El tablero aquí solo elige extremos/navega.
 class VisionScreen extends StatefulWidget {
@@ -45,12 +46,24 @@ class _VisionScreenState extends State<VisionScreen> {
     if (mounted) _activate();
   }
 
+  Future<void> _report() => switch (widget.controller.value.tool) {
+    EditorTool.distance => showDistanceReport(context, widget.controller),
+    EditorTool.targets => showTargetReport(context, widget.controller),
+    _ => showVisionReport(context, widget.controller),
+  };
+
   @override
   Widget build(BuildContext context) => ValueListenableBuilder<BoardSession>(
     valueListenable: widget.controller,
     builder: (context, session, _) {
       final result = widget.controller.vision.result;
       final status = result?.status ?? VisionStatus.notEvaluated;
+      final selectedTarget = session.tool == EditorTool.targets
+          ? widget.controller.tactical.selected
+          : null;
+      final tint = selectedTarget == null
+          ? visionColor(status)
+          : targetColor(selectedTarget.status);
       final workspace = widget.controller.workspace;
       return AbsorbPointer(
         absorbing: workspace?.loading == true || workspace?.switching == true,
@@ -63,11 +76,42 @@ class _VisionScreenState extends State<VisionScreen> {
             title: Text(
               widget.mode == AppMode.referee
                   ? 'Modo árbitro'
-                  : 'Simulador · Visión',
+                  : 'Simulador · Análisis',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
             actions: [
+              PopupMenuButton<EditorTool>(
+                key: const ValueKey('analysis-mode'),
+                tooltip: 'Elegir análisis',
+                icon: const Icon(Icons.tune_outlined),
+                onSelected: (tool) {
+                  if (tool == EditorTool.vision) {
+                    _activate();
+                    return;
+                  }
+                  widget.controller.setTool(tool);
+                  if (tool == EditorTool.targets) {
+                    showTargetList(context, widget.controller);
+                  }
+                },
+                itemBuilder: (_) => const [
+                  PopupMenuItem(
+                    value: EditorTool.vision,
+                    child: Text('Visión'),
+                  ),
+                  PopupMenuItem(
+                    key: ValueKey('mode-distance'),
+                    value: EditorTool.distance,
+                    child: Text('Medir distancia'),
+                  ),
+                  PopupMenuItem(
+                    key: ValueKey('mode-targets'),
+                    value: EditorTool.targets,
+                    child: Text('Mostrar objetivos'),
+                  ),
+                ],
+              ),
               IconButton(
                 key: const ValueKey('vision-edit-scene'),
                 tooltip: 'Editar escenario',
@@ -86,7 +130,7 @@ class _VisionScreenState extends State<VisionScreen> {
               IconButton(
                 key: const ValueKey('vision-report'),
                 tooltip: 'Dictamen y referencias',
-                onPressed: () => showVisionReport(context, widget.controller),
+                onPressed: _report,
                 icon: const Icon(Icons.fact_check_outlined),
               ),
             ],
@@ -95,7 +139,11 @@ class _VisionScreenState extends State<VisionScreen> {
             top: false,
             child: Column(
               children: [
-                SightToolbar(controller: widget.controller),
+                if (session.tool == EditorTool.vision)
+                  SightToolbar(controller: widget.controller),
+                if (session.tool == EditorTool.distance ||
+                    session.tool == EditorTool.targets)
+                  TacticalToolbar(controller: widget.controller),
                 Expanded(
                   child: BoardCanvas(
                     controller: widget.controller,
@@ -107,17 +155,27 @@ class _VisionScreenState extends State<VisionScreen> {
                     Expanded(
                       child: TextButton.icon(
                         key: const ValueKey('vision-status'),
-                        onPressed: () =>
-                            showVisionReport(context, widget.controller),
+                        onPressed: _report,
                         icon: Icon(
-                          visionIcon(status),
-                          color: visionColor(status),
+                          session.tool == EditorTool.distance
+                              ? Icons.straighten_outlined
+                              : selectedTarget == null
+                              ? visionIcon(status)
+                              : targetIcon(selectedTarget.status),
+                          color: tint,
                         ),
                         label: Text(
-                          visionLabel(status),
+                          session.tool == EditorTool.distance
+                              ? 'D: ${widget.controller.tactical.measurement?.squares ?? '?'}'
+                              : session.tool == EditorTool.targets &&
+                                    widget.controller.tactical.selected != null
+                              ? targetLabel(
+                                  widget.controller.tactical.selected!.status,
+                                )
+                              : visionLabel(status),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(color: visionColor(status)),
+                          style: TextStyle(color: tint),
                         ),
                       ),
                     ),

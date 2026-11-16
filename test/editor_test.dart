@@ -191,7 +191,14 @@ void main() {
     tester,
   ) async {
     final controller = await openEditor(tester);
-    for (final id in ['distance', 'movement']) {
+    for (final id in ['distance', 'targets']) {
+      final button = tester.widget<IconButton>(
+        find.byKey(ValueKey('tool-$id')),
+      );
+      expect(button.onPressed, isNotNull);
+      expect(button.tooltip, isNot(contains('Próximamente')));
+    }
+    for (final id in ['movement']) {
       final button = tester.widget<IconButton>(
         find.byKey(ValueKey('tool-$id')),
       );

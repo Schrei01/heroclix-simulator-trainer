@@ -6,6 +6,7 @@ import '../theme/app_theme.dart';
 import 'board_painter.dart';
 import 'editor_controller.dart';
 import '../../application/board/board_session.dart';
+import '../../application/board/sight_probe.dart';
 import '../../domain/board/cell_coordinate.dart';
 import 'character_dialog.dart';
 import '../../application/board/layer_draft.dart';
@@ -211,7 +212,9 @@ class _BoardCanvasState extends State<BoardCanvas> {
     if (widget.readOnly ||
         _multiTouch ||
         widget.controller.value.editsLayers ||
-        widget.controller.value.tool == EditorTool.vision) {
+        widget.controller.value.tool == EditorTool.vision ||
+        widget.controller.value.tool == EditorTool.distance ||
+        widget.controller.value.tool == EditorTool.targets) {
       return;
     }
     final cell = _cell(details.localPosition);
@@ -429,6 +432,28 @@ class _BoardCanvasState extends State<BoardCanvas> {
                 onTapUp: (details) {
                   if (!_blockTap) {
                     final cell = _cell(details.localPosition);
+                    if (session.tool == EditorTool.targets) {
+                      final figure = cell == null
+                          ? null
+                          : session.characters.at(cell);
+                      if (figure != null) {
+                        if (widget.controller.tactical.sourceId == null) {
+                          widget.controller.setTargetSource(figure.id);
+                        } else {
+                          widget.controller.selectTarget(figure.id);
+                        }
+                      }
+                      return;
+                    }
+                    if (session.tool == EditorTool.distance) {
+                      if (cell != null) {
+                        widget.controller.setSightEndpoint(
+                          ProbeEndpoint.cell(cell),
+                          asOrigin: widget.controller.sight.chooseOrigin,
+                        );
+                      }
+                      return;
+                    }
                     if (widget.readOnly || session.tool == EditorTool.vision) {
                       if (cell != null) {
                         widget.controller.tap(
@@ -505,9 +530,20 @@ class _BoardCanvasState extends State<BoardCanvas> {
                               line: widget.controller.sight.showLine,
                               cells: widget.controller.sight.showCells,
                               contacts: widget.controller.sight.showContacts,
-                              evaluation: widget.controller.vision.enabled
+                              evaluation:
+                                  widget.controller.vision.enabled &&
+                                      session.tool != EditorTool.distance
                                   ? widget.controller.vision.result
                                   : null,
+                              annotation: session.tool == EditorTool.distance
+                                  ? 'D: ${widget.controller.tactical.measurement?.squares ?? '?'}'
+                                  : session.tool == EditorTool.targets &&
+                                        widget.controller.tactical.selected !=
+                                            null
+                                  ? 'D: ${widget.controller.tactical.selected!.distance.squares ?? '?'} / A: ${widget.controller.tactical.selected!.declaredRange}'
+                                  : null,
+                              highlightTarget:
+                                  session.tool == EditorTool.targets,
                               showCauses: widget.controller.vision.showCauses,
                             ),
                             isComplex: true,
