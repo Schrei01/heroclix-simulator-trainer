@@ -1,13 +1,13 @@
 # HeroClix Simulator & Trainer
 
-Aplicación Android Flutter/Dart, offline y en español. Versión **0.6.0+6**.
-La entrega 05 está en la rama `codex/prompt-05` del repositorio privado
+Aplicación Android Flutter/Dart, offline y en español. Versión **0.7.0+7**.
+La entrega 06 está en la rama `codex/prompt-06` del repositorio privado
 [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer).
 
 ```powershell
 git clone https://github.com/Schrei01/heroclix-simulator-trainer.git
 cd heroclix-simulator-trainer
-git switch codex/prompt-05
+git switch codex/prompt-06
 ```
 
 ## Qué existe
@@ -23,9 +23,35 @@ limpiezas independientes. La leyenda usa letras, puntos, rayas y línea doble,
 además del color. Figuras, terreno y muros tienen datos separados.
 
 La etapa 04 añade biblioteca local, recuperación automática de sesión, historial
-de 100 operaciones, JSON versionado y PNG del tablero. Simulador, Entrenador y
-Árbitro permanecen futuros. La etapa 05 añade geometría de trayectorias en el
-Editor. No hay evaluación reglamentaria, ataques ni rutas de movimiento.
+de 100 operaciones, JSON versionado y PNG del tablero. La etapa 05 añade geometría
+exacta. La etapa 06 incorpora visión reglamentaria básica en Editor, Simulador y
+Árbitro, compartiendo escenario y motor. Entrenador sigue futuro. No se evalúan
+alcance, ataques completos ni rutas de movimiento.
+
+## Consultar un dictamen de visión
+
+1. Crea o abre un escenario con figuras en el Editor. En Línea de visión elige
+   origen y destino y pulsa **Dictamen de visión**; también está en Opciones.
+2. Desde Inicio, **Simulador** y **Árbitro** muestran el mismo escenario con un
+   tablero que solo selecciona extremos y navega. **Editar escenario** abre el
+   Editor y al volver conserva las referencias válidas.
+3. El estado se muestra con texto, icono y color: verde/despejada,
+   ámbar/obstaculizada, rojo/bloqueada y gris/no evaluada. Obstaculizada permite
+   trazar visión; eso no declara que un ataque sea legal.
+4. El informe explica causas y muestra **Registro y referencias**, con reglas,
+   eventos consultados y elementos decisivos. Puedes ocultar sus resaltados.
+5. El perfil cubre figuras genéricas normales, sin poderes, en tablero plano.
+   Marca **Efectos especiales** si el caso requiere condiciones no modeladas.
+   Elevación relevante, bases múltiples, versión desconocida y otros límites
+   descritos en la matriz producen **No evaluado**.
+
+En esquinas se comparan ambos lados, incluidas figuras y muros incidentes;
+no se bloquea por tocar cualquier elemento aislado. Cambiar figuras, terreno,
+muros, dimensiones o contexto actualiza el resultado. Borrar un extremo lo invalida.
+Los nombres de las figuras no se interpretan como fichas oficiales ni poderes.
+Este apoyo no sustituye una decisión oficial de torneo.
+
+Fuentes, límites y casos esperados: [MATRIZ_REGLAS_VISION](docs/MATRIZ_REGLAS_VISION.md).
 
 ## Inspeccionar una trayectoria
 
@@ -44,8 +70,8 @@ Editor. No hay evaluación reglamentaria, ataques ni rutas de movimiento.
    ligada a una figura se recalcula; borrar un extremo retira el resultado y muestra
    error. Zoom y orientación no alteran la geometría. Dos dedos navegan sin elegir.
 
-Un contacto con muro se identifica como cruce de interior o contacto terminal,
-sin deducir su efecto en HeroClix. No se muestran veredictos reglamentarios.
+La inspección geométrica identifica contactos sin interpretar reglas. **Dictamen
+de visión** aplica por separado el perfil reglamentario documentado de 06.
 Los extremos y superposiciones son transitorios: no cambian JSON ni se exportan
 en el PNG del escenario. Detalles matemáticos en [GEOMETRIA](docs/GEOMETRIA.md).
 
@@ -124,6 +150,7 @@ no existe editor ni análisis de altura en esta etapa.
 $env:Path = "$env:USERPROFILE\develop\flutter\bin;$env:Path"
 flutter --no-version-check pub get
 dart run tool/verify_geometry.dart
+dart run tool/verify_vision.dart
 dart format --output=none --set-exit-if-changed lib test tool
 flutter --no-version-check analyze
 flutter --no-version-check test
@@ -133,7 +160,7 @@ flutter --no-version-check build apk --debug
 
 `--no-version-check` evita una consulta de actualización del SDK; no cambia su
 versión ni omite análisis o pruebas. Los renders se escriben en
-`build/previews/prompt-05/`; son capturas Flutter, no de un dispositivo.
+`build/previews/prompt-06/`; son capturas Flutter, no de un dispositivo.
 
 Preparación Android y firma release en [ANDROID.md](docs/ANDROID.md).
 El APK debug y sus resultados/hash se registran en [ESTADO.md](docs/ESTADO.md).
@@ -145,11 +172,13 @@ No se incluyen binarios, credenciales ni claves en Git.
 - `lib/domain/characters`: figuras, equipos, huellas y ocupación.
 - `lib/domain/terrain`: terreno, elevación preparada, muros normalizados y hit tests.
 - `lib/domain/geometry`: fracciones exactas, segmentos y eventos de intersección.
+- `lib/domain/rules`: perfil versionado de visión, observaciones y referencias.
 - `lib/application/board`: sesión inmutable, comandos reversibles e historial acotado.
 - `lib/application/scenarios`: documento, codec y repositorio de escenarios.
 - `lib/infrastructure/local`: archivos privados y puente nativo Android.
 - `lib/presentation/scenarios`: biblioteca, autoguardado, acciones y render PNG.
 - `lib/presentation/editor`: formularios, herramientas, vista previa y canvas por capas.
+- `lib/presentation/vision`: informe y vistas de Simulador/Árbitro.
 - `test`: contratos de dominio, gestos, confirmaciones, accesibilidad y regresiones.
 
 `ScenarioCodec` define el documento completo con `schemaVersion: 1` y utiliza
@@ -165,6 +194,7 @@ de herramientas y compilación durante el desarrollo sí puede necesitar interne
 [ARQUITECTURA](docs/ARQUITECTURA.md), [ESTADO](docs/ESTADO.md),
 [REGLAS](docs/REGLAS.md) y [ANDROID](docs/ANDROID.md).
 Informes anteriores: [00](docs/ENTREGA_00.md), [01](docs/ENTREGA_01.md),
-[02](docs/ENTREGA_02.md), [03](docs/ENTREGA_03.md), [04](docs/ENTREGA_04.md).
+[02](docs/ENTREGA_02.md), [03](docs/ENTREGA_03.md), [04](docs/ENTREGA_04.md),
+[05](docs/ENTREGA_05.md).
 
-**No se inició Prompt 06.** Requiere una nueva orden tras revisar esta entrega.
+**No se inició Prompt 07.** Requiere una nueva orden tras revisar esta entrega.

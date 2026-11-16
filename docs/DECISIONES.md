@@ -244,3 +244,26 @@ verificado ni implementado ninguna regla del juego.
 - Contratos del motor compartidos entre runner Dart puro y tests Flutter, con
   oráculo independiente de cajas abiertas para 2.916 pares de 6×9 y simetría de
   todos los pares de 4×4. Sin paquetes nuevos.
+
+## 2026-11-16 — Prompt 06
+
+- Perfil basado en el Comprehensive Rulebook 07.01.2026 enlazado por WizKids;
+  se revisaron las páginas pertinentes y se creó MATRIZ_REGLAS_VISION.md.
+- Una entrada pública LineOfSightService.evaluate en Dart puro, snapshot inmutable,
+  contexto versionado y salida con explicaciones, eventos, referencias y causas.
+- En vértices diagonales, comparar ambos lados incluyendo terreno, ocupación y
+  muros incidentes; elegir el menos restrictivo. No confundir contacto con bloqueo.
+- Despejada/obstaculizada permiten visión; bloqueada la impide; No evaluada conserva
+  visibilidad desconocida. Ningún estado declara un ataque legal ni calcula alcance.
+- Fronteras conservadoras documentadas: poderes/tamaños, alturas y bases múltiples
+  relevantes, fuente remota, reglas de mapa, versión desconocida y casos ambiguos.
+  La etiqueta SCOPE distingue esas decisiones de una regla oficial.
+- Referencias a figuras siguen sus posiciones; invalidación también por terreno,
+  muros, dimensiones, extremos y versión. Borrar un extremo retira el resultado.
+- Simulador y Árbitro se habilitan para visión básica con el mismo escenario/motor;
+  selección/navegación en su tablero y edición explícita mediante otra vista.
+  Entrenador permanece futuro. No se inicia 07.
+- Inspección, perfil declarado y superposiciones transitorios; esquema JSON 1
+  sin modificaciones. La declaración de efectos se reinicia al cargar documento.
+- Se corrigió competencia entre viewports de rutas cubiertas y activas. No se
+  omiten avisos de hit test: controles probados a 300 % y en vistas pequeñas.

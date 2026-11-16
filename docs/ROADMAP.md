@@ -1,7 +1,7 @@
 # Hoja de ruta
 
 Se trabaja en este mismo repositorio. Cada etapa requiere revisión de su entrega
-y una nueva orden antes de iniciar la siguiente. Estado al 2026-11-14.
+y una nueva orden antes de iniciar la siguiente. Estado al 2026-11-16.
 
 | Etapa | Entrega | Estado |
 | --- | --- | --- |
@@ -10,8 +10,8 @@ y una nueva orden antes de iniciar la siguiente. Estado al 2026-11-14.
 | 02 | Figuras genéricas, equipos y ocupación | Validada; continuación a 03 autorizada por el usuario |
 | 03 | Terreno, muros y capas de edición | Validada; continuación a 04 autorizada por el usuario |
 | 04 | Persistencia local, JSON/PNG y deshacer/rehacer | Validada; continuación a 05 autorizada por el usuario |
-| 05 | Geometría exacta de segmentos e intersecciones | Implementada; 168 tests, 13 contratos Dart puros y 22 renders; verificación en ESTADO.md |
-| 06 | Visión reglamentaria explicable y árbitro básico | Pendiente |
+| 05 | Geometría exacta de segmentos e intersecciones | Validada; continuación a 06 autorizada por el usuario |
+| 06 | Visión reglamentaria explicable y árbitro básico | Implementada; perfil acotado, 205 tests y 30 renders; verificación en ESTADO.md |
 | 07 | Distancias, alcance y análisis de objetivos | Pendiente |
 | 08 | Elevaciones, bases múltiples y capacidades verificadas | Pendiente |
 | 09 | Validación y búsqueda de rutas de movimiento | Pendiente |
@@ -20,10 +20,8 @@ y una nueva orden antes de iniciar la siguiente. Estado al 2026-11-14.
 | 12 | Integración, accesibilidad, verificación y APK final | Pendiente |
 
 Editor se habilita en 01. El informe histórico de 00 se conserva en ENTREGA_00.md.
-La entrada al Simulador tendrá
-funciones reales al integrar las herramientas tácticas de 05–06. Árbitro se
-habilitará en 06 y Entrenador en 10. Todos usarán el mismo escenario cuando exista.
-Esta previsión no constituye implementación de esas etapas.
+Simulador y Árbitro tienen visión básica desde 06 y comparten escenario con Editor.
+Entrenador sigue futuro hasta 10. Alcance y movimiento permanecen pendientes.
 
 Fuera de alcance: partidas completas, dados, daño, turnos, puntuación completa,
 cuentas, backend, servicios de IA externos y funciones online.

@@ -53,10 +53,11 @@ ESTADO.md para saber qué se ejecutó realmente.
 2. Ejecutar `flutter devices` y anotar ID, modelo y versión Android.
 3. Instalar con `adb -s ID install -r build/app/outputs/flutter-apk/app-debug.apk`
    y abrir la app desde el launcher.
-4. Comprobar nombre, español y Editor operativo. Simulador, Entrenador y Árbitro
-   siguen deshabilitados como «Próximamente». Abrir Editor y editar un escenario.
+4. Comprobar nombre, español y Editor operativo. Desde la etapa 06, Simulador y
+   Árbitro permiten consultar visión básica; Entrenador sigue «Próximamente».
+   Abrir Editor y editar un escenario.
 5. Girar vertical/horizontal y recorrer la pantalla. Repetir con texto ampliado
-   en accesibilidad de Android y TalkBack; los modos se anuncian deshabilitados.
+   en accesibilidad de Android y TalkBack; solo Entrenador se anuncia deshabilitado.
 6. Deshabilitar Wi-Fi y datos. Esperar confirmación de autoguardado, forzar cierre,
    reabrir Editor y comprobar contenido. Probar biblioteca y exportar/importar JSON
    con el selector nativo; exportar PNG y abrir Compartir (cancelar para la prueba).
@@ -103,3 +104,19 @@ abrir Inspeccionar y revisar los tres vértices. Probar formulario, ocultar las
 capas, invertir extremos, cambiar zoom/orientación y editar una figura usada como
 extremo. Un muro tocado se informa geométricamente, sin resolver reglas. El
 procedimiento y resultados efectivos de cada entrega están en ESTADO.md.
+
+## Dictámenes de visión en el dispositivo (06)
+
+Instalar `build/releases/heroclix-prompt-06-debug.apk` (0.7.0+7). En Editor crear
+figuras normales en A1 y D1, seleccionar sus extremos y abrir Dictamen de visión.
+Comprobar despejada; H en B1 debe producir obstaculizada, y B o muro atravesado,
+bloqueada. Desde Inicio abrir Árbitro y comprobar el mismo escenario con navegación
+y selección; Editar escenario permite volver a modificar el mundo.
+
+Abrir Registro y referencias, revisar las causas resaltadas y activar Efectos
+especiales: el resultado debe ser No evaluado. La evaluación no comprueba alcance
+ni legalidad completa del ataque. Las condiciones sin soporte y la tabla de casos
+con secciones oficiales están en [MATRIZ_REGLAS_VISION](MATRIZ_REGLAS_VISION.md).
+El recorrido realmente ejecutado, sus capturas y las interrupciones de System UI
+del emulador están registrados en [ESTADO](ESTADO.md); no equivalen a prueba en
+teléfono físico ni a una instalación release.

@@ -20,12 +20,12 @@ no importa Flutter, infraestructura ni plataforma.
 `domain/board` contiene BoardDimensions, CellCoordinate, BoardGeometry,
 BoardCamera y ViewportSize. characters implementa figuras, equipos y ocupación.
 terrain implementa terrenos, muros normalizados y geometría de edición. geometry
-implementa intersecciones exactas en 05. rules, movement y training conservan
-documentación de alcance sin implementar todavía sus funciones.
+implementa intersecciones exactas en 05. rules incorpora visión básica en 06;
+movement y training conservan documentación de alcance para etapas futuras.
 
 ## Estado y persistencia
 
-El inicio usa un catálogo inmutable; solo Editor está disponible. `BoardSession`
+El inicio usa un catálogo inmutable; Editor, Simulador y Árbitro están disponibles. `BoardSession`
 es la única fuente de verdad del tablero: dimensiones, selección, cámara,
 viewport, opciones de visualización, figuras, equipos, terreno y muros. Es inmutable y no importa Flutter.
 
@@ -61,17 +61,17 @@ El hit test usa BoardGeometry tras invertir la cámara. Una pinza o desplazamien
 que supera el umbral táctil no produce selección; un gesto con varios punteros
 queda bloqueado para selección hasta un nuevo toque. Es independiente del zoom.
 
-Terreno, muros y figuras tienen capas operativas desde 03. Las superposiciones
-reglamentarias siguen futuras.
+Terreno, muros y figuras tienen capas operativas desde 03. En 06 se añaden
+superposiciones del dictamen básico y sus causas.
 La cuadrícula y su selección no
 se almacenan como si fueran terreno ni figuras.
 
-## Motor futuro
+## Motor compartido
 
 Geometría ya emite intersecciones exactas y la UI representa sus resultados.
-Reglas interpretará sus efectos en etapas futuras. Editor, Simulador, Entrenador y Árbitro
-consumirán los mismos servicios. Las condiciones no soportadas devolverán
-«No evaluado». No existe dictamen reglamentario en esta etapa.
+LineOfSightService interpreta el perfil básico de 06. Editor, Simulador y Árbitro
+usan el mismo servicio; Entrenador lo reutilizará más adelante. Las condiciones
+fuera de cobertura devuelven «No evaluado». No se decide la legalidad de un ataque.
 
 ## Plataforma y red
 
@@ -108,8 +108,8 @@ Los rectángulos esperan confirmación explícita; coordenadas ofrecen el mismo 
 BoardPainter dibuja terreno, cuadrícula, figuras, muros, advertencias y previas.
 Las advertencias de estudio se derivan de las capas; no son reglas de HeroClix.
 
-LayerCodec serializa solo un fragmento terreno/bordes, sin I/O. El documento de
-escenario completo y el almacenamiento no están implementados en esta etapa.
+LayerCodec serializa un fragmento terreno/bordes, sin I/O propio. Desde 04 ese
+fragmento se integra en el documento completo y el almacenamiento local.
 
 ## Persistencia e intercambio en 04
 
@@ -148,3 +148,27 @@ de escena y dibuja tramos/contactos ya calculados, sin repetir intersecciones.
 El exportador PNG conserva BoardPainter de 04 y excluye esta inspección transitoria.
 SightControls adapta selección, formulario de referencias y panel de eventos.
 El algoritmo, límites y convenciones están en GEOMETRIA.md.
+
+## Visión reglamentaria básica en 06
+
+LineOfSightService implementa VisionEvaluator en Dart puro. VisionSnapshot copia
+la colección de figuras y conserva capas inmutables; VisionContext identifica la
+edición y condiciones especiales. La salida incluye estado, canSee trivalente,
+traza geométrica, observaciones por evento, reglas y elementos decisivos.
+La geometría no cambia: el servicio consume SightGeometry, sin replicar cortes.
+
+VisionAnalysis coordina la caché del resultado en aplicación. Comparte extremos
+de SightProbe y se invalida por dimensiones, figuras, terreno, muros o contexto.
+Cámara, selección y resaltados no recomputan las reglas. El cambio de versión de
+metadatos también invalida aunque las capas sean idénticas. Cargar otra escena
+limpia referencias, resultado y declaración de efectos; no cambia el esquema JSON.
+
+Editor, Simulador y Árbitro usan la misma instancia de EditorController y la misma
+entrada evaluate. VisionScreen es una vista de selección/navegación con acceso
+explícito a Editor. Una vista de lectura cubierta no modifica el viewport compartido:
+se evita que dos rutas alternen tamaños y provoquen cuadros de render continuos.
+
+VisionControls muestra dictamen y registro; SightPainter solo proyecta el resultado,
+colorea la línea y resalta causas. No decide reglas en widgets. La inspección
+geométrica sigue separada y PNG continúa excluyendo análisis transitorio.
+La matriz documenta las referencias, decisiones y fronteras de soporte.

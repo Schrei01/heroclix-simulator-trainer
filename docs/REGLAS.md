@@ -42,3 +42,18 @@ bordes y vértices. Un contacto con muro/figura no se interpreta como veredicto.
 No se implementa ni valida una regla oficial adicional en esta etapa; la versión
 objetivo del documento permanece como referencia. GEOMETRIA.md describe el
 contrato matemático; la evaluación reglamentaria de visión corresponde a 06.
+
+## Validación para 06
+
+Consulta de la página y PDF oficiales iniciada el 2026-11-14, lectura/contratos
+verificados el 15 e integración cerrada el 16. Se mantiene 2026-07-01: la página
+continúa enlazando esa edición y los pies de las páginas 27, 39, 40, 43 y 44 la
+confirman. No se tomó el título histórico de metadatos como versión del contenido.
+La matriz MATRIZ_REGLAS_VISION.md enlaza secciones, decisiones, límites y pruebas.
+
+Implementado un perfil de visión para figuras genéricas normales, sin poderes,
+en tablero plano. Bases/elevaciones relevantes, condiciones declaradas fuera de
+cobertura e interpretaciones pendientes regresan No evaluado. Ese estado es una
+política de implementación, no un dictamen oficial de bloqueo. No se evalúa ataque
+completo ni alcance. Fuente y SHA-256 del PDF de consulta figuran en la matriz;
+no se distribuye el reglamento con la app ni con el repositorio.
