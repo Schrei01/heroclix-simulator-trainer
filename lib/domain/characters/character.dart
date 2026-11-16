@@ -1,6 +1,7 @@
 import '../board/board_dimensions.dart';
 import '../board/cell_coordinate.dart';
 import 'vision_ability.dart';
+import 'movement_ability.dart';
 
 final class Footprint {
   factory Footprint.rectangle({required int width, required int height}) {
@@ -59,6 +60,7 @@ final class CharacterDraft {
     int range = 4,
     Iterable<VisionAbility> abilities = const [],
     FigureSize size = FigureSize.normal,
+    Iterable<MovementAbility> movementAbilities = const [],
   }) {
     final cleaned = name.trim();
     if (cleaned.isEmpty || cleaned.length > 80) {
@@ -76,6 +78,7 @@ final class CharacterDraft {
       range,
       Set.unmodifiable(abilities),
       size,
+      Set.unmodifiable(movementAbilities),
     );
   }
   const CharacterDraft._(
@@ -87,6 +90,7 @@ final class CharacterDraft {
     this.range,
     this.abilities,
     this.size,
+    this.movementAbilities,
   );
   final String name;
   final String teamId;
@@ -96,6 +100,7 @@ final class CharacterDraft {
   final int range;
   final Set<VisionAbility> abilities;
   final FigureSize size;
+  final Set<MovementAbility> movementAbilities;
   CharacterDraft at(CellCoordinate position) => CharacterDraft(
     name: name,
     teamId: teamId,
@@ -105,6 +110,7 @@ final class CharacterDraft {
     range: range,
     abilities: abilities,
     size: size,
+    movementAbilities: movementAbilities,
   );
 }
 
@@ -125,6 +131,7 @@ final class Character {
   int get range => data.range;
   Set<VisionAbility> get abilities => data.abilities;
   FigureSize get size => data.size;
+  Set<MovementAbility> get movementAbilities => data.movementAbilities;
   Iterable<CellCoordinate> get occupiedCells => footprint.cellsAt(position);
   Character revised(CharacterDraft data) =>
       Character(id: id, label: label, data: data);

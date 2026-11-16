@@ -44,7 +44,7 @@ class HomeScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    'Construye tu escenario y consulta distancias, alcance y visión con '
+                    'Construye tu escenario y ensaya movimiento, distancias, alcance y visión con '
                     'explicaciones y referencias. Entrenador: próximamente.',
                   ),
                   const SizedBox(height: 32),
@@ -161,7 +161,7 @@ class _ModeCard extends StatelessWidget {
       ),
       AppMode.simulator => (
         'Simulador',
-        'Mide distancias y consulta alcance, objetivos y visión.',
+        'Ensaya rutas y consulta distancias, alcance, objetivos y visión.',
         Icons.route_outlined,
       ),
       AppMode.trainer => (

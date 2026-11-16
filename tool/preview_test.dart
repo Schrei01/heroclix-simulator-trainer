@@ -37,6 +37,9 @@ import 'package:heroclix_simulator_trainer/domain/characters/vision_ability.dart
 
 import '../test/support/advanced_vision_contract.dart' show capable;
 import '../test/support/target_contract.dart' show ranged;
+import '../test/support/movement_contract.dart' show mw;
+
+import 'package:heroclix_simulator_trainer/presentation/movement/movement_controls.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -62,6 +65,12 @@ void main() {
   });
 
   for (final (name, size, dimensions) in [
+    ('movement_route', const Size(400, 900), BoardDimensions.initial),
+    ('movement_invalid', const Size(400, 900), BoardDimensions.initial),
+    ('movement_report', const Size(400, 900), BoardDimensions.initial),
+    ('movement_comparison', const Size(1000, 700), BoardDimensions.initial),
+    ('movement_alternatives', const Size(400, 900), BoardDimensions.initial),
+    ('movement_unknown', const Size(400, 900), BoardDimensions.initial),
     ('advanced_elevation', const Size(400, 900), BoardDimensions.initial),
     ('advanced_base', const Size(400, 900), BoardDimensions.initial),
     ('advanced_base_report', const Size(400, 900), BoardDimensions.initial),
@@ -407,6 +416,58 @@ void main() {
             await tester.pumpAndSettle();
           }
         }
+        if (name.startsWith('movement_')) {
+          controller.loadScenario(
+            visionSession(
+              mw(
+                extras: [vf(2, 'D1', team: 'team-2')],
+                walls: [
+                  EdgeWall.between(
+                    CellCoordinate.parse('B1'),
+                    CellCoordinate.parse('C1'),
+                  ),
+                ],
+              ),
+            ),
+          );
+          controller.setTool(EditorTool.movement);
+          controller.beginMovement('figure-1');
+          controller.movementCell(
+            CellCoordinate.parse(name == 'movement_invalid' ? 'D4' : 'B2'),
+          );
+          if (name == 'movement_unknown') {
+            controller.updateMovement((m) => m.setEffects(true));
+          }
+          await tester.pumpAndSettle();
+          if (name != 'movement_route' && name != 'movement_invalid') {
+            showMovementReport(
+              tester.element(find.byType(Scaffold).last),
+              controller,
+            );
+            await tester.pumpAndSettle();
+            if (name == 'movement_comparison') {
+              await tester.ensureVisible(
+                find.byKey(const ValueKey('movement-comparison')),
+              );
+              await tester.tap(
+                find.byKey(const ValueKey('movement-comparison')),
+              );
+              await tester.pumpAndSettle();
+              await tester.ensureVisible(find.textContaining('Distancia 3'));
+              await tester.pumpAndSettle();
+            }
+            if (name == 'movement_alternatives') {
+              controller.updateMovement(
+                (m) => m.search(CellCoordinate.parse('C1')),
+              );
+              await tester.pumpAndSettle();
+              await tester.ensureVisible(
+                find.byKey(const ValueKey('movement-route-0')),
+              );
+              await tester.pumpAndSettle();
+            }
+          }
+        }
         if (name.startsWith('advanced_')) {
           final base = name.startsWith('advanced_base');
           final elevated = [
@@ -643,7 +704,7 @@ void main() {
         final image = await boundary.toImage();
         try {
           final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-          final output = File('build/previews/prompt-08/$name.png');
+          final output = File('build/previews/prompt-09/$name.png');
           await output.parent.create(recursive: true);
           await output.writeAsBytes(bytes!.buffer.asUint8List());
         } finally {

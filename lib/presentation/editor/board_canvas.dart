@@ -16,6 +16,7 @@ import 'layer_actions.dart';
 import 'sight_controls.dart';
 import 'sight_painter.dart';
 import 'elevation_controls.dart';
+import '../movement/movement_painter.dart';
 
 class BoardCanvas extends StatefulWidget {
   const BoardCanvas({
@@ -216,7 +217,8 @@ class _BoardCanvasState extends State<BoardCanvas> {
         widget.controller.value.tool == EditorTool.vision ||
         widget.controller.value.tool == EditorTool.distance ||
         widget.controller.value.tool == EditorTool.targets ||
-        widget.controller.value.tool == EditorTool.elevation) {
+        widget.controller.value.tool == EditorTool.elevation ||
+        widget.controller.value.tool == EditorTool.movement) {
       return;
     }
     final cell = _cell(details.localPosition);
@@ -434,6 +436,10 @@ class _BoardCanvasState extends State<BoardCanvas> {
                 onTapUp: (details) {
                   if (!_blockTap) {
                     final cell = _cell(details.localPosition);
+                    if (session.tool == EditorTool.movement) {
+                      if (cell != null) widget.controller.movementCell(cell);
+                      return;
+                    }
                     if (!widget.readOnly &&
                         session.tool == EditorTool.elevation) {
                       if (cell != null) {
@@ -545,31 +551,42 @@ class _BoardCanvasState extends State<BoardCanvas> {
                               preview: _drag,
                               layerPreview: widget.controller.draft.value,
                             ),
-                            foregroundPainter: SightPainter(
-                              widget.controller.vision.enabled &&
-                                      session.tool != EditorTool.distance &&
-                                      widget.controller.vision.result != null
-                                  ? widget.controller.vision.result!.trace
-                                  : widget.controller.sight.trace,
-                              line: widget.controller.sight.showLine,
-                              cells: widget.controller.sight.showCells,
-                              contacts: widget.controller.sight.showContacts,
-                              evaluation:
-                                  widget.controller.vision.enabled &&
-                                      session.tool != EditorTool.distance
-                                  ? widget.controller.vision.result
-                                  : null,
-                              annotation: session.tool == EditorTool.distance
-                                  ? 'D: ${widget.controller.tactical.measurement?.squares ?? '?'}'
-                                  : session.tool == EditorTool.targets &&
-                                        widget.controller.tactical.selected !=
-                                            null
-                                  ? 'D: ${widget.controller.tactical.selected!.distance.squares ?? '?'} / A: ${widget.controller.tactical.selected!.declaredRange}'
-                                  : null,
-                              highlightTarget:
-                                  session.tool == EditorTool.targets,
-                              showCauses: widget.controller.vision.showCauses,
-                            ),
+                            foregroundPainter:
+                                session.tool == EditorTool.movement
+                                ? MovementPainter(widget.controller.movement)
+                                : SightPainter(
+                                    widget.controller.vision.enabled &&
+                                            session.tool !=
+                                                EditorTool.distance &&
+                                            widget.controller.vision.result !=
+                                                null
+                                        ? widget.controller.vision.result!.trace
+                                        : widget.controller.sight.trace,
+                                    line: widget.controller.sight.showLine,
+                                    cells: widget.controller.sight.showCells,
+                                    contacts:
+                                        widget.controller.sight.showContacts,
+                                    evaluation:
+                                        widget.controller.vision.enabled &&
+                                            session.tool != EditorTool.distance
+                                        ? widget.controller.vision.result
+                                        : null,
+                                    annotation:
+                                        session.tool == EditorTool.distance
+                                        ? 'D: ${widget.controller.tactical.measurement?.squares ?? '?'}'
+                                        : session.tool == EditorTool.targets &&
+                                              widget
+                                                      .controller
+                                                      .tactical
+                                                      .selected !=
+                                                  null
+                                        ? 'D: ${widget.controller.tactical.selected!.distance.squares ?? '?'} / A: ${widget.controller.tactical.selected!.declaredRange}'
+                                        : null,
+                                    highlightTarget:
+                                        session.tool == EditorTool.targets,
+                                    showCauses:
+                                        widget.controller.vision.showCauses,
+                                  ),
                             isComplex: true,
                           ),
                         ),

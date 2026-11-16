@@ -204,6 +204,7 @@ Future<void> _editRange(
       range: value,
       abilities: latest.abilities,
       size: latest.size,
+      movementAbilities: latest.movementAbilities,
     ),
     id: latest.id,
     allowStudy: latest.occupiedCells.any(

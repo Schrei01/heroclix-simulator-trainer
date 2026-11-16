@@ -16,6 +16,7 @@ import 'sight_controls.dart';
 import '../vision/vision_controls.dart';
 import '../vision/tactical_controls.dart';
 import 'elevation_controls.dart';
+import '../movement/movement_controls.dart';
 
 enum _ViewAction {
   grid,
@@ -340,6 +341,8 @@ class EditorScreen extends StatelessWidget {
             child: Column(
               children: [
                 if (session.editsLayers) LayerToolbar(controller: controller),
+                if (session.tool == EditorTool.movement)
+                  MovementToolbar(controller: controller),
                 if (session.tool == EditorTool.vision)
                   SightToolbar(controller: controller),
                 if (session.tool == EditorTool.distance ||
@@ -402,7 +405,9 @@ class _CameraBar extends StatelessWidget {
         ? controller.vision.result
         : null;
     final trace = verdict == null ? probe.trace : verdict.trace;
-    final message = session.tool != EditorTool.vision
+    final message = session.tool == EditorTool.movement
+        ? 'Ensayo de movimiento · la figura permanece en origen hasta confirmar'
+        : session.tool != EditorTool.vision
         ? selectionMessage
         : trace != null
         ? '${trace.path.origin.label} a ${trace.path.destination.label} · ${trace.segments.length} tramos · ${controller.vision.enabled ? 'Visión' : 'Solo geometría'}'
@@ -570,6 +575,10 @@ class _ToolBar extends StatelessWidget {
                             ),
                           );
                           if (controller.value.editsLayers) return;
+                          if (id == 'movement') {
+                            showMovementReport(context, controller);
+                            return;
+                          }
                           if (id == 'elevation') {
                             showElevationDialog(context, controller);
                             return;
@@ -584,7 +593,7 @@ class _ToolBar extends StatelessWidget {
                               content: Text(
                                 id == 'characters'
                                     ? 'Toca una casilla vacía para crear. Mantén pulsada una figura y arrastra para moverla.'
-                                    : 'Toca para seleccionar; mantén pulsada una figura y arrastra para moverla.',
+                                    : 'Editor: reposicionamiento libre. Toca para seleccionar; mantén pulsada una figura y arrastra para montar el escenario.',
                               ),
                             ),
                           );

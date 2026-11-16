@@ -108,10 +108,11 @@ final class ScenarioRepository {
         : parsed;
     if (document is Map &&
         document['schemaVersion'] is int &&
-        document['schemaVersion'] == 1) {
+        (document['schemaVersion'] == 1 || document['schemaVersion'] == 2)) {
       codec.fromMap(document);
-      if (await store.read('schema1-$id') == null) {
-        await store.write('schema1-$id', raw);
+      final backup = 'schema${document['schemaVersion']}-$id';
+      if (await store.read(backup) == null) {
+        await store.write(backup, raw);
       }
     }
   }

@@ -1,3 +1,5 @@
+import '../../domain/characters/movement_ability.dart';
+
 import 'package:material_ui/material_ui.dart';
 
 import '../../domain/board/cell_coordinate.dart';
@@ -90,6 +92,7 @@ class _CharacterDialogState extends State<CharacterDialog> {
   late Footprint _footprint;
   late Set<VisionAbility> _abilities;
   late FigureSize _size;
+  late Set<MovementAbility> _movementAbilities;
   bool _duplicate = false;
   bool _allowStudy = false;
   String? _error;
@@ -112,6 +115,7 @@ class _CharacterDialogState extends State<CharacterDialog> {
     _footprint = figure?.footprint ?? Footprint.single;
     _abilities = {...?figure?.abilities};
     _size = figure?.size ?? FigureSize.normal;
+    _movementAbilities = {...?figure?.movementAbilities};
   }
 
   @override
@@ -140,6 +144,7 @@ class _CharacterDialogState extends State<CharacterDialog> {
       range: int.parse(_range.text.trim()),
       abilities: _abilities,
       size: _size,
+      movementAbilities: _movementAbilities,
     );
     final error = widget.controller.saveCharacter(
       data,
@@ -344,10 +349,35 @@ class _CharacterDialogState extends State<CharacterDialog> {
               'Solo Normal se evalúa como origen/destino. Tiny/Giant/Colossal quedan pendientes como extremos. La huella no concede un tamaño ni poderes.',
             ),
             const SizedBox(height: 8),
-            const Text('Improved Targeting · capacidades declaradas'),
+            ExpansionTile(
+              key: const ValueKey('movement-abilities'),
+              title: const Text('Improved Movement · movimiento'),
+              children: [
+                const Text(
+                  'H no añade costo. Cada mejora ignora solo su componente; las opciones sin soporte dejan la ruta No evaluada.',
+                ),
+                for (final a in MovementAbility.values)
+                  CheckboxListTile(
+                    key: ValueKey('movement-ability-${a.name}'),
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(
+                      '${a.label}${a.supported ? '' : ' · sin soporte'}',
+                    ),
+                    value: _movementAbilities.contains(a),
+                    onChanged: (v) => setState(() {
+                      if (v == true) {
+                        _movementAbilities.add(a);
+                      } else {
+                        _movementAbilities.remove(a);
+                      }
+                    }),
+                  ),
+              ],
+            ),
             const Text(
               'Cada mejora actúa solo sobre su obstáculo. Las opciones sin soporte producen No evaluado; no se interpretan cartas.',
             ),
+            const Text('Improved Targeting · capacidades declaradas'),
             for (final ability in VisionAbility.values)
               CheckboxListTile(
                 key: ValueKey('ability-${ability.name}'),

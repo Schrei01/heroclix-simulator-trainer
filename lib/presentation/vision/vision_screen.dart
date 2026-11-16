@@ -12,6 +12,7 @@ import '../editor/sight_controls.dart';
 import '../scenarios/scenario_actions.dart';
 import 'vision_controls.dart';
 import 'tactical_controls.dart';
+import '../movement/movement_controls.dart';
 
 /// Vista del mismo escenario y motor. El tablero aquí solo elige extremos/navega.
 class VisionScreen extends StatefulWidget {
@@ -47,6 +48,7 @@ class _VisionScreenState extends State<VisionScreen> {
   }
 
   Future<void> _report() => switch (widget.controller.value.tool) {
+    EditorTool.movement => showMovementReport(context, widget.controller),
     EditorTool.distance => showDistanceReport(context, widget.controller),
     EditorTool.targets => showTargetReport(context, widget.controller),
     _ => showVisionReport(context, widget.controller),
@@ -91,11 +93,19 @@ class _VisionScreenState extends State<VisionScreen> {
                     return;
                   }
                   widget.controller.setTool(tool);
+                  if (tool == EditorTool.movement) {
+                    showMovementReport(context, widget.controller);
+                  }
                   if (tool == EditorTool.targets) {
                     showTargetList(context, widget.controller);
                   }
                 },
                 itemBuilder: (_) => const [
+                  PopupMenuItem(
+                    key: ValueKey('mode-movement'),
+                    value: EditorTool.movement,
+                    child: Text('Movimiento reglamentario'),
+                  ),
                   PopupMenuItem(
                     value: EditorTool.vision,
                     child: Text('Visión'),
@@ -139,6 +149,8 @@ class _VisionScreenState extends State<VisionScreen> {
             top: false,
             child: Column(
               children: [
+                if (session.tool == EditorTool.movement)
+                  MovementToolbar(controller: widget.controller),
                 if (session.tool == EditorTool.vision)
                   SightToolbar(controller: widget.controller),
                 if (session.tool == EditorTool.distance ||
@@ -167,6 +179,8 @@ class _VisionScreenState extends State<VisionScreen> {
                         label: Text(
                           session.tool == EditorTool.distance
                               ? 'D: ${widget.controller.tactical.measurement?.squares ?? '?'}'
+                              : session.tool == EditorTool.movement
+                              ? 'Ensayo de movimiento · sin aplicar'
                               : session.tool == EditorTool.targets &&
                                     widget.controller.tactical.selected != null
                               ? targetLabel(

@@ -17,6 +17,7 @@ enum EditorTool {
   distance,
   targets,
   elevation,
+  movement,
 }
 
 enum EraseLayer { figures, walls }
