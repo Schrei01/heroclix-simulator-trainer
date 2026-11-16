@@ -1,13 +1,13 @@
 # HeroClix Simulator & Trainer
 
-Aplicación Android Flutter/Dart, offline y en español. Versión **0.7.1+8**.
-La entrega 06 está en la rama `codex/prompt-06` del repositorio privado
+Aplicación Android Flutter/Dart, offline y en español. Versión **0.8.0+9**.
+La entrega 07 está en la rama `codex/prompt-07` del repositorio privado
 [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer).
 
 ```powershell
 git clone https://github.com/Schrei01/heroclix-simulator-trainer.git
 cd heroclix-simulator-trainer
-git switch codex/prompt-06
+git switch codex/prompt-07
 ```
 
 ## Qué existe
@@ -25,8 +25,34 @@ además del color. Figuras, terreno y muros tienen datos separados.
 La etapa 04 añade biblioteca local, recuperación automática de sesión, historial
 de 100 operaciones, JSON versionado y PNG del tablero. La etapa 05 añade geometría
 exacta. La etapa 06 incorpora visión reglamentaria básica en Editor, Simulador y
-Árbitro, compartiendo escenario y motor. Entrenador sigue futuro. No se evalúan
-alcance, ataques completos ni rutas de movimiento.
+Árbitro, compartiendo escenario y motor. La etapa 07 añade distancias, comparación
+con alcance declarado y consulta de objetivos. Entrenador, ataques completos y
+rutas de movimiento siguen pendientes.
+
+## Medir distancia y consultar objetivos
+
+1. En Editor elige **Medir distancia** (regla), toca origen y destino y consulta
+   la cuenta en casillas. El botón **Distancia** abre referencias y diferencias
+   opcionales de filas/columnas. Puedes medir entre casillas vacías.
+2. Para objetivos selecciona una figura y pulsa **Mostrar objetivos** (radar).
+   También puedes elegir el origen en la lista. Se muestran enemigas por defecto;
+   cambia a Aliadas o Todas si quieres consultar otras figuras.
+3. Cada fila indica distancia, alcance declarado y estado. **Editar alcance**
+   modifica el dato de la figura, actualiza todos los resultados y permite deshacer.
+4. Elegir un objetivo resalta su casilla, traza la línea y anota distancia/alcance.
+   Pulsa el resumen para ver comparación, visión, explicación y reglas pendientes.
+5. En Simulador y Árbitro usa **Elegir análisis** (controles de la barra superior)
+   para alternar Visión, Medir distancia y Mostrar objetivos. No mueven figuras
+   al tocar el tablero; para cambiar posiciones entra en Editar escenario.
+
+Estados: en alcance con visión despejada, en alcance con visión obstaculizada,
+visión bloqueada, fuera de alcance y no evaluado. Distancia, alcance y visión
+se conservan como dimensiones independientes. **Visible y en alcance no significa
+ataque legal.** El filtro de aliados no concede permiso de ataque.
+Bases múltiples en extremos dejan distancia/rango sin evaluar; elevación relevante
+deja la visión pendiente. Más detalles en [MATRIZ_DISTANCIAS_OBJETIVOS](docs/MATRIZ_DISTANCIAS_OBJETIVOS.md).
+La consulta y sus superposiciones no se guardan ni se exportan en PNG; el alcance
+editado sí pertenece al escenario. No cambia el esquema JSON 1.
 
 ## Consultar un dictamen de visión
 
@@ -155,6 +181,8 @@ $env:Path = "$env:USERPROFILE\develop\flutter\bin;$env:Path"
 flutter --no-version-check pub get
 dart run tool/verify_geometry.dart
 dart run tool/verify_vision.dart
+dart run tool/verify_targets.dart
+dart run tool/benchmark_targets.dart --mixed
 dart format --output=none --set-exit-if-changed lib test tool
 flutter --no-version-check analyze
 flutter --no-version-check test
@@ -164,7 +192,7 @@ flutter --no-version-check build apk --debug
 
 `--no-version-check` evita una consulta de actualización del SDK; no cambia su
 versión ni omite análisis o pruebas. Los renders se escriben en
-`build/previews/prompt-06/`; son capturas Flutter, no de un dispositivo.
+`build/previews/prompt-07/`; son capturas Flutter, no de un dispositivo.
 
 Preparación Android y firma release en [ANDROID.md](docs/ANDROID.md).
 El APK debug y sus resultados/hash se registran en [ESTADO.md](docs/ESTADO.md).
@@ -199,6 +227,7 @@ de herramientas y compilación durante el desarrollo sí puede necesitar interne
 [REGLAS](docs/REGLAS.md) y [ANDROID](docs/ANDROID.md).
 Informes anteriores: [00](docs/ENTREGA_00.md), [01](docs/ENTREGA_01.md),
 [02](docs/ENTREGA_02.md), [03](docs/ENTREGA_03.md), [04](docs/ENTREGA_04.md),
-[05](docs/ENTREGA_05.md), [06 inicial](docs/ENTREGA_06.md).
+[05](docs/ENTREGA_05.md), [06 inicial](docs/ENTREGA_06.md),
+[06 corregida](docs/ENTREGA_06_FIX.md).
 
-**No se inició Prompt 07.** Requiere una nueva orden tras revisar esta entrega.
+**No se inició Prompt 08.** Requiere una nueva orden tras revisar esta entrega.

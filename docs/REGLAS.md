@@ -67,3 +67,14 @@ sin condicionar el procedimiento a la pendiente global. Con B4 bloqueado y
 C3 libre, el contacto puntual en (2,3) no bloquea. No se cambian la edición
 ni las reglas de obstáculos que la línea atraviesa por el interior.
 La matriz registra R23–R25 y corrige la expectativa anterior de R17.
+
+## Validación para 07 — 2026-11-16
+
+La página oficial sigue enlazando 2026-07-01. Revisión de §11.3a–b (conteo y
+comparación con alcance), §11.4a y §11.5 (misma fuente), y §11.2a/12.1 (condiciones
+de ataque que exceden esta consulta), páginas 26–28. Se conserva la edición.
+MATRIZ_DISTANCIAS_OBJETIVOS.md documenta fórmula derivada, límites por dimensión,
+prioridad de categorías y contratos D01–D02/T01–T11. Rango declarado no equivale
+a cálculo completo del valor modificado; aliados consultables no se declaran
+objetivos de ataque universalmente legales. Bases y excepciones siguen pendientes
+de 08. El motor de visión y la corrección oblicua de 0.7.1 se reutilizan sin cambios.

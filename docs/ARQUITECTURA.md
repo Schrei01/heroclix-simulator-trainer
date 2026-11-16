@@ -20,7 +20,8 @@ no importa Flutter, infraestructura ni plataforma.
 `domain/board` contiene BoardDimensions, CellCoordinate, BoardGeometry,
 BoardCamera y ViewportSize. characters implementa figuras, equipos y ocupación.
 terrain implementa terrenos, muros normalizados y geometría de edición. geometry
-implementa intersecciones exactas en 05. rules incorpora visión básica en 06;
+implementa intersecciones exactas en 05. rules incorpora visión básica en 06 y
+distancias/objetivos en 07;
 movement y training conservan documentación de alcance para etapas futuras.
 
 ## Estado y persistencia
@@ -172,3 +173,25 @@ VisionControls muestra dictamen y registro; SightPainter solo proyecta el result
 colorea la línea y resalta causas. No decide reglas en widgets. La inspección
 geométrica sigue separada y PNG continúa excluyendo análisis transitorio.
 La matriz documenta las referencias, decisiones y fronteras de soporte.
+
+## Distancia y objetivos en 07
+
+DistanceService aplica el conteo de §11.3a entre casillas. TargetAnalysisService
+combina esa distancia, el alcance declarado y el mismo VisionEvaluator de 06.
+TargetEvaluation conserva dimensiones independientes, categoría de consulta,
+restricciones comprobadas/pendientes y referencias. No produce permiso de ataque.
+
+TacticalAnalysis es estado transitorio en aplicación, coordinado por el mismo
+EditorController. Cambios del mundo, extremos, alcance, versión o condiciones
+actualizan resultados; cámara y selección no escriben ni invalidan el mundo.
+TacticalVisionCache limita a 256 pares del mismo mundo/contexto. Compara las
+figuras mediante registros tipados de identidad, posición, huella, equipo y etiqueta;
+rango/nombre no afectan los obstáculos. Cambiarlos reutiliza visión y recalcula
+distancia/comparación/lista. El filtro también reutiliza resultados.
+
+Las herramientas distance/targets se habilitan en Editor. VisionScreen las ofrece
+mediante Elegir análisis con el mismo controlador. TacticalControls representa
+resultados ya calculados; editar alcance pasa por saveCharacter y el historial.
+SightPainter proyecta anotación y contorno del objetivo; no calcula distancia ni
+alcance. El exportador PNG usa BoardPainter y excluye análisis transitorios.
+No cambia el esquema JSON 1. Al cargar se limpian origen, objetivo, filtro y caché.

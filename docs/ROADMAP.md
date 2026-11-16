@@ -11,8 +11,8 @@ y una nueva orden antes de iniciar la siguiente. Estado al 2026-11-16.
 | 03 | Terreno, muros y capas de edición | Validada; continuación a 04 autorizada por el usuario |
 | 04 | Persistencia local, JSON/PNG y deshacer/rehacer | Validada; continuación a 05 autorizada por el usuario |
 | 05 | Geometría exacta de segmentos e intersecciones | Validada; continuación a 06 autorizada por el usuario |
-| 06 | Visión reglamentaria explicable y árbitro básico | Implementada; 0.7.1 corrige vértices oblicuos, 208 tests; verificación en ESTADO.md |
-| 07 | Distancias, alcance y análisis de objetivos | Pendiente |
+| 06 | Visión reglamentaria explicable y árbitro básico | Validada; continuación a 07 autorizada por el usuario; corrección 0.7.1 conservada |
+| 07 | Distancias, alcance y análisis de objetivos | Implementada; 238 pruebas y 37 renders aprobados; verificación en ESTADO.md |
 | 08 | Elevaciones, bases múltiples y capacidades verificadas | Pendiente |
 | 09 | Validación y búsqueda de rutas de movimiento | Pendiente |
 | 10 | Ejercicios, corrección y progreso local | Pendiente |
@@ -21,7 +21,8 @@ y una nueva orden antes de iniciar la siguiente. Estado al 2026-11-16.
 
 Editor se habilita en 01. El informe histórico de 00 se conserva en ENTREGA_00.md.
 Simulador y Árbitro tienen visión básica desde 06 y comparten escenario con Editor.
-Entrenador sigue futuro hasta 10. Alcance y movimiento permanecen pendientes.
+Alcance declarado y objetivos se incorporan en 07. Entrenador sigue futuro hasta
+10; movimiento y excepciones avanzadas permanecen pendientes.
 
 Fuera de alcance: partidas completas, dados, daño, turnos, puntuación completa,
 cuentas, backend, servicios de IA externos y funciones online.

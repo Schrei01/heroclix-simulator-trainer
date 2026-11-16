@@ -282,3 +282,32 @@ verificado ni implementado ninguna regla del juego.
   nueve pares de terrenos, 16 combinaciones de muros, figuras laterales y
   bloqueos interiores. Los límites de elevación/poderes/bases se mantienen.
 - Versión Android 0.7.1, código 8, sin migración ni dependencias nuevas.
+
+## 2026-11-16 — Prompt 07
+
+- Edición 2026-07-01 conservada tras revisar enlace oficial y §11.3a–b. Distancia
+  de casillas en ocho direcciones, empezando en cero. La fórmula del máximo de
+  diferencias absolutas se deriva de ese conteo, no de la longitud del segmento.
+- DistanceService y TargetAnalysisService en Dart puro. El segundo usa
+  VisionEvaluator/LineOfSightService de 06 y conserva distancia, comparación de
+  alcance y visión por separado, además de referencias y condiciones pendientes.
+- El alcance editable sigue siendo el valor declarado de la figura; no se
+  interpretan cartas/modificadores. Visible y en alcance no significa ataque legal.
+- Consulta de todas las demás figuras, con filtro inicial Enemigas y opciones
+  Aliadas/Todas. El filtro no decide qué objetivos permite un poder concreto.
+- No evaluado tiene prioridad si alguna dimensión necesaria no está resuelta.
+  Fuera de alcance tiene prioridad de lista sobre bloqueo, conservando el bloqueo
+  en su dimensión y explicación. Bases múltiples en extremos no reciben distancia
+  ni alcance completos; altura relevante mantiene pendiente la visión.
+- Caché acotada a 256 pares del mismo mundo/contexto. El rango no modifica los
+  obstáculos: editarlo reutiliza visión y actualiza comparaciones. Movimiento,
+  terreno/muros, huellas, versión y condiciones invalidan la caché pertinente.
+- Herramientas disponibles en Editor, Simulador y Árbitro; los dos últimos
+  mantienen navegación/selección y edición explícita del escenario. Controles
+  horizontales acotados al ancho disponible y filas compactas con informe completo
+  para acceso al 300 %. Se conservan comprobaciones fatales de hit test.
+- Consultas transitorias sin I/O, historial ni JSON; cambiar alcance usa el comando
+  normal de edición, undo/redo y persistencia existentes. Esquema 1 sin migración.
+- Rendimiento medido con Dart en el PC Windows del desarrollo; no se presentan
+  esos tiempos como FPS ni mediciones Android. Detalle y equipo en ESTADO.md.
+- 0.8.0+9, sin nuevas dependencias ni permisos. No se inicia 08.

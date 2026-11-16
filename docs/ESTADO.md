@@ -1,97 +1,163 @@
-# Estado actual — corrección de la etapa 06
+# Estado actual — etapa 07
 
-2026-11-16 (America/Bogota). App **0.7.1+8**.
-Rama: `codex/prompt-06` del repositorio privado
-https://github.com/Schrei01/heroclix-simulator-trainer.
-Informe de la primera entrega 06 (0.7.0+7): [ENTREGA_06](ENTREGA_06.md).
+2026-11-16 (America/Bogota). App **0.8.0+9**.
+Repositorio privado: https://github.com/Schrei01/heroclix-simulator-trainer.
+Rama: `codex/prompt-07`, sobre 06 corregida (`9697fc9`).
+Informes de 06: [inicial](ENTREGA_06.md), [corrección 0.7.1](ENTREGA_06_FIX.md).
 
 ## A. Operativo y preparado
 
-Se corrige el reporte del usuario: figuras normales en A1 y D6, terreno bloqueado
-solo en B4. El motor devuelve **DESPEJADA**; B4 solo toca el vértice (2,3) y C3 es
-el otro lado, libre. El registro muestra ambas alternativas y aplica §16.8b.
-Antes, un rechazo por pendiente distinta de 45° devolvía No evaluada. R23 reprodujo
-ese fallo antes de modificar el servicio; el log rojo se conserva localmente.
-
-Se elimina ese rechazo y se reutiliza el mismo procedimiento de intersecciones,
-con geometría exacta, terreno, figuras y muros incidentes. No se desvía la línea.
-Si ambos lados bloquean, la línea queda bloqueada; si el menos restrictivo es H,
-queda obstaculizada. Los obstáculos atravesados por el interior siguen contando.
-Editor, Simulador y Árbitro reciben la corrección mediante el servicio compartido.
-No se añade funcionalidad de 07 ni se amplían poderes/elevaciones/bases múltiples.
+- Medir distancia entre dos casillas, incluidas vacías: horizontal, vertical,
+  diagonal, oblicua y origen igual a destino. Cuenta en ocho direcciones con
+  cero en origen, §11.3a; diferencias de filas/columnas opcionales en el informe.
+- Elegir figura de origen desde selección o lista. Mostrar las demás figuras con
+  filtro inicial Enemigas y opciones Aliadas/Todas, sin inferir permisos de ataque.
+- Distancia, alcance declarado y visión independientes. Categorías: en alcance
+  con visión despejada, en alcance con visión obstaculizada, visión bloqueada,
+  fuera de alcance y No evaluado. Se conserva una visión bloqueada aunque el
+  encabezado de lista indique fuera de alcance.
+- Seleccionar una fila resalta objetivo y línea, anota distancia/alcance y permite
+  abrir explicación, referencias y dimensiones pendientes. Se reutiliza el motor
+  de visión de 06, incluida la corrección A1–D6/B4 de 0.7.1.
+- Editar alcance 0–99 desde la lista o ficha; actualización de todos los objetivos,
+  persistencia existente y deshacer/rehacer. No interpreta modificadores de cartas.
+- Herramientas disponibles en Editor y mediante Elegir análisis en Simulador y
+  Árbitro. Sus tableros permiten navegar/elegir, sin mover piezas al tocar.
+- Caché de visión acotada al mundo/contexto y 256 pares. Cámara/filtro/selección no
+  recalculan visión; rango/nombre reutilizan obstáculos y actualizan comparación.
+- Preparadas entradas tipadas para extender capacidades; no se implementa 08.
+  Consulta, filtro y superposiciones transitorios. JSON conserva esquema 1.
 
 ## B. Archivos principales
 
-- `lib/domain/rules/line_of_sight_service.dart`: retirar la restricción de pendiente.
-- `test/support/vision_contract.dart`: corregir R17 y añadir R23–R25.
-- `tool/preview_test.dart`: render de A1–D6 con B4 bloqueado.
-- `pubspec.yaml`: versión 0.7.1+8, sin dependencias nuevas.
-- README, ANDROID, MATRIZ_REGLAS_VISION, REGLAS, ROADMAP, DECISIONES y este informe.
-  ENTREGA_06 conserva los resultados de la primera entrega sin reescribirlos.
+- `lib/domain/rules/distance_service.dart`, `target_analysis_service.dart`.
+- `lib/application/board/tactical_analysis.dart`; adaptación de EditorController.
+- `lib/presentation/vision/tactical_controls.dart`; cambios de VisionScreen,
+  BoardCanvas, SightPainter, EditorScreen, catálogo visual de Inicio y herramientas.
+- `test/support/target_contract.dart`, `target_rules_test.dart`,
+  `target_state_test.dart`, `target_editor_test.dart`; expectativas anteriores de
+  disponibilidad de herramientas/título de Simulador actualizadas.
+- `tool/verify_targets.dart`, `benchmark_targets.dart`, nuevos renders en preview_test.
+- Pubspec 0.8.0+9, README, ARQUITECTURA, REGLAS, ANDROID, ROADMAP, DECISIONES,
+  MATRIZ_DISTANCIAS_OBJETIVOS, este informe y archivo histórico de 06 corregida.
 
-## C. Verificación real
+## C. Comandos y resultados reales
+
+Flutter 3.50.0, Dart 3.14.0, material_ui 1.11.0. Sin dependencias nuevas.
+Android minSdk 24, compile/target 36. Se conserva la configuración de 06.
 
 | Comando | Resultado |
 | --- | --- |
-| `dart run tool/verify_vision.dart` antes del arreglo | R23 falla: No evaluada en lugar de despejada; 22/23 pasan. |
-| `dart run tool/verify_vision.dart` después del arreglo | **25/25 contratos aprobados**. |
-| `dart format --output=none --set-exit-if-changed lib test tool` | **75 archivos, 0 cambios**, 2,06 s. |
-| `flutter --no-version-check analyze --no-pub` | **No issues found**, 67,3 s. |
-| `flutter --no-version-check test --no-pub --reporter expanded` | **208 aprobadas**, 126 s. |
-| `flutter --no-version-check test tool/preview_test.dart --no-pub --reporter expanded` | **31 renders aprobados**, 36 s. A1–D6/B4 revisado visualmente: línea verde y DESPEJADA. |
-| `flutter --no-version-check build apk --debug --no-pub` | **Correcto**, 119,5 s. |
-| `aapt dump badging` / `dump permissions` | 0.7.1/código 8, SDK 24/36, sin INTERNET ni almacenamiento amplio. |
-| `apksigner verify --verbose --print-certs` | **Verifies**, v2 válida; mismo certificado que 0.7.0+7. |
+| `dart run tool/verify_targets.dart` | **13/13 contratos aprobados** en Dart puro. |
+| `dart format --output=none --set-exit-if-changed lib test tool` | **85 archivos, 0 cambios**, 0,65 s. |
+| `flutter --no-version-check analyze --no-pub` | **No issues found**, 5,6 s. |
+| `flutter --no-version-check test --no-pub --reporter expanded` | **238 aprobadas**, 96 s. |
+| `flutter --no-version-check test tool/preview_test.dart --no-pub --reporter expanded` | **37 renders aprobados**, 26 s; seis nuevos revisados visualmente. |
+| `flutter --no-version-check build apk --debug --no-pub` | **Correcto**, 45,9 s. |
+| `aapt dump badging` / `dump permissions` | 0.8.0/código 9, SDK 24/36; sin INTERNET ni almacenamiento amplio. |
+| `apksigner verify --verbose --print-certs` | **Verifies**, v2 válida y mismo certificado que la entrega anterior. |
 
-R23 comprueba A1–D6 y el sentido inverso, el contacto puntual con B4 y la elección
-de C3 en el registro. R24 compara los nueve pares de terreno de B4/C3, ambos
-sentidos, figuras laterales, bloqueos interiores y el límite de elevación. R25
-cubre los 16 subconjuntos de muros incidentes en ambos sentidos. R17 comprueba
-una línea oblicua con varios vértices. Las expectativas proceden de §16.8b y están
-registradas en [MATRIZ_REGLAS_VISION](MATRIZ_REGLAS_VISION.md).
+Las 30 pruebas nuevas son 13 contratos, 9 de estado y 8 de interfaz. Se mantienen
+las 208 previas. Cubren límites de alcance, dos objetivos, muro, figura intermedia,
+terrenos, bases/elevación/condiciones/versión sin soporte, ocupación incompatible,
+undo/redo, invalidación, carga, filtro, origen desde lista y ausencia de I/O por
+consultas. La regresión oblicua de 06 también se aplica al análisis combinado.
+Las expectativas y secciones están en MATRIZ_DISTANCIAS_OBJETIVOS.md.
 
-Logs locales ignorados por Git: `build/vision-fix-red.log`, `vision-fix-green.log`,
-`format-06-fix.log`, `analyze-06-fix.log`, `test-06-fix.log`, `preview-06-fix.log`
-y `build-06-fix.log`, además de `signature-06-fix.log`. Los resultados nativos
-de 0.7.0+7 están archivados en
-ENTREGA_06 y no se presentan como un recorrido del APK 0.7.1+8.
+UI comprobada en 320×568, 800×360 y 320×320 con texto al 300 %. En verificaciones
+intermedias fallaron compilaciones de helpers de prueba por tipos/constructores;
+se ajustaron a las interfaces reales. También se detectaron controles demasiado
+anchos/altos a texto ampliado: se acotaron al ancho visible, se compactaron filas
+con acceso al informe completo y se conservan hit tests fatales. La primera suite
+completa falló solo por la expectativa histórica de Distancia deshabilitada;
+se actualizó para comprobar Distancia/Objetivos disponibles y Movimiento futuro.
+Los resultados aprobados de la tabla corresponden a las ejecuciones finales.
 
-### APK actualizado
+### Rendimiento medido
 
-- `build/releases/heroclix-prompt-06-fix-debug.apk`, versión 0.7.1, código 8.
-- Tamaño: **158175501 bytes**.
-- SHA-256: `F33F8E3C2242C52302B623391991F9FE1DDB8858AF2AFD3BF32A52AA84BAEFC2`.
-- Se conserva `heroclix-prompt-06-debug.apk` de 0.7.0+7 sin sobrescribirlo.
-- APK, logs, fixtures y renders quedan fuera de Git.
+Dispositivo: PC de desarrollo Windows 10 Home 10.0.19045 x64, Intel Core i5-7200U @ 2,50 GHz,
+4 procesadores lógicos y 8 GB RAM; Dart 3.14.0. Ejecución del motor con
+`dart run tool/benchmark_targets.dart --mixed`, sin la suite Flutter ejecutándose
+a la vez. Figuras distribuidas determinísticamente por el tablero, terreno H/B,
+muros y figuras intermedias. No se colocan figuras sobre bloqueado.
 
-## D. Comprobación manual
+| Escenario | 20×20 / 40 figuras | 40×40 / 120 figuras |
+| --- | --- | --- |
+| Objetivos analizados | 39 | 119 |
+| Casillas de terreno / muros | 40 / 40 | 80 / 80 |
+| Primera llamada por escenario | 82,711 ms | 79,039 ms |
+| Mediana de 25 muestras sin caché | 7,562 ms | 65,222 ms |
+| Percentil 95 / máximo | 43,289 / 43,953 ms | 78,482 / 80,812 ms |
+| Media de 100 cambios de filtro con caché | 0,00698 ms | 0,00872 ms |
+| Actualizar alcance reutilizando visión | 0,333 ms | 0,954 ms |
+| Llamadas de visión antes/después de filtro y alcance | 39 / 39 | 119 / 119 |
 
-1. Instalar la actualización sobre la app existente; no hace falta borrar datos.
-2. Crear un tablero de al menos 4 columnas por 6 filas, figuras normales 1×1 en
-   A1 y D6 y terreno bloqueado solo en B4. Desactivar Efectos especiales.
-3. Consultar Dictamen de visión: **DESPEJADA**. Abrir Registro y referencias:
-   B4 es el lado bloqueado y C3, el lado libre usado por §16.8b.
-4. Añadir bloqueado en C3: **BLOQUEADA**. Cambiar C3 a H: **OBSTACULIZADA**.
-5. Dejar C3 libre y añadir bloqueado en B3: **BLOQUEADA**, por cruce interior.
-6. Invertir los extremos y comprobar el mismo resultado en estos ejemplos.
+Muestras en orden dentro del mismo proceso JIT, sin reiniciar Dart para el
+segundo escenario. Son mediciones de CPU del motor; no son FPS, latencia total de
+UI ni tiempos de un teléfono/emulador Android. Una ejecución preliminar durante
+la suite produjo tiempos mayores por contención y no se usa como medición final.
+La herramienta permite repetir también la variante sin terreno/muros.
 
-## E. Límites y pendientes
+Logs locales: `build/targets-pure-07-final.log`, `format-07-final.log`,
+`analyze-07-final.log`, `test-07-final.log`, `preview-07-final.log`, `build-07.log`,
+`performance-07-final.log`, `signature-07.log`. Fallos intermedios en targets-first,
+second, third, targets-ui-07-fourth y test-07-first-full, todos fuera de Git.
+Renders en `build/previews/prompt-07/`: distancia, diferencias, lista de cinco
+categorías, objetivo en horizontal, detalle y base sin soporte, además de las
+regresiones. Son renders Flutter, no capturas nativas de Android.
 
-El perfil sigue limitado a figuras normales sin poderes y tablero plano.
-Elevaciones/bases múltiples relevantes, efectos especiales declarados, versión
-sin soporte, ocupación incompatible y clasificación a sí mismo sobre H siguen
-No evaluadas. No se comprueban alcance ni legalidad completa de un ataque.
-Sin migración JSON, permisos nuevos ni cambios del editor. No se ha realizado
-un nuevo recorrido nativo de 0.7.1+8 ni una prueba de teléfono físico o release.
+### APK definitivo
 
-## F. Fuente y documentación
+- `build/releases/heroclix-prompt-07-debug.apk`; salida estándar
+  `build/app/outputs/flutter-apk/app-debug.apk`.
+- Tamaño: **158211717 bytes** (aprox. 150,88 MiB).
+- SHA-256: `52ACB1A19449BEEF6B1AA92E0C3B9BDA41F33028DE2F8DAB051AFD40928E776A`.
+- Paquete `com.valinor.heroclixtrainer`, versión 0.8.0, código 9.
+- Firma de desarrollo conservada; se puede actualizar sin desinstalar ni borrar
+  datos. No se ha ejecutado esa instalación en dispositivo para esta entrega.
+- APK/evidencias/PDF excluidos de Git. Binarios de entregas anteriores conservados.
 
-Se revisaron de nuevo la página oficial y el PDF 2026-07-01, §16.8b, página
-impresa 44. El procedimiento de intersecciones no impone pendiente global de 45°;
-la mención introductoria de diagonales en 16.8 se había convertido indebidamente
-en una restricción del producto. Se conserva la misma edición de reglas.
-Matriz, decisiones, guía Android y hoja de ruta actualizadas.
+## D. Comprobar manualmente
+
+1. Instalar el APK sobre la app anterior. En Editor, Medir distancia y A1/D6:
+   5 casillas. Pulsar Distancia y activar diferencias: filas 5, columnas 3.
+2. Figuras normales A1/D1, alcance del origen 3: Mostrar objetivos debe indicar
+   distancia 3 y en alcance con visión despejada. Seleccionar D1 y abrir su resumen.
+3. Editar alcance a 2: fuera; subir a 4: dentro. Deshacer/rehacer actualiza todas
+   las filas. El alcance editado se guarda como dato del escenario.
+4. H en B1: obstaculizada; B o muro A1/B1: bloqueada. Figura intermedia también
+   bloquea. Alcance 2 con ese bloqueo conserva ambas dimensiones en el informe.
+5. Añadir aliada y otra enemiga lejana. Probar filtros; elegir origen desde la
+   lista sin selección previa; comprobar casilla/segmento/anotación del objetivo.
+6. En Simulador o Árbitro usar Elegir análisis; comprobar que tocar no mueve
+   figuras. Editar escenario permite modificarlas y regresar al análisis.
+7. Base múltiple de extremo: distancia/rango sin evaluar. Efectos especiales o
+   elevación relevante: conservar los límites del perfil, sin aprobado global.
+8. Borrar un extremo, cargar otra escena, girar y ampliar texto. Las barras son
+   desplazables; el informe conserva los textos completos que la lista abrevia.
+
+## E. Limitaciones, supuestos y pendientes
+
+- Perfil de figuras genéricas normales sin poderes, en tablero plano. El valor
+  declarado no incorpora modificadores, habilidades ni cartas interpretadas.
+- Distancia entre casillas no es movimiento. Altura, bases múltiples y excepciones
+  relevantes conservan dimensiones pendientes según la matriz; no se inicia 08.
+- Visible y en alcance no valida un ataque. No se comprueban acciones, adyacencia
+  para atacar, estados, poderes ni cantidad de objetivos. Aliados consultables no
+  equivalen a permiso universal para atacarlos.
+- Se conserva el resto de límites de 06: ocupación incompatible, versión sin
+  soporte y clasificación a sí mismo en H. El listado excluye al propio origen.
+- No se implementa movimiento, combate completo ni Entrenador.
+- No se realizó un recorrido nativo Android de 07, medición de FPS/Android ni
+  prueba física/release. La instalación nativa de 06 queda documentada en su archivo.
+
+## F. Documentación y fuente
+
+ROADMAP, DECISIONES, ESTADO, README, ARQUITECTURA, ANDROID y REGLAS actualizados.
+MATRIZ_DISTANCIAS_OBJETIVOS enlaza reglas, contratos, decisiones y metodología de
+rendimiento. Fuentes oficiales consultadas el 2026-11-16; se conserva 2026-07-01.
+El informe de 06 corregida se archiva en ENTREGA_06_FIX.md.
 
 ## G. Límite de etapa
 
-**No se inició Prompt 07.** Esta revisión corrige el motor de visión de 06.
+**No se inició Prompt 08.** Se espera una nueva orden tras revisar esta entrega.

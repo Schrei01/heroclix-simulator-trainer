@@ -127,3 +127,22 @@ el registro compara B4 y C3. Añadir bloqueado en C3 debe producir BLOQUEADA y
 cambiarlo a obstaculizado, OBSTACULIZADA. Conservar B4 y poner bloqueado en B3
 también bloquea, porque B3 sí se atraviesa. Esta revisión no cambia el formato
 de escenarios ni requiere borrar datos de la app.
+
+## Distancias y objetivos en el dispositivo (07)
+
+Instalar `build/releases/heroclix-prompt-07-debug.apk` (0.8.0+9) sobre la versión
+anterior, sin borrar datos. En Editor usar Medir distancia y tocar A1/D6: cuenta
+5 casillas. El botón Distancia abre diferencias opcionales de filas/columnas y
+la referencia de conteo. No requiere que las casillas tengan figuras.
+
+Crear una figura normal en A1 con alcance 3 y otra en D1. Seleccionar A1 y usar
+Mostrar objetivos: D1 debe estar dentro y con visión despejada. Cambiar alcance
+a 2 debe clasificarla fuera; deshacer restaura 3. H en B1 produce obstaculizada;
+B o muro cruzado, bloqueada. Consultar detalle y referencias al elegir una fila.
+
+En Simulador/Árbitro, abrir Elegir análisis en la barra superior y alternar entre
+Visión, Medir distancia y Mostrar objetivos. Comprobar selección del origen desde
+la lista, filtros Enemigas/Aliadas/Todas, objetivo resaltado y regreso a Editor.
+No se valida un ataque completo. Una base 2×2 relevante mantiene dimensiones
+pendientes; no recibe un aprobado automático. Consultar ESTADO.md para distinguir
+estas instrucciones de los recorridos efectivamente realizados.
