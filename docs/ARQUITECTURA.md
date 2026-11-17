@@ -338,3 +338,18 @@ La aceptación automatizada combina controladores y almacenamiento real con UI
 de ejercicio, restauración e intercambio de archivos. La matriz separa esa prueba
 del recorrido instrumental pendiente. Se mantiene 1.0.0-rc.1 sin afirmar aceptación
 nativa ni rendimiento en Android; README_FINAL explica cómo cerrar esos criterios.
+
+## Interacciones rápidas del Editor — rc.2
+
+TerrainPalette sustituye el selector de tipo desplegable y ocupa una franja propia
+centrada al pie del mapa, fuera del receptor de gestos. Usa configureLayers, sin
+registrar una edición hasta pintar. En poco alto el Editor mueve herramientas a
+la izquierda y compacta la barra de capas mediante iconos/tooltip accesibles.
+No se superponen controles a las casillas ni se alteran formatos o reglas.
+
+BoardCanvas coloca CharacterDraft con los valores predeterminados mediante el
+saveCharacter existente, conservando validación/historial/autoguardado. La ficha
+queda para edición posterior; sobre bloqueado se conserva confirmación de estudio.
+La ayuda transitoria se retira al colocar para no interceptar el lápiz inferior.
+ElevationDialog propone el nivel existente limitado inferiormente a 2; el usuario
+puede escribir 1 para volver a suelo. La capa de terreno no cambia su valor inicial.

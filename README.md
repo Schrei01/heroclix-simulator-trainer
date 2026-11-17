@@ -1,13 +1,13 @@
 # HeroClix Simulator & Trainer
 
-Aplicación Android Flutter/Dart, offline y en español. Versión **1.0.0-rc.1+14**.
-La entrega 12 está en la rama `codex/prompt-12` del repositorio privado
+Aplicación Android Flutter/Dart, offline y en español. Versión **1.0.0-rc.2+15**.
+La actualización del Editor está en la rama `codex/editor-quick-tools` del repositorio privado
 [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer).
 
 ```powershell
 git clone https://github.com/Schrei01/heroclix-simulator-trainer.git
 cd heroclix-simulator-trainer
-git switch codex/prompt-12
+git switch codex/editor-quick-tools
 ```
 
 ## Qué existe
@@ -110,7 +110,8 @@ libre del Editor sirve para montar escenarios y no valida una ruta reglamentaria
 ## Alturas, bases y capacidades
 
 1. En Editor abre **Alturas y transiciones** desde las herramientas o las opciones.
-   Indica una casilla o región y un nivel de 1 a 40. El suelo es nivel 1; las
+   Indica una casilla o región y un nivel de 1 a 40. Sobre suelo el formulario
+   propone nivel 2; al editar una elevación conserva su nivel actual. El suelo es nivel 1; las
    alturas muestran E2, E3… y bordes. Añade transiciones entre dos vecinos de
    distinta altura sin muro compartido. Pintar altura conserva H/B; limpiar tipos
    de terreno conserva altura y transiciones. Hay Deshacer/Rehacer.
@@ -242,13 +243,17 @@ exporta JSON para conservar una copia externa. Detalles en [ESCENARIOS](docs/ESC
    Reducir se rechaza si dejaría figuras, terreno o muros fuera de sus límites.
 2. **Seleccionar** permite tocar una casilla o figura, arrastrar para pan y usar
    pinza o botones −/+ para zoom. Centrar mantiene el zoom; Ajustar encaja el mapa.
-3. **Personajes** y toque en vacío abre la ficha. Nombre, equipo, posición, base,
-   velocidad y alcance son editables. Velocidad/alcance: enteros 0–99 como datos.
-   El lápiz inferior abre la ficha; la lista superior permite elegir cualquier figura.
+3. **Personajes** y toque en vacío coloca una figura inmediatamente: nombre Figura,
+   primer equipo, base 1×1, tamaño Normal, velocidad 6 y alcance 4, sin mejoras.
+   Para cambiarla, selecciónala y pulsa el lápiz inferior; la lista superior también
+   abre fichas. Nombre, equipo, posición, base, velocidad y alcance siguen editables.
+   Cada colocación permite Deshacer/Rehacer y activa el autoguardado habitual.
 4. Mantener pulsada una figura y arrastrar muestra destino ✓/×. Solo al soltar un
    destino válido se mueve. La ficha permite editar la coordenada como alternativa.
-5. **Terrenos** muestra un selector D/Despejado, H/Obstaculizado o B/Bloqueado.
-   Toca o arrastra para pintar. La vista previa no modifica el mapa; el trazo completo
+5. **Terrenos** muestra tres iconos centrados al pie del mapa: Bloqueado,
+   Obstaculizado y Despejado. Tienen selección visible, nombre y ayuda al mantener
+   pulsado; en poco espacio se muestran solo iconos con etiquetas accesibles.
+   Elegir uno no pinta. Toca o arrastra en el mapa para pintar. La vista previa no modifica el mapa; el trazo completo
    se aplica al soltar. Se interpolan los eventos para evitar huecos en trazos rápidos.
 6. Elige **Rellenar rectángulo**, arrastra entre dos casillas y pulsa **Aplicar
    terreno** o **Cancelar**. **Coordenadas** permite indicar inicio/fin sin arrastrar.
@@ -271,7 +276,8 @@ La barra de opciones de capa se desplaza horizontalmente en pantallas pequeñas.
 Pintar bloqueado bajo una figura ofrece **Cancelar** o **Conservar para estudio**.
 Esta última mantiene la figura y marca cada casilla incompatible con **!**; no afirma
 legalidad reglamentaria. También se requiere optar explícitamente por estudio en la
-ficha si se crea o edita una figura sobre bloqueado. El arrastre ordinario rechaza
+colocación rápida sobre bloqueado mediante confirmación; la ficha conserva esa
+opción al editar. El arrastre ordinario rechaza
 ese destino y remite a la ficha. Obstaculizado no elimina ni desplaza figuras.
 
 Las bases se anclan arriba a la izquierda y la huella completa valida ocupación.
@@ -303,7 +309,7 @@ flutter --no-version-check build apk --debug
 
 `--no-version-check` evita una consulta de actualización del SDK; no cambia su
 versión ni omite análisis o pruebas. Los renders se escriben en
-`build/previews/prompt-12/`; son capturas Flutter, no de un dispositivo.
+`build/previews/editor-quick-tools/`; son capturas Flutter, no de un dispositivo.
 
 Preparación Android y firma release en [ANDROID.md](docs/ANDROID.md).
 El APK debug y sus resultados/hash se registran en [ESTADO.md](docs/ESTADO.md).
@@ -348,7 +354,7 @@ de herramientas y compilación durante el desarrollo sí puede necesitar interne
 Informes anteriores: [00](docs/ENTREGA_00.md), [01](docs/ENTREGA_01.md),
 [02](docs/ENTREGA_02.md), [03](docs/ENTREGA_03.md), [04](docs/ENTREGA_04.md),
 [05](docs/ENTREGA_05.md), [06 inicial](docs/ENTREGA_06.md),
-[06 corregida](docs/ENTREGA_06_FIX.md), [07](docs/ENTREGA_07.md), [08](docs/ENTREGA_08.md), [09](docs/ENTREGA_09.md), [10](docs/ENTREGA_10.md), [11](docs/ENTREGA_11.md).
+[06 corregida](docs/ENTREGA_06_FIX.md), [07](docs/ENTREGA_07.md), [08](docs/ENTREGA_08.md), [09](docs/ENTREGA_09.md), [10](docs/ENTREGA_10.md), [11](docs/ENTREGA_11.md), [12](docs/ENTREGA_12.md).
 
 Las etapas 00–12 están implementadas dentro del perfil documentado. La candidata
 mantiene aceptación Android pendiente: [MATRIZ_ACEPTACION](docs/MATRIZ_ACEPTACION.md).

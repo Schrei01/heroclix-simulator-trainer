@@ -1,8 +1,10 @@
-# Aceptación final — 1.0.0-rc.1
+# Aceptación final — candidata actual
 
 Fecha: 2026-11-17. La ejecución automatizada es Flutter/Dart en Windows y archivos
 locales reales o fallos inyectados explícitos. No equivale a un recorrido en Android.
 Resultados completos y APK: ESTADO.md. No se declaran aprobados pasos nativos sin ejecutar.
+La candidata actual es 1.0.0-rc.2+15; la entrega 12 original se conserva en
+ENTREGA_12.md. Los pendientes Android se mantienen sin cambio de estado.
 
 | ID | Recorrido / condición | Evidencia automatizada | Android |
 | --- | --- | --- | --- |
@@ -26,6 +28,7 @@ Resultados completos y APK: ESTADO.md. No se declaran aprobados pasos nativos si
 | AC18 | Diagnóstico TXT/PNG sin nombres/metadatos | tactics_export/editor: resumen controlado, PNG decodificado; native TXT/MIME corregidos y compilados | Guardar TXT/PNG pendiente |
 | AC19 | Funcionamiento sin internet | Sin INTERNET ni APIs de red en runtime; ejemplos, banco y licencias locales | Radios desactivadas pendiente |
 | AC20 | APK verificable | Build debug, versión/código, permisos, firma y hash en ESTADO | Instalación pendiente |
+| AC21 | Editor con colocación rápida y paleta de terreno | editor_quick_tools: tipos sin desplegable/pintura accidental, colocación sin formulario, ficha/Deshacer/Rehacer, altura 2 y nivel existente, tamaños/escala | Pendiente |
 
 El test E2E es `test/final_acceptance_test.dart`, caso «aceptación: crear, guardar,
 reabrir, visión, alcance, mover, ejercicio, resolver, JSON y PNG». Invoca creación

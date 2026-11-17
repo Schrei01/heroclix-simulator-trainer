@@ -246,3 +246,17 @@ continuar sin uno. Se documentan pendientes; no se anuncia 1.0.0 estable ni FPS.
 Una firma release diferente no actualiza el paquete debug: planificar conservación
 de datos antes de cambiar de canal. Nunca desinstalar para resolver un conflicto
 de firma sin haber conservado los datos necesarios.
+
+## Actualización del Editor — 1.0.0-rc.2+15
+
+APK actual: `build/releases/heroclix-1.0.0-rc.2-debug.apk`, misma firma y paquete,
+para instalar encima sin desinstalar. En Editor → Terrenos probar los tres iconos
+centrados bajo el mapa: seleccionar no debe pintar. Probar trazo y rectángulo,
+Deshacer/Rehacer, giro y texto ampliado. Sobre suelo, Alturas debe proponer 2;
+una altura existente 3 debe seguir mostrando 3 y aceptar volver a 1.
+
+Personajes → casilla vacía debe colocar sin formulario con valores predeterminados.
+Seleccionar y pulsar lápiz debe editar la misma figura. Colocar varias, deshacer,
+rehacer y cerrar/reabrir con autoguardado. Bloqueado pide confirmación para estudio.
+Estas interacciones están cubiertas por Flutter/renders en Windows; el recorrido
+nativo continúa pendiente. Resultados y hash actuales en ESTADO.md.

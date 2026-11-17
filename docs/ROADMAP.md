@@ -27,3 +27,8 @@ fuera de las matrices de capacidades permanecen pendientes.
 
 Fuera de alcance: partidas completas, dados, daño, turnos, puntuación completa,
 cuentas, backend, servicios de IA externos y funciones online.
+
+Actualización posterior a 12: ajustes de edición solicitados por el usuario,
+1.0.0-rc.2+15 en `codex/editor-quick-tools`. Paleta de terreno, altura propuesta 2
+y colocación rápida de figuras; modos aún separados. Evidencia actual en ESTADO.md;
+entrega 12 original archivada en ENTREGA_12.md. Aceptación nativa sigue pendiente.

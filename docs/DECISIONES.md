@@ -446,3 +446,20 @@ verificado ni implementado ninguna regla del juego.
 - Sin claves release suministradas; se conserva firma debug para actualizar las
   entregas anteriores y se documenta custodia/firma segura. No se usa debug como
   sustituto de release. APK, claves, logs y renders excluidos de Git.
+
+## 2026-11-17 — Ajustes del Editor posteriores a 12
+
+- Mantener separados Editor/Simulador/Árbitro mientras se ajusta la edición, según
+  la petición del usuario. Sin nuevas reglas, esquemas ni permisos.
+- Sustituir el desplegable del tipo de terreno por tres iconos al pie del mapa,
+  centrados, con selección, tooltip y semántica. Reservar su espacio fuera del
+  receptor de gestos para que elegir no pinte ni tape casillas. En altura escasa
+  usar barra lateral y controles compactos accesibles, sin reducir el texto global.
+- Proponer altura 2 sobre nivel 1; respetar alturas existentes y permitir volver
+  manualmente a suelo. No cambiar nivel por defecto de las casillas ni documentos.
+- Colocar Figura/primer equipo/base 1×1/Normal/velocidad 6/alcance 4 sin formulario;
+  usar el mismo comando de creación, validación, historial y autoguardado. Edición
+  posterior mediante la ficha existente. Bloqueado conserva confirmación de estudio.
+- Ocultar la ayuda transitoria al colocar para dejar accesible el lápiz inferior.
+- 1.0.0-rc.2+15 conserva firma debug; aceptación nativa sigue pendiente por decisión
+  de continuar sin teléfono. No se promueve estable ni se unifican los modos.

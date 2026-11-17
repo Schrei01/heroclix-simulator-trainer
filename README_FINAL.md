@@ -1,17 +1,17 @@
-# HeroClix Simulator & Trainer — 1.0.0-rc.1+14
+# HeroClix Simulator & Trainer — 1.0.0-rc.2+15
 
 Aplicación Android offline, en español, para construir escenarios, consultar reglas
 implementadas y practicar. **Versión candidata, APK debug**: faltan las comprobaciones
 nativas de aceptación y rendimiento descritas abajo. No se congela 1.0.0 estable.
 Repositorio privado: [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer),
-rama `codex/prompt-12`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
+rama `codex/editor-quick-tools`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
 
 ## Instalar y actualizar
 
 El archivo generado se conserva en:
 
 ```text
-build/releases/heroclix-1.0.0-rc.1-debug.apk
+build/releases/heroclix-1.0.0-rc.2-debug.apk
 ```
 
 1. Android 7.0/API 24 o superior. Copiar el APK al teléfono, abrirlo en Archivos
@@ -23,7 +23,7 @@ build/releases/heroclix-1.0.0-rc.1-debug.apk
 
 ```powershell
 adb devices -l
-adb -s ID install -r build/releases/heroclix-1.0.0-rc.1-debug.apk
+adb -s ID install -r build/releases/heroclix-1.0.0-rc.2-debug.apk
 adb -s ID shell am start -n com.valinor.heroclixtrainer/com.valinor.heroclix_simulator_trainer.MainActivity
 ```
 
@@ -45,6 +45,12 @@ no está implementada. PNG sirve para compartir una imagen, no para recuperar da
 
 Un dedo usa la herramienta; dos dedos navegan. En mapas grandes amplía antes de
 tocar. En horizontal las herramientas se desplazan para conservar el tablero.
+
+En Editor, Personajes coloca al tocar una casilla vacía con valores predeterminados
+(Figura, primer equipo, base 1×1, velocidad 6/alcance 4); seleccionar y pulsar el
+lápiz permite editarlos después. Terrenos muestra tres iconos centrados bajo el
+mapa, sin desplegable de tipo. La altura sobre suelo propone nivel 2 y conserva
+el nivel existente al editar una elevación. El suelo continúa siendo nivel 1.
 El Editor monta escenas con arrastre libre; el Simulador valida el movimiento.
 Ensayar no cambia posiciones hasta confirmar una ruta verificada.
 
@@ -70,7 +76,7 @@ usa etiquetas genéricas. Exportar la escena completa sí conserva sus nombres.
 | Instalación, cierre forzado/restauración y selectores nativos | Pendiente de Android; equivalentes de archivos/controladores sí verificados |
 | Offline con radios desactivadas y rendimiento Android/FPS | Pendiente de dispositivo/emulador funcional |
 | APK release con firma del propietario | Preparado; sin claves suministradas, no generado |
-| Congelar 1.0.0 estable | Pendiente de cerrar aceptación nativa; esta entrega es 1.0.0-rc.1 |
+| Congelar 1.0.0 estable | Pendiente de cerrar aceptación nativa; esta entrega es 1.0.0-rc.2 |
 | Partida completa, dados, diales, daño y victoria | Fuera del alcance del proyecto |
 
 ## Dependencias y recompilación
@@ -81,7 +87,7 @@ No se añaden dependencias para 12. Las licencias empaquetadas se consultan sin
 conexión en Acerca de → Licencias de dependencias.
 
 ```powershell
-git switch codex/prompt-12
+git switch codex/editor-quick-tools
 $env:Path = "$env:USERPROFILE\develop\flutter\bin;$env:Path"
 flutter --no-version-check pub get
 dart format --output=none --set-exit-if-changed lib test tool
