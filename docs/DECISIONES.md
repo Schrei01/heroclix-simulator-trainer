@@ -501,3 +501,29 @@ verificado ni implementado ninguna regla del juego.
   el desbordamiento con texto al 300 % usando herramientas laterales cuando falta altura.
 - 1.0.0-rc.4+17, misma firma debug. Android real continúa pendiente por la decisión
   previa de continuar sin teléfono. Biblioteca y progreso conservados.
+## 2026-11-17 — Incrementos del Editor rc.5
+
+- Escenario nuevo 10×10; biblioteca/importación conservan dimensiones guardadas.
+- Paleta única de cinco pinceles: Bloqueado, Obstaculizado, Elevado, Transición,
+  Despejado. Sin selector Elevación separado en herramientas/menú. Elevado usa toques
+  para subir un nivel (suelo→E2→E3, máximo E40); Coordenadas conserva edición avanzada.
+  Despejado limpia el tipo y conserva alturas/transiciones. Cinco objetivos de al
+  menos 48 px caben en los tamaños verificados, con nombres accesibles/tooltip.
+- Transición selecciona dos vecinos ortogonales de distinto nivel y sin muro.
+  Errores visibles y ninguna edición parcial. No se amplía cobertura de reglas.
+- Dos toques consecutivos en la misma casilla con Seleccionar preguntan por borrado:
+  personaje, tipo de terreno, elevación; las transiciones restantes pueden borrarse
+  después. Confirmar afecta una capa; Cancelar conserva todo. Borrar incorpora tipo,
+  elevación y transiciones además de figuras/muros; operaciones reversibles.
+- Eliminar allowStudy de los comandos de creación/edición/pintura y de toda la UI.
+  Bloqueado no admite nuevas figuras ni se pinta bajo ellas. La lectura heredada
+  conserva datos con advertencia para corregirlos, sin eliminar escenarios guardados.
+- Improved Targeting usa ExpansionTile como Movement, permitiendo varias mejoras.
+  No se ofrecen las entradas Other de ninguna lista; se conservan sus IDs antiguos
+  para leer documentos sin transformar incertidumbre en un resultado aprobado.
+- Dictamen únicamente sobre el mapa. En Visión, mismos extremos limpian referencias,
+  selección, traza y resultado; Distancia conserva su medición cero independiente.
+- Si la cámara seguía ajustada automáticamente, cambia el ajuste al abrir barras;
+  un zoom/pan manual conserva su centro y escala. Evita recortar A1 en 10×10.
+- 1.0.0-rc.5+18, misma firma debug, sin dependencias/permisos/esquemas nuevos.
+  Pruebas Flutter/Windows; aceptación Android sigue pendiente por decisión previa.

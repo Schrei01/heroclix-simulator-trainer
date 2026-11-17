@@ -150,3 +150,16 @@ Solo cambia la representación: se mantienen las transiciones existentes entre
 vecinos ortogonales de distinto nivel y sin muro compartido. No se incorpora
 soporte para pasajes del mismo nivel ni nuevas excepciones. Retirar Simulador y
 Árbitro no cambia los servicios ni amplía las reglas soportadas.
+## Gestos de terreno rc.5 — 2026-11-17
+
+Se vuelve a comprobar que la página oficial enlaza Comprehensive Rules 2026-07-01,
+y se contrasta §16.7 en la copia local previamente verificada (página impresa 43).
+La nueva selección táctil reutiliza la validación de transiciones ya implementada:
+vecinos ortogonales, distintos niveles, sin muro compartido. Pintar altura conserva
+los tipos de terreno y rechaza repartir una base entre niveles. El gesto no declara
+movimiento/ataque legal; los demás límites siguen en las matrices.
+
+El rechazo de nuevas figuras sobre bloqueado es una política explícita del Editor
+solicitada por el usuario; se elimina el permiso para representaciones de estudio.
+La lectura de datos históricos y las condiciones sin soporte conservan sus avisos.
+No se incorporan reglas de marcadores de terreno de set-up ni pasajes de igual nivel.

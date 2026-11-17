@@ -1,18 +1,18 @@
 # HeroClix Simulator & Trainer
 
-Aplicación Android Flutter/Dart, offline y en español. Versión **1.0.0-rc.4+17**.
-La actualización del Editor está en la rama `codex/editor-transitions` del repositorio privado
+Aplicación Android Flutter/Dart, offline y en español. Versión **1.0.0-rc.5+18**.
+La actualización del Editor está en la rama `codex/editor-terrain-gestures` del repositorio privado
 [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer).
 
 ```powershell
 git clone https://github.com/Schrei01/heroclix-simulator-trainer.git
 cd heroclix-simulator-trainer
-git switch codex/editor-transitions
+git switch codex/editor-terrain-gestures
 ```
 
 ## Qué existe
 
-Editor con tablero 4×4 inicial, filas/columnas independientes de 2 a 40,
+Editor con tablero 10×10 inicial, filas/columnas independientes de 2 a 40,
 coordenadas A1…AN40, selección, zoom, pinza y pan. Figuras genéricas con identidad
 estable, etiquetas A…Z, AA…, equipos con código/color/patrón y ficha editable.
 Bases 1×1, 1×2, 2×2, 2×4 y 3×6, con rotaciones ortogonales y ocupación completa;
@@ -46,6 +46,12 @@ Al trazar entre dos figuras, el dictamen aparece directamente arriba del mapa.
 Desde rc.4 se retiran los módulos Simulador y Árbitro. Inicio ofrece **Editor** y
 **Entrenador**; las consultas, informes y ensayos están en las herramientas del Editor.
 Las transiciones se distinguen por triángulos blancos numerados con borde rojo.
+
+Desde rc.5 Terrenos reúne cinco pinceles, incluido Elevado (toques E2→E3…) y
+Transición (dos vecinos de alturas distintas). Seleccionar permite confirmar
+borrado con dos toques en la misma casilla; Borrar también retira alturas y
+transiciones. No se permite crear o mover figuras sobre bloqueado ni pintarlo
+bajo ellas. La ficha agrupa Improved Targeting y Movement en listas desplegables.
 
 ## Analizar y comparar posiciones
 
@@ -116,11 +122,13 @@ libre del Editor sirve para montar escenarios y no valida una ruta reglamentaria
 
 ## Alturas, bases y capacidades
 
-1. En Editor abre **Alturas y transiciones** desde las herramientas o las opciones.
+1. En Editor elige **Terrenos → Elevado**. Un toque en suelo coloca E2; cada toque
+   siguiente sube un nivel hasta E40. **Coordenadas** abre el formulario avanzado:
    Indica una casilla o región y un nivel de 1 a 40. Sobre suelo el formulario
    propone nivel 2; al editar una elevación conserva su nivel actual. El suelo es nivel 1; las
    alturas muestran E2, E3… y bordes rojos. Las transiciones usan un triángulo blanco
-   con borde rojo y nivel dentro de cada casilla conectada. Añádelas entre dos vecinos de
+   con borde rojo y nivel dentro de cada casilla conectada. Con **Terrenos → Transición**
+   toca dos vecinos ortogonales de
    distinta altura sin muro compartido. Pintar altura conserva H/B; limpiar tipos
    de terreno conserva altura y transiciones. Hay Deshacer/Rehacer.
 2. Selecciona una figura, pulsa el lápiz de la barra inferior y declara sus mejoras
@@ -250,6 +258,8 @@ exporta JSON para conservar una copia externa. Detalles en [ESCENARIOS](docs/ESC
    Reducir se rechaza si dejaría figuras, terreno o muros fuera de sus límites.
 2. **Seleccionar** permite tocar una casilla o figura, arrastrar para pan y usar
    pinza o botones −/+ para zoom. Centrar mantiene el zoom; Ajustar encaja el mapa.
+   Dos toques consecutivos en la misma casilla preguntan si quieres borrar: primero
+   personaje, después tipo de terreno y luego elevación. Cancelar conserva todo.
 3. **Personajes** y toque en vacío coloca una figura inmediatamente: nombre Figura,
    primer equipo, base 1×1, tamaño Normal, velocidad 6 y alcance 4, sin mejoras.
    Para cambiarla, selecciónala y pulsa el lápiz inferior; la lista superior también
@@ -257,8 +267,8 @@ exporta JSON para conservar una copia externa. Detalles en [ESCENARIOS](docs/ESC
    Cada colocación permite Deshacer/Rehacer y se conserva en la sesión abierta.
 4. Mantener pulsada una figura y arrastrar muestra destino ✓/×. Solo al soltar un
    destino válido se mueve. La ficha permite editar la coordenada como alternativa.
-5. **Terrenos** muestra tres iconos centrados al pie del mapa: Bloqueado,
-   Obstaculizado y Despejado. Tienen selección visible, nombre y ayuda al mantener
+5. **Terrenos** muestra cinco iconos centrados al pie del mapa: Bloqueado,
+   Obstaculizado, Elevado, Transición y Despejado. Tienen selección visible, nombre y ayuda al mantener
    pulsado; en poco espacio se muestran solo iconos con etiquetas accesibles.
    Elegir uno no pinta. Toca o arrastra en el mapa para pintar. La vista previa no modifica el mapa; el trazo completo
    se aplica al soltar. Se interpolan los eventos para evitar huecos en trazos rápidos.
@@ -268,8 +278,10 @@ exporta JSON para conservar una copia externa. Detalles en [ESCENARIOS](docs/ESC
 7. **Muros** permite Añadir/Borrar muro. Toca o traza cerca de un borde interno;
    cada trazo conserva la orientación del primer borde. No se admiten bordes externos.
    **Coordenadas** recibe dos casillas vecinas ortogonales que comparten el muro.
-8. **Borrar elemento** tiene un selector explícito de figura o muro. Borrar figura
-   pide confirmación y no cambia terreno/muros. Para quitar terreno usa **Despejado**.
+8. **Borrar elemento** permite elegir figura, terreno, elevación, transición o muro.
+   Borrar figura pide confirmación. Borrar terreno conserva altura; borrar elevación
+   devuelve al suelo y retira las transiciones que dejan de unir niveles distintos.
+   Borrar transición se aplica sobre su borde compartido y conserva la altura.
 9. El menú superior ofrece **Leyenda y capas** y **Limpiar solo terreno/muros/figuras**.
    Cada limpieza pide confirmación y conserva las otras capas.
 
@@ -278,14 +290,14 @@ segundo dedo o cancelar el gesto descarta la edición transitoria. Cambiar herra
 u orientación cancela la previa. En mapas grandes, amplía para leer y tocar con precisión.
 La barra de opciones de capa se desplaza horizontalmente en pantallas pequeñas.
 
-## Posiciones para estudio
+## Posiciones y compatibilidad
 
-Pintar bloqueado bajo una figura ofrece **Cancelar** o **Conservar para estudio**.
-Esta última mantiene la figura y marca cada casilla incompatible con **!**; no afirma
-legalidad reglamentaria. También se requiere optar explícitamente por estudio en la
-colocación rápida sobre bloqueado mediante confirmación; la ficha conserva esa
-opción al editar. El arrastre ordinario rechaza
-ese destino y remite a la ficha. Obstaculizado no elimina ni desplaza figuras.
+No se permite crear, duplicar, mover o editar figuras hacia terreno bloqueado,
+ni pintarlo bajo una figura. No hay checkbox ni confirmación para autorizarlo.
+Las escenas antiguas conservan sus datos al abrirse: una incompatibilidad heredada
+se marca con ! y debe corregirse moviendo la figura o limpiando el terreno.
+Obstaculizado no elimina ni desplaza figuras. Las opciones antiguas Otra excepción
+no se ofrecen en la ficha; sus datos heredados conservan No evaluado.
 
 Las bases se anclan arriba a la izquierda y la huella completa valida ocupación.
 El editor admite colocación sobre un único nivel; las combinaciones que requieren
@@ -316,7 +328,7 @@ flutter --no-version-check build apk --debug
 
 `--no-version-check` evita una consulta de actualización del SDK; no cambia su
 versión ni omite análisis o pruebas. Los renders se escriben en
-`build/previews/editor-transitions/`; son capturas Flutter, no de un dispositivo.
+`build/previews/editor-increments/`; son capturas Flutter, no de un dispositivo.
 
 Preparación Android y firma release en [ANDROID.md](docs/ANDROID.md).
 El APK debug y sus resultados/hash se registran en [ESTADO.md](docs/ESTADO.md).
