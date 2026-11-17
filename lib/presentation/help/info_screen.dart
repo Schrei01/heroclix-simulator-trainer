@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:material_ui/material_ui.dart';
 
 import '../../domain/app_info.dart';
+import '../../domain/beta_expiration.dart';
 
 class InformationScreen extends StatelessWidget {
   const InformationScreen({
@@ -116,6 +117,7 @@ class AboutScreen extends StatelessWidget {
         style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
       ),
       const Text('Versión ${AppInfo.version} · compilación ${AppInfo.build}'),
+      const Text('Versión de prueba. Vence el ${BetaExpiration.label}.'),
       const Text(
         'Edición reglamentaria implementada: ${AppInfo.rules}. Perfil parcial; no se actualiza automáticamente.',
       ),

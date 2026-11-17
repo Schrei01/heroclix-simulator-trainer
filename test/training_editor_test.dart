@@ -1,3 +1,5 @@
+import 'support/test_clock.dart';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:heroclix_simulator_trainer/app.dart';
@@ -28,7 +30,11 @@ Future<(TrainingController, EditorController)> openTrainer(
       editor = EditorController();
   await trainer.initialize();
   await t.pumpWidget(
-    HeroClixApp(controller: editor, trainingController: trainer),
+    HeroClixApp(
+      clock: testClock,
+      controller: editor,
+      trainingController: trainer,
+    ),
   );
   await t.ensureVisible(find.text('Abrir entrenador'));
   await t.tap(find.text('Abrir entrenador'));

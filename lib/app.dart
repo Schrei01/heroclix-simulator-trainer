@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import 'presentation/home/home_screen.dart';
+import 'presentation/beta/beta_access_gate.dart';
 import 'domain/app_info.dart';
 import 'presentation/editor/editor_controller.dart';
 import 'presentation/theme/app_theme.dart';
@@ -11,9 +12,15 @@ import 'presentation/training/training_scope.dart';
 import 'dart:async';
 
 class HeroClixApp extends StatefulWidget {
-  const HeroClixApp({this.controller, this.trainingController, super.key});
+  const HeroClixApp({
+    this.controller,
+    this.trainingController,
+    this.clock = DateTime.now,
+    super.key,
+  });
   final EditorController? controller;
   final TrainingController? trainingController;
+  final DateTime Function() clock;
 
   @override
   State<HeroClixApp> createState() => _HeroClixAppState();
@@ -61,9 +68,12 @@ class _HeroClixAppState extends State<HeroClixApp> with WidgetsBindingObserver {
       supportedLocales: const [Locale('es')],
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
       theme: AppTheme.dark,
-      builder: (context, child) => TrainingScope(
-        controller: _trainingController,
-        child: child ?? const SizedBox.shrink(),
+      builder: (context, child) => BetaAccessGate(
+        clock: widget.clock,
+        child: TrainingScope(
+          controller: _trainingController,
+          child: child ?? const SizedBox.shrink(),
+        ),
       ),
       home: HomeScreen(
         editorController: _editorController,

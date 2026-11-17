@@ -1,17 +1,25 @@
 # TeamFight: GridLab
 
-Aplicación Android Flutter/Dart, offline y en español. Versión **1.0.0-rc.8+21**.
-La versión actual está en la rama `codex/latest-apk-only` del repositorio privado
+Aplicación Android Flutter/Dart, offline y en español. Versión **1.0.0-rc.9+22**.
+La versión actual está en la rama `codex/beta-expiry-december-2026` del repositorio privado
 [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer).
 
 Desde rc.8 la marca visible es **TeamFight: GridLab**, con los iconos Android y el
 símbolo aportados por el usuario. Conserva el identificador y los datos de la app.
 Recursos y procedencia en [IDENTIDAD](docs/IDENTIDAD.md).
 
+Esta beta rc.9 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
+(2026-12-30T05:00:00Z). Desde ese instante muestra «Versión de prueba finalizada»
+y bloquea todas las pantallas, también al reanudar o si permanece abierta. Acerca de
+muestra la fecha. No elimina biblioteca ni progreso. Usa el reloj del dispositivo:
+no es una licencia validada por servidor y puede eludirse al alterar el reloj.
+La futura edición de Play debe retirar expresamente este corte. Instalar una beta
+anterior sin caducidad también queda fuera de este control local.
+
 ```powershell
 git clone https://github.com/Schrei01/heroclix-simulator-trainer.git
 cd heroclix-simulator-trainer
-git switch codex/latest-apk-only
+git switch codex/beta-expiry-december-2026
 ```
 
 ## Qué existe

@@ -1,3 +1,5 @@
+import 'support/test_clock.dart';
+
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -45,7 +47,11 @@ openPosition(
   await trainer.initialize();
   if (precompute) await t.runAsync(() => c.analyze(only: vc('B2')));
   await t.pumpWidget(
-    HeroClixApp(controller: editor, trainingController: trainer),
+    HeroClixApp(
+      clock: testClock,
+      controller: editor,
+      trainingController: trainer,
+    ),
   );
   Navigator.of(t.element(find.byType(Scaffold))).push<void>(
     MaterialPageRoute(
@@ -64,7 +70,7 @@ void main() {
     final editor = EditorController()
       ..loadScenario(visionSession(tacticalWorld()));
     editor.selectCharacter('figure-1');
-    await t.pumpWidget(HeroClixApp(controller: editor));
+    await t.pumpWidget(HeroClixApp(clock: testClock, controller: editor));
     await t.ensureVisible(find.text('Abrir editor'));
     await t.tap(find.text('Abrir editor'));
     await t.pumpAndSettle();

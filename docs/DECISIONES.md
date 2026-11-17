@@ -589,3 +589,22 @@ verificado ni implementado ninguna regla del juego.
 - AGENTS.md registra el procedimiento para futuras sesiones. Pruebas en una carpeta
   temporal aislada: fallo de compilación con APK previo válido, versión incorrecta,
   APK corrupto, publicación correcta y publicación repetida.
+
+## 2026-11-17 — Beta con vencimiento el 30 de diciembre de 2026
+
+- Petición explícita del usuario: fijar el vencimiento el 30 de diciembre de este
+  año. Se interpreta el corte al inicio de ese día, 00:00 Colombia (05:00 UTC),
+  comunicado durante la implementación. Rc.9+22 contiene este límite fijo.
+- BetaExpiration centraliza instante y texto. BetaAccessGate envuelve el Navigator
+  desde MaterialApp.builder: protege todas las rutas/diálogos, también al arrancar
+  vencida. Se comprueba al reanudar y como máximo cada minuto; el último temporizador
+  se programa para el instante exacto. Una sesión vencida permanece bloqueada.
+- Pantalla «Versión de prueba finalizada», con fecha y petición de actualizar.
+  Acerca de muestra la caducidad antes del corte. Biblioteca/progreso no se borran.
+  No hay ficha publicada de Play a la que enlazar todavía.
+- Se conserva la app offline sin dependencias ni permisos nuevos. Se usa reloj
+  local; se acepta la limitación ya explicada sobre manipulación de fecha. No se
+  implementa servidor, licencia remota ni migración de firma de publicación.
+- El reloj es inyectable para verificar límites y mantener los recorridos y renders
+  funcionales deterministas cuando pase la fecha. El arranque real usa DateTime.now.
+  La futura edición oficial debe retirar expresamente este corte, incluso en release.

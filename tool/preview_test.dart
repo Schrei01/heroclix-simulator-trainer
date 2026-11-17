@@ -1,3 +1,5 @@
+import '../test/support/test_clock.dart';
+
 // Ejecutar explícitamente: flutter test tool/preview_test.dart
 // Capturas de render Flutter; no representan una prueba en Android real.
 import 'dart:io';
@@ -8,6 +10,8 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:heroclix_simulator_trainer/app.dart';
+import 'package:heroclix_simulator_trainer/domain/app_info.dart';
+import 'package:heroclix_simulator_trainer/domain/beta_expiration.dart';
 import 'package:heroclix_simulator_trainer/domain/board/board_dimensions.dart';
 import 'package:heroclix_simulator_trainer/domain/board/board_viewport.dart';
 import 'package:heroclix_simulator_trainer/domain/board/cell_coordinate.dart';
@@ -83,6 +87,8 @@ void main() {
   });
 
   for (final (name, size, dimensions) in [
+    ('beta_expired', const Size(400, 900), null),
+    ('beta_expired_landscape', const Size(800, 360), null),
     ('brush_hint_portrait', const Size(400, 900), null),
     ('brush_hint_landscape', const Size(1000, 700), null),
     ('brush_hint_compact', const Size(320, 320), null),
@@ -446,12 +452,24 @@ void main() {
         RepaintBoundary(
           key: key,
           child: HeroClixApp(
+            clock: name.startsWith('beta_expired')
+                ? () => BetaExpiration.deadline
+                : testClock,
             controller: persistent,
             trainingController: training,
           ),
         ),
       );
       await tester.pumpAndSettle();
+      if (name.startsWith('beta_expired')) {
+        await tester.runAsync(
+          () => precacheImage(
+            const AssetImage(AppInfo.iconAsset),
+            key.currentContext!,
+          ),
+        );
+        await tester.pumpAndSettle();
+      }
       TestGesture? brushGesture;
       if (name.startsWith('brush_')) {
         persistent.loadScenario(
@@ -1297,7 +1315,7 @@ void main() {
         final image = await boundary.toImage();
         try {
           final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-          final output = File('build/previews/teamfight-brand/$name.png');
+          final output = File('build/previews/beta-expiry/$name.png');
           await output.parent.create(recursive: true);
           await output.writeAsBytes(bytes!.buffer.asUint8List());
         } finally {

@@ -1,3 +1,5 @@
+import 'support/test_clock.dart';
+
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -97,7 +99,7 @@ void main() {
     (tester) async {
       final c = await persistentController(MemoryStore());
       c.loadScenario(localExamples.first.copy().session);
-      await tester.pumpWidget(HeroClixApp(controller: c));
+      await tester.pumpWidget(HeroClixApp(clock: testClock, controller: c));
       final before = c.value.characters.all.first.position;
       expect(find.byKey(const ValueKey('mode-simulator')), findsNothing);
       expect(find.byKey(const ValueKey('mode-referee')), findsNothing);
@@ -118,7 +120,7 @@ void main() {
         CharacterDraft(name: 'Original', teamId: 'team-1', position: fc('A1')),
       );
       final originalId = c.workspace!.current.id;
-      await tester.pumpWidget(HeroClixApp(controller: c));
+      await tester.pumpWidget(HeroClixApp(clock: testClock, controller: c));
       await press(tester, 'open-examples');
       await press(tester, 'example-wall');
       await press(tester, 'open-example-copy');
@@ -370,7 +372,7 @@ void main() {
   ) async {
     final semantics = tester.ensureSemantics();
     try {
-      await tester.pumpWidget(const HeroClixApp());
+      await tester.pumpWidget(const HeroClixApp(clock: testClock));
       await tester.ensureVisible(find.byKey(const ValueKey('open-about')));
       await tester.pumpAndSettle();
       expect(tester, meetsGuideline(androidTapTargetGuideline));

@@ -1,3 +1,5 @@
+import 'support/test_clock.dart';
+
 import 'dart:ui' show Tristate;
 
 import 'package:flutter/semantics.dart';
@@ -11,7 +13,7 @@ void main() {
   ) async {
     final semantics = tester.ensureSemantics();
     try {
-      await tester.pumpWidget(const HeroClixApp());
+      await tester.pumpWidget(const HeroClixApp(clock: testClock));
 
       expect(find.text('TeamFight: GridLab'), findsOneWidget);
       expect(
@@ -62,7 +64,7 @@ void main() {
         addTearDown(tester.view.resetPhysicalSize);
         addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
 
-        await tester.pumpWidget(const HeroClixApp());
+        await tester.pumpWidget(const HeroClixApp(clock: testClock));
         for (final id in ['editor', 'trainer']) {
           final card = find.byKey(ValueKey('mode-$id'));
           await tester.ensureVisible(card);

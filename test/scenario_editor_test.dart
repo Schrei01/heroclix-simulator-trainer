@@ -1,3 +1,5 @@
+import 'support/test_clock.dart';
+
 import 'dart:convert';
 import 'dart:async';
 import 'dart:typed_data';
@@ -23,7 +25,9 @@ Future<EditorController> openPersistent(
     store ?? MemoryStore(),
     files: files,
   );
-  await tester.pumpWidget(HeroClixApp(controller: controller));
+  await tester.pumpWidget(
+    HeroClixApp(clock: testClock, controller: controller),
+  );
   await tester.ensureVisible(find.text('Abrir editor'));
   await tester.tap(find.text('Abrir editor'));
   await tester.pumpAndSettle();

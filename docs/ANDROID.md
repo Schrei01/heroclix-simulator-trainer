@@ -1,6 +1,6 @@
 # Preparar, compilar e instalar en Android
 
-Candidata actual: **TeamFight: GridLab 1.0.0-rc.8+21**. Inicio contiene Editor y Entrenador; las consultas
+Candidata actual: **TeamFight: GridLab 1.0.0-rc.9+22**. Inicio contiene Editor y Entrenador; las consultas
 y ensayos están en las herramientas del Editor. El recorrido vigente del Editor
 está al final de este documento. Los apartados identificados por etapa describen
 sus versiones históricas. Resultados efectivamente ejecutados: [ESTADO](ESTADO.md).
@@ -374,7 +374,7 @@ al cambiar herramienta y dejar pasar los gestos sin alterar cámara. Probar vert
 horizontal y texto ampliado. Verificación Android pendiente; pruebas y capturas
 Flutter/Windows en ESTADO.md. Se mantiene la decisión de continuar sin teléfono.
 
-## TeamFight: GridLab — candidata actual 1.0.0-rc.8+21
+## TeamFight: GridLab — identidad rc.8+21 (histórica)
 
 APK: build/releases/teamfight-gridlab-1.0.0-rc.8-debug.apk. Conserva paquete y firma;
 instalar encima sin desinstalar para mantener biblioteca/progreso.
@@ -384,3 +384,20 @@ tema monocromático si el launcher lo ofrece, arranque/recientes, Inicio/Acerca 
 licencias. Revisar giro/texto y datos anteriores. Recursos compilados y originales
 contrastados; documentación de identidad en IDENTIDAD.md. El recorrido real sigue
 pendiente, manteniendo la decisión del usuario de continuar sin teléfono.
+
+## Beta con vencimiento — candidata rc.9+22
+
+APK actual: build/releases/teamfight-gridlab-1.0.0-rc.9-debug.apk. Mismo paquete y
+certificado debug; instalar encima. Caduca al empezar el 30 de diciembre de 2026,
+00:00 Colombia (05:00 UTC). Acerca de muestra ese límite. El corte cubre Navigator,
+diálogos y todas las funciones; no elimina los datos guardados.
+
+Comprobar en dispositivo de pruebas: abrir antes del corte, abrir con fecha vencida,
+cruzar el corte con Editor/diálogo abierto y reanudar desde segundo plano después
+del límite. Probar giro/texto ampliado y botón Atrás. Usar fecha manual solo para
+esas comprobaciones y restaurarla después. Este recorrido nativo sigue pendiente.
+
+La app mantiene funcionamiento offline y no añade permisos. El reloj local puede
+alterarse: la caducidad no es protección contra manipulación. La futura versión
+oficial debe retirar expresamente BetaAccessGate; compilar en release por sí solo
+no elimina el vencimiento. No se incluye enlace de Play hasta disponer de la ficha.

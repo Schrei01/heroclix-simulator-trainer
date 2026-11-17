@@ -1,103 +1,68 @@
 # Estado actual — TeamFight: GridLab
 
-2026-11-17 (America/Bogota). **1.0.0-rc.8+21**, candidata debug.
-Rama `codex/latest-apk-only`, sobre `cb4bea1`. Código de aplicación: `ac6d1d3`.
-Informe anterior: [ENTREGA_RC7.md](ENTREGA_RC7.md).
+2026-11-17 (America/Bogota). **1.0.0-rc.9+22**, beta candidata debug.
+Rama `codex/beta-expiry-december-2026`, base `f0ec936`.
+Informe anterior: [ENTREGA_RC8.md](ENTREGA_RC8.md).
 
-## Identidad aplicada
+## Vencimiento implementado
 
-- Nombre visible **TeamFight: GridLab** en Android, título Flutter, Inicio,
-  Acerca de y licencias. AppInfo.name centraliza el nombre de la interfaz.
-- Iconos originales del ZIP aportado: 25 PNG de Android en cinco densidades y dos
-  XML adaptables (normal/redondo) con fondo, primer plano y capa monocromática.
-  Manifest usa @mipmap/ic_launcher y @mipmap/ic_launcher_round. Se retira el vector anterior.
-- Inicio y Acerca de muestran el símbolo del paquete; asset Flutter 512×512
-  incluido en pubspec. Se comprueba su hash dentro del APK frente al PNG original.
-- Icono 512×512 y banner 1024×500 de Google Play preparados en distribution/google-play/.
-  Procedencia, dimensiones y formato: [IDENTIDAD.md](IDENTIDAD.md).
-- Se conservan applicationId com.valinor.heroclixtrainer, namespace/canales, firma,
-  almacenamiento privado y paquete Dart. La marca cambia dentro de la misma app;
-  biblioteca/progreso siguen en sus ubicaciones. Sin nuevas reglas, permisos,
-  dependencias ni esquemas. Se ignora la caché generada android/.kotlin/.
+- Corte fijo al empezar el **30 de diciembre de 2026, 00:00 Colombia**:
+  `2026-12-30T05:00:00Z`. BetaExpiration centraliza el instante y el texto.
+- BetaAccessGate envuelve Navigator desde MaterialApp.builder. Al vencer, sustituye
+  Inicio, Editor, Entrenador, rutas y diálogos por «Versión de prueba finalizada».
+  Pide instalar una versión actualizada; todavía no existe ficha de Play para enlazar.
+- Comprueba al arrancar y reanudar; temporizador de un minuto como máximo, con último
+  control programado para el corte. Una sesión bloqueada no se reactiva al atrasar
+  el reloj. Se cancela el temporizador y el observador al desmontar.
+- Acerca de muestra la fecha. Biblioteca y progreso no se eliminan. Los APK previos
+  sin esta función no adquieren caducidad retroactivamente.
+- Usa el reloj del teléfono. Sin servidor ni validación de licencia; puede eludirse
+  manipulando fecha/reiniciando. Continúa offline, sin permisos o dependencias nuevos.
+- La futura edición oficial debe retirar expresamente este corte. Compilar con
+  -Mode release no lo retira. No se modifica todavía la firma para Google Play.
 
 ## Verificación ejecutada
 
 Flutter 3.50.0, Dart 3.14.0, material_ui 1.11.0, Windows.
 
-| Comando / comprobación | Resultado |
+| Comprobación | Resultado |
 | --- | --- |
-| `dart format --output=none --set-exit-if-changed lib test tool` | 155 archivos, 0 cambios |
-| `flutter --no-version-check analyze --no-pub` | No issues found, 6,2 s |
-| `flutter --no-version-check test --no-pub test/widget_test.dart test/final_acceptance_test.dart --reporter expanded` | **35 aprobadas**, 8 s |
-| `flutter --no-version-check test tool/preview_test.dart --no-pub --reporter expanded` | **101 renders aprobados**, 46 s |
-| `flutter --no-version-check build apk --debug --no-pub` | Correcto; Gradle 65,1 s |
-| PNG/XML Android frente al ZIP | 27 recursos coinciden por SHA-256; dimensiones de PNG comprobadas |
-| `aapt dump badging / permissions / resources / xmltree` | Nombre, versión/código, icon/roundIcon y capas background/foreground/monochrome compilados; SDK 24/36 |
-| `apksigner verify --verbose --print-certs` | Verifies; firma v2 válida y mismo certificado |
+| dart format --output=none --set-exit-if-changed lib test tool | 159 archivos, 0 cambios |
+| flutter --no-version-check analyze --no-pub | No issues found, 94,9 s |
+| flutter --no-version-check test --no-pub --reporter expanded | **494 aprobadas**, 5 min 18 s |
+| flutter test tool/preview_test.dart --no-pub --reporter expanded | **103 renders aprobados**, 2 min 2 s |
+| Renders finales --plain-name beta_expired | **2 aprobados**, con imagen precargada |
+| ./tool/build_apk.ps1 | Compilación correcta, Gradle 236,3 s; copia/hash válidos; 1 APK anterior eliminado |
+| aapt badging/permissions + apksigner | Paquete, versión, SDK y firma v2 válidos; mismo certificado, sin INTERNET |
 
-WidgetTest comprueba nombre visible, título y símbolo, junto a navegación y 15
-combinaciones de tamaño/escala. FinalAcceptance incluye versiones, E2E de archivos,
-consultas, ejercicios, JSON/PNG, ejemplos, Acerca de/licencias y accesibilidad.
-Se ejecutan los 35 casos afectados por Inicio/identidad; las 485 pruebas completas
-previas pertenecen a rc.6, archivadas en ENTREGA_RC6.md, y no se atribuyen a esta entrega.
+Las nueve pruebas nuevas cubren arranque vencido de HeroClixApp, frontera inclusiva
+con UTC y otras zonas, contenido protegido sin construir, corte con ruta/diálogo,
+Atrás, reanudación, reloj adelantado/atrasado, cancelación al desmontar y dos tamaños
+con texto x3. Los recorridos funcionales y renders inyectan una fecha anterior al
+corte para no depender de la fecha de ejecución; el arranque real usa DateTime.now.
 
-Capturas Flutter en build/previews/teamfight-brand/; revisados Inicio y Acerca de
-con nombre y símbolo nuevos. Los 101 renders mantienen hit test fatal. Metadatos
-originales en build/verification/brand-assets/ y compilados en
-build/verification/teamfight-brand/. Logs/capturas fuera de Git. No son pruebas Android.
+Capturas revisadas vertical y horizontal en build/previews/beta-expiry/.
+Logs: build/test-beta-expiry.log, build/analyze-beta-expiry.log,
+build/render-beta-expiry.log, build/render-beta-expiry-final.log,
+build/build-beta-expiry.log. Metadatos en build/verification/beta-expiry/.
+No son pruebas Android reales.
 
-## APK entregable
+## APK entregable único
 
-- `build/releases/teamfight-gridlab-1.0.0-rc.8-debug.apk`, **158910079 bytes**.
-- SHA-256: `E9898D2E102FB1FDB9F2FB3834BB65F7FECC9583F2B707F89CE003C1554B532F`.
-- Copia entregable y salida estándar con el mismo hash. Solo se conserva este APK
-  en build/releases/; los 20 anteriores se eliminaron por petición del usuario.
-- Paquete com.valinor.heroclixtrainer, nombre TeamFight: GridLab, versión 1.0.0-rc.8,
-  código 21, SDK mínimo 24 y objetivo/compilación 36.
+- build/releases/teamfight-gridlab-1.0.0-rc.9-debug.apk, **158917063 bytes**.
+- SHA-256: `67BA50665239E5EE7EF713800AA136909C432EDC9628408655794B0BA4DB7443`.
+- Paquete com.valinor.heroclixtrainer, nombre TeamFight: GridLab, código 22.
+  SDK mínimo 24, objetivo/compilación 36.
 - Certificado SHA-256: `57081ee91137c216eff437a7c75ac5bb6f552bc29167e63370d85628fc82ac54`.
-- Firma debug conservada: instalar encima, sin desinstalar, para mantener biblioteca
-  y progreso. NOTICES.Z y PNG de marca presentes en el APK. Sin INTERNET ni permiso
-  de almacenamiento amplio; solo permiso privado de receptor generado.
+- Se eliminó el entregable rc.8 después de validar rc.9. Las salidas técnicas
+  actuales de Flutter/Gradle en build/app/ permanecen. Política en AGENTS.md.
+- Instalar encima sin desinstalar para conservar biblioteca y progreso de la beta
+  anterior con igual firma. Esta actualización no fuerza a usuarios de APK antiguos
+  a instalarla. Preparar firma definitiva y distribución de Play por separado.
 
-## Comprobar en Android
+## Pendiente en Android
 
-1. Instalar encima: conserva datos. Verificar nombre e icono en launcher y Ajustes.
-2. Revisar icono normal/redondo, máscaras del launcher y tema monocromático cuando
-   esté disponible, además del arranque y aplicaciones recientes.
-3. Abrir Inicio, Acerca de y licencias: TeamFight: GridLab, símbolo y rc.8/código 21.
-   Probar giro/texto ampliado. Abrir biblioteca y progreso; continuar los recorridos del Editor.
-
-Pendiente: actualización e iconos/máscaras/tema/splash en Android real, TalkBack,
-selectores, radios apagadas, proceso y rendimiento. Se mantiene la decisión previa
-de continuar sin teléfono. El APK sigue siendo candidata debug; la publicación
-requiere completar aceptación y firma release. Los recursos de Google Play quedan
-preparados en el repositorio.
-
-README/README_FINAL, identidad, decisiones, Android, arquitectura, hoja de ruta y
-matriz AC33 actualizados. Rc.7 archivada en ENTREGA_RC7.md.
-
-## Política de APK único — actualización posterior a la identidad
-
-No cambia la app: continúa 1.0.0-rc.8+21 con el mismo APK/hash de la entrega de marca.
-Se implementa tool/build_apk.ps1 y se fija como flujo del repositorio en AGENTS.md.
-README/README_FINAL y ANDROID usan ese comando. Primero compila y valida paquete,
-versión y firma; solo tras comprobar la copia retira los APK anteriores de releases.
-
-Verificación ejecutada:
-
-- tool/test_apk_workflow.ps1: **5 comprobaciones aprobadas** en directorios temporales
-  aislados. Compilación fallida conserva los anteriores aunque exista un APK fuente
-  válido previo; versión incorrecta y APK corrupto también. Publicar correctamente
-  deja un solo APK con hash idéntico y conserva archivos/carpetas ajenos. Repetir
-  conserva el vigente. Se normaliza el modo Debug/debug en el nombre de entrega.
-- tool/build_apk.ps1: compilación debug correcta (Gradle 12,5 s), paquete/versión y
-  firma válidos, copia con hash idéntico, **20 APK anteriores eliminados**.
-- Antes: 21 APK, 3398234428 bytes. Después: 1 APK, 158910079 bytes.
-  Liberados **3239324349 bytes**, aproximadamente 3,02 GiB.
-- Queda build/releases/teamfight-gridlab-1.0.0-rc.8-debug.apk. SHA-256 conservado:
-  E9898D2E102FB1FDB9F2FB3834BB65F7FECC9583F2B707F89CE003C1554B532F.
-
-Las salidas actuales app-debug.apk de Flutter/Gradle permanecen en build/app/;
-son copias técnicas de la misma versión, no versiones históricas. Logs en
-build/test-apk-workflow-final.log y build/build-latest-apk-only.log. Los informes
-anteriores describen su entrega histórica y no garantizan disponibilidad del binario.
+Se mantiene la autorización de continuar sin teléfono. Falta verificar instalación
+encima, fecha manual/corte/reanudación reales, Atrás, giro/TalkBack, launcher y
+recorridos nativos previos. Seguir docs/ANDROID.md; no se atribuyen estas pruebas
+nativas a la verificación Flutter. Sigue siendo candidata debug, no release estable.

@@ -1,3 +1,5 @@
+import 'support/test_clock.dart';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:heroclix_simulator_trainer/app.dart';
 import 'package:heroclix_simulator_trainer/domain/board/board_dimensions.dart';
@@ -8,7 +10,7 @@ import 'package:heroclix_simulator_trainer/presentation/editor/editor_screen.dar
 import 'package:material_ui/material_ui.dart';
 
 Future<EditorController> openEditor(WidgetTester tester) async {
-  await tester.pumpWidget(const HeroClixApp());
+  await tester.pumpWidget(const HeroClixApp(clock: testClock));
   await tester.ensureVisible(find.text('Abrir editor'));
   await tester.tap(find.text('Abrir editor'));
   await tester.pumpAndSettle();
