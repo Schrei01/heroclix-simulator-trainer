@@ -57,8 +57,9 @@ ESTADO.md para saber qué se ejecutó realmente.
    un escenario; consultar visión en Simulador/Árbitro y practicar en Entrenador.
 5. Girar vertical/horizontal y recorrer la pantalla. Repetir con texto ampliado
    en accesibilidad de Android y TalkBack; todas las entradas de modo deben abrir.
-6. Deshabilitar Wi-Fi y datos. Esperar confirmación de autoguardado, forzar cierre,
-   reabrir Editor y comprobar contenido. Probar biblioteca y exportar/importar JSON
+6. Deshabilitar Wi-Fi y datos. Guardar una escena en biblioteca y forzar cierre.
+   Al abrir, comprobar escena vacía y figuras desde A; abrir manualmente el guardado.
+   Comprobar progreso del Entrenador. Probar biblioteca y exportar/importar JSON
    con el selector nativo; exportar PNG y abrir Compartir (cancelar para la prueba).
 7. Registrar resultados reales en ESTADO.md; las pruebas de widgets no sustituyen
    estas pruebas de dispositivo.
@@ -260,3 +261,22 @@ Seleccionar y pulsar lápiz debe editar la misma figura. Colocar varias, deshace
 rehacer y cerrar/reabrir con autoguardado. Bloqueado pide confirmación para estudio.
 Estas interacciones están cubiertas por Flutter/renders en Windows; el recorrido
 nativo continúa pendiente. Resultados y hash actuales en ESTADO.md.
+
+## Sesión temporal y visión inmediata — 1.0.0-rc.3+16
+
+APK actual: `build/releases/heroclix-1.0.0-rc.3-debug.apk`, misma firma/paquete para
+instalar encima sin desinstalar. La sesión de Editor ya no se recupera al abrir:
+guarda en biblioteca lo que quieras conservar. Las figuras nuevas empiezan desde A
+en cada apertura. Cambiar de sección y volver desde segundo plano conserva la
+sesión si la instancia sigue activa; el progreso del Entrenador permanece guardado.
+
+Para comprobarlo: llegar hasta AA, guardar una copia, cerrar completamente y abrir.
+Debe aparecer mapa vacío; colocar una figura debe generar A. La copia de biblioteca
+debe seguir disponible al abrirla manualmente. Repetir sin guardar y comprobar que
+los cambios temporales no se recuperan. No borrar datos del paquete para probar.
+
+En Línea de visión, elegir dos figuras debe mostrar inmediatamente el dictamen
+sobre el mapa; tocarlo abre referencias. Probar despejada/H/B/No evaluada, borrar un
+extremo, limpiar línea, giro y texto ampliado. Regresiones/archivos/controladores
+verificados en Windows; cierre real, pausa Android, TalkBack y rendimiento siguen
+pendientes de dispositivo.

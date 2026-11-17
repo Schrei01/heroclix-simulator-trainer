@@ -127,3 +127,8 @@ Los documentos antiguos carecen de ese campo y se leen con colección vacía.
 No cambia el formato del escenario ni el banco curado versión 1.
 
 Resultados de pruebas, renders y APK: [ESTADO.md](ESTADO.md).
+
+Desde rc.3 el escenario de Editor es temporal y se reinicia al abrir la app.
+Este cambio no borra ejercicios ni estadísticas: el Entrenador mantiene sus datos
+persistentes y snapshots independientes. Los escenarios guardados en biblioteca
+siguen disponibles para crear ejercicios personales.

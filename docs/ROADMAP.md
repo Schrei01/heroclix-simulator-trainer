@@ -32,3 +32,8 @@ Actualización posterior a 12: ajustes de edición solicitados por el usuario,
 1.0.0-rc.2+15 en `codex/editor-quick-tools`. Paleta de terreno, altura propuesta 2
 y colocación rápida de figuras; modos aún separados. Evidencia actual en ESTADO.md;
 entrega 12 original archivada en ENTREGA_12.md. Aceptación nativa sigue pendiente.
+
+Actualización actual: 1.0.0-rc.3+16, rama `codex/temporary-scenario-vision`.
+Nueva apertura vacía/figuras desde A, biblioteca y progreso persistentes, y dictamen
+inmediato sobre el mapa. Entrega rc.2 archivada en ENTREGA_RC2.md. Modos aún separados;
+candidata con aceptación Android pendiente.

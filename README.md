@@ -1,13 +1,13 @@
 # HeroClix Simulator & Trainer
 
-Aplicación Android Flutter/Dart, offline y en español. Versión **1.0.0-rc.2+15**.
-La actualización del Editor está en la rama `codex/editor-quick-tools` del repositorio privado
+Aplicación Android Flutter/Dart, offline y en español. Versión **1.0.0-rc.3+16**.
+La actualización de sesión y visión está en la rama `codex/temporary-scenario-vision` del repositorio privado
 [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer).
 
 ```powershell
 git clone https://github.com/Schrei01/heroclix-simulator-trainer.git
 cd heroclix-simulator-trainer
-git switch codex/editor-quick-tools
+git switch codex/temporary-scenario-vision
 ```
 
 ## Qué existe
@@ -23,7 +23,7 @@ internos; trazo y relleno rectangular con vista previa; borrado por capa y tres
 limpiezas independientes. La leyenda usa letras, puntos, rayas y línea doble,
 además del color. Figuras, terreno y muros tienen datos separados.
 
-La etapa 04 añade biblioteca local, recuperación automática de sesión, historial
+La etapa 04 añadió biblioteca local, recuperación automática de sesión, historial
 de 100 operaciones, JSON versionado y PNG del tablero. La etapa 05 añade geometría
 exacta. La etapa 06 incorpora visión reglamentaria básica en Editor, Simulador y
 Árbitro, compartiendo escenario y motor. La etapa 07 añade distancias, comparación
@@ -37,6 +37,11 @@ La etapa 12 integra cinco ejemplos locales, Guía rápida y Acerca de con cobert
 y licencias offline; corrige la exportación Android TXT y la selección táctica al
 reutilizar caché. Es una **candidata**: falta la aceptación nativa, no se congela
 1.0.0 estable. Instalación, recompilación y mantenimiento en [README_FINAL](README_FINAL.md).
+
+Desde rc.3 cada apertura empieza con escenario vacío y figuras desde A. La escena
+se conserva mientras siga abierta la app; **Guardar** en biblioteca permite conservarla
+para abrirla manualmente después. El progreso del Entrenador sigue siendo persistente.
+Al trazar entre dos figuras, el dictamen aparece directamente arriba del mapa.
 
 ## Analizar y comparar posiciones
 
@@ -160,8 +165,9 @@ editado sí pertenece al escenario, junto con capacidades, altura y transiciones
 
 ## Consultar un dictamen de visión
 
-1. Crea o abre un escenario con figuras en el Editor. En Línea de visión elige
-   origen y destino y pulsa **Dictamen de visión**; también está en Opciones.
+1. Crea o abre un escenario con figuras en el Editor. En Línea de visión toca
+   origen y destino: el dictamen aparece automáticamente en una franja sobre el mapa.
+   Tócala para ver explicación y referencias; el informe también está en Opciones.
 2. Desde Inicio, **Simulador** y **Árbitro** muestran el mismo escenario con un
    tablero que solo selecciona extremos y navega. **Editar escenario** abre el
    Editor y al volver conserva las referencias válidas.
@@ -217,10 +223,11 @@ en el PNG del escenario. Detalles matemáticos en [GEOMETRIA](docs/GEOMETRIA.md)
 - El menú superior ofrece **Guardar**, **Guardar como**, nuevo, importar JSON,
   exportar/compartir JSON y exportar PNG. Guardar como crea otra identidad;
   dos escenarios pueden tener el mismo nombre. El ID corto distingue las copias.
-- Cada edición lógica activa el autoguardado de la sesión actual. El indicador
-  de estado permite consultar el resultado y reintentar un fallo. Guarda en la
-  biblioteca para conservar varias versiones: cambiar de escenario sustituye la
-  recuperación actual y pide confirmación si hay cambios fuera de la biblioteca.
+- La escena actual es temporal: cambiar de sección o dejar la app en segundo plano
+  conserva la sesión si sigue activa. Una nueva apertura empieza vacía y desde A.
+  **Guardar** o **Guardar como** conserva el escenario en biblioteca; cambiar a otra
+  escena pide confirmación si hay cambios sin guardar. La recuperación antigua no
+  se abre ni se actualiza automáticamente.
 - **Deshacer/Rehacer** está en la barra de herramientas desplazable. Incluye
   figuras, equipos, terreno, muros, limpiezas y dimensiones. Abrir, importar, nuevo
   o guardar como reinicia el historial. Cámara, selección y herramientas no entran.
@@ -233,8 +240,7 @@ en el PNG del escenario. Detalles matemáticos en [GEOMETRIA](docs/GEOMETRIA.md)
   No necesita permisos de almacenamiento amplios, cuentas ni servidor. El destino
   elegido al compartir puede tener sus propios requisitos de red.
 
-La recuperación se escribe de forma asíncrona: espera a que el indicador confirme
-el autoguardado antes de forzar el cierre. Desinstalar elimina la biblioteca privada;
+Guarda en biblioteca antes de cerrar si deseas conservar la escena. Desinstalar elimina la biblioteca privada;
 exporta JSON para conservar una copia externa. Detalles en [ESCENARIOS](docs/ESCENARIOS.md).
 
 ## Uso del Editor
@@ -247,7 +253,7 @@ exporta JSON para conservar una copia externa. Detalles en [ESCENARIOS](docs/ESC
    primer equipo, base 1×1, tamaño Normal, velocidad 6 y alcance 4, sin mejoras.
    Para cambiarla, selecciónala y pulsa el lápiz inferior; la lista superior también
    abre fichas. Nombre, equipo, posición, base, velocidad y alcance siguen editables.
-   Cada colocación permite Deshacer/Rehacer y activa el autoguardado habitual.
+   Cada colocación permite Deshacer/Rehacer y se conserva en la sesión abierta.
 4. Mantener pulsada una figura y arrastrar muestra destino ✓/×. Solo al soltar un
    destino válido se mueve. La ficha permite editar la coordenada como alternativa.
 5. **Terrenos** muestra tres iconos centrados al pie del mapa: Bloqueado,
@@ -309,7 +315,7 @@ flutter --no-version-check build apk --debug
 
 `--no-version-check` evita una consulta de actualización del SDK; no cambia su
 versión ni omite análisis o pruebas. Los renders se escriben en
-`build/previews/editor-quick-tools/`; son capturas Flutter, no de un dispositivo.
+`build/previews/session-vision/`; son capturas Flutter, no de un dispositivo.
 
 Preparación Android y firma release en [ANDROID.md](docs/ANDROID.md).
 El APK debug y sus resultados/hash se registran en [ESTADO.md](docs/ESTADO.md).
@@ -331,7 +337,7 @@ No se incluyen binarios, credenciales ni claves en Git.
 - `lib/application/scenarios`: documento, codec y repositorio de escenarios.
 - `lib/application/training`: formato versionado y persistencia del Entrenador.
 - `lib/infrastructure/local`: archivos privados y puente nativo Android.
-- `lib/presentation/scenarios`: biblioteca, autoguardado, acciones y render PNG.
+- `lib/presentation/scenarios`: biblioteca, sesión temporal, acciones y render PNG.
 - `lib/presentation/editor`: formularios, herramientas, vista previa y canvas por capas.
 - `lib/presentation/vision`: informe y vistas de Simulador/Árbitro.
 - `lib/presentation/training`: banco, pregunta, respuesta y autor de ejercicios.
@@ -354,7 +360,7 @@ de herramientas y compilación durante el desarrollo sí puede necesitar interne
 Informes anteriores: [00](docs/ENTREGA_00.md), [01](docs/ENTREGA_01.md),
 [02](docs/ENTREGA_02.md), [03](docs/ENTREGA_03.md), [04](docs/ENTREGA_04.md),
 [05](docs/ENTREGA_05.md), [06 inicial](docs/ENTREGA_06.md),
-[06 corregida](docs/ENTREGA_06_FIX.md), [07](docs/ENTREGA_07.md), [08](docs/ENTREGA_08.md), [09](docs/ENTREGA_09.md), [10](docs/ENTREGA_10.md), [11](docs/ENTREGA_11.md), [12](docs/ENTREGA_12.md).
+[06 corregida](docs/ENTREGA_06_FIX.md), [07](docs/ENTREGA_07.md), [08](docs/ENTREGA_08.md), [09](docs/ENTREGA_09.md), [10](docs/ENTREGA_10.md), [11](docs/ENTREGA_11.md), [12](docs/ENTREGA_12.md), [rc.2](docs/ENTREGA_RC2.md).
 
 Las etapas 00–12 están implementadas dentro del perfil documentado. La candidata
 mantiene aceptación Android pendiente: [MATRIZ_ACEPTACION](docs/MATRIZ_ACEPTACION.md).

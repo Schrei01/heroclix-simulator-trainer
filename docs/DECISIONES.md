@@ -463,3 +463,23 @@ verificado ni implementado ninguna regla del juego.
 - Ocultar la ayuda transitoria al colocar para dejar accesible el lápiz inferior.
 - 1.0.0-rc.2+15 conserva firma debug; aceptación nativa sigue pendiente por decisión
   de continuar sin teléfono. No se promueve estable ni se unifican los modos.
+
+## 2026-11-17 — Sesión temporal y dictamen sobre el mapa
+
+- Petición del usuario: cerrar/reabrir empieza con escenario vacío y figuras desde
+  A. Desactivar recuperación y escritura automáticas del escenario de trabajo por
+  defecto, sin borrar archivos ni biblioteca. Navegación/segundo plano conservan
+  la instancia viva. Guardar explícito y progreso del Entrenador siguen persistentes.
+- Mantener APIs/formato de recuperación antigua con activación explícita en sus
+  pruebas de compatibilidad. Añadir pruebas con la configuración de producción,
+  AA→A, working no leído/escrito, biblioteca y progreso en disco real. No se da por
+  probado el comportamiento Android a partir de una prueba de controladores.
+- Habilitar visión al elegir la herramienta y mostrar el mismo dictamen en franja
+  superior al completar extremos. Color/icono/texto y acceso directo a referencias;
+  No evaluado conserva incertidumbre. Bases automáticas sin diálogo; referencia
+  manual disponible mediante el control existente.
+- Actualizar mensajes de Inicio/Guía/estado para no prometer autoguardado temporal.
+  Error de Guardar permite reintentar guardado; los renders usan sesión temporal y
+  el caso de fallo es ahora de guardado explícito, no autoguardado.
+- 1.0.0-rc.3+16, misma firma debug; formatos/perfiles sin cambios. Sin unificar modos,
+  sin partida completa ni promoción a estable mientras falte aceptación nativa.

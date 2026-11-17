@@ -1,29 +1,29 @@
-# HeroClix Simulator & Trainer — 1.0.0-rc.2+15
+# HeroClix Simulator & Trainer — 1.0.0-rc.3+16
 
 Aplicación Android offline, en español, para construir escenarios, consultar reglas
 implementadas y practicar. **Versión candidata, APK debug**: faltan las comprobaciones
 nativas de aceptación y rendimiento descritas abajo. No se congela 1.0.0 estable.
 Repositorio privado: [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer),
-rama `codex/editor-quick-tools`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
+rama `codex/temporary-scenario-vision`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
 
 ## Instalar y actualizar
 
 El archivo generado se conserva en:
 
 ```text
-build/releases/heroclix-1.0.0-rc.2-debug.apk
+build/releases/heroclix-1.0.0-rc.3-debug.apk
 ```
 
 1. Android 7.0/API 24 o superior. Copiar el APK al teléfono, abrirlo en Archivos
    y autorizar la instalación desde esa aplicación cuando Android lo solicite.
 2. Para actualizar una versión anterior con esta misma firma, instalar encima,
-   **sin desinstalar**. Se conservan archivos privados, escenarios y progreso.
+   **sin desinstalar**. Se conservan archivos privados, escenarios guardados y progreso.
    Cambiar firma o applicationId impide esa actualización directa.
 3. Alternativa con depuración USB autorizada y Android Platform Tools:
 
 ```powershell
 adb devices -l
-adb -s ID install -r build/releases/heroclix-1.0.0-rc.2-debug.apk
+adb -s ID install -r build/releases/heroclix-1.0.0-rc.3-debug.apk
 adb -s ID shell am start -n com.valinor.heroclixtrainer/com.valinor.heroclix_simulator_trainer.MainActivity
 ```
 
@@ -60,6 +60,16 @@ Visión y alcance declarados no prueban que un ataque sea legal. El analizador
 segmenta a 12 destinos/página y 32 enemigos: el resto permanece No evaluado.
 
 Todo el contenido necesario está instalado: no requiere login, servidor o red.
+
+Cada apertura empieza con un escenario vacío y las figuras desde A. La escena
+temporal continúa al cambiar de sección o dejar la app en segundo plano si la
+instancia sigue activa. **Guardar** en biblioteca permite abrirla manualmente en
+otra sesión. Los guardados anteriores y el progreso del Entrenador se conservan;
+el autoguardado antiguo del Editor deja de recuperarse y escribirse automáticamente.
+
+En Línea de visión, elegir las dos figuras muestra el dictamen sobre el mapa sin
+abrir menús. Tocar esa franja abre explicación/referencias. Conserva los estados
+despejada, obstaculizada, bloqueada y No evaluada del mismo motor implementado.
 Para usar archivos offline, elegir almacenamiento local en el selector Android;
 proveedores externos del sistema pueden requerir conexión. El diagnóstico TXT/PNG
 usa etiquetas genéricas. Exportar la escena completa sí conserva sus nombres.
@@ -68,15 +78,15 @@ usa etiquetas genéricas. Exportar la escena completa sí conserva sus nombres.
 
 | Función | Estado |
 | --- | --- |
-| Cuatro modos, biblioteca, JSON/PNG y recuperación de sesión | Implementado y cubierto por pruebas Flutter/archivos en Windows |
+| Cuatro modos, biblioteca, JSON/PNG y sesión temporal | Implementado; nuevo arranque vacío, biblioteca/progreso persistentes |
 | Geometría, visión, alcance, alturas, mejoras tipadas y movimiento | Perfil parcial implementado, con reglas y No evaluados explícitos |
 | Análisis de posiciones, hipótesis, ejercicios y diagnóstico TXT/PNG | Implementado; puente Android TXT corregido y compilado |
 | Catálogo de cinco ejemplos, guía y Acerca de/licencias | Implementado y probado; recursos locales |
 | Accesibilidad básica y adaptación vertical/horizontal | Pruebas de widgets, objetivos táctiles/etiquetas y contraste; falta TalkBack real |
-| Instalación, cierre forzado/restauración y selectores nativos | Pendiente de Android; equivalentes de archivos/controladores sí verificados |
+| Instalación, nueva sesión tras cierre y selectores nativos | Pendiente de Android; equivalentes de archivos/controladores sí verificados |
 | Offline con radios desactivadas y rendimiento Android/FPS | Pendiente de dispositivo/emulador funcional |
 | APK release con firma del propietario | Preparado; sin claves suministradas, no generado |
-| Congelar 1.0.0 estable | Pendiente de cerrar aceptación nativa; esta entrega es 1.0.0-rc.2 |
+| Congelar 1.0.0 estable | Pendiente de cerrar aceptación nativa; esta entrega es 1.0.0-rc.3 |
 | Partida completa, dados, diales, daño y victoria | Fuera del alcance del proyecto |
 
 ## Dependencias y recompilación
@@ -87,7 +97,7 @@ No se añaden dependencias para 12. Las licencias empaquetadas se consultan sin
 conexión en Acerca de → Licencias de dependencias.
 
 ```powershell
-git switch codex/editor-quick-tools
+git switch codex/temporary-scenario-vision
 $env:Path = "$env:USERPROFILE\develop\flutter\bin;$env:Path"
 flutter --no-version-check pub get
 dart format --output=none --set-exit-if-changed lib test tool

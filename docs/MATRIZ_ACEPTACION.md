@@ -3,7 +3,7 @@
 Fecha: 2026-11-17. La ejecución automatizada es Flutter/Dart en Windows y archivos
 locales reales o fallos inyectados explícitos. No equivale a un recorrido en Android.
 Resultados completos y APK: ESTADO.md. No se declaran aprobados pasos nativos sin ejecutar.
-La candidata actual es 1.0.0-rc.2+15; la entrega 12 original se conserva en
+La candidata actual es 1.0.0-rc.3+16; la entrega 12 original se conserva en
 ENTREGA_12.md. Los pendientes Android se mantienen sin cambio de estado.
 
 | ID | Recorrido / condición | Evidencia automatizada | Android |
@@ -16,7 +16,7 @@ ENTREGA_12.md. Los pendientes Android se mantienen sin cambio de estado.
 | AC06 | Convertir escena guardada en ejercicio y resolver | E2E copia snapshot personal, UI responde/comprueba, guarda un acierto y lo relee de disco | Pendiente |
 | AC07 | Exportar y reimportar JSON | E2E escribe/lee archivo, decodifica e importa con identidad nueva; coordenadas conservadas | Selector pendiente |
 | AC08 | Exportar PNG e intercambiar imagen | E2E renderiza, escribe, relee y decodifica PNG; dimensiones verificadas | Selector/Compartir pendientes |
-| AC09 | Cerrar y restaurar datos | E2E destruye/recrea controladores y repositorios; escena, ejercicio y progreso conservados | Cierre forzado pendiente |
+| AC09 | Cerrar y abrir nueva sesión | session_vision: nueva escena vacía y A; biblioteca/progreso conservados. La recuperación antigua se prueba aparte en modo de compatibilidad | Cierre forzado pendiente |
 | AC10 | Escenarios 1/2, entrenamiento 1/2 y datos nuevos 3 | scenario_migration, movement_migration, training_codec y tactics_training: respaldo exacto y compatibilidad | Actualización pendiente |
 | AC11 | Almacenamiento insuficiente | final_acceptance inyecta OSError 28: documento anterior intacto, mensaje de espacio y reintento | Disco lleno real no ejecutado |
 | AC12 | JSON inválido/desconocido y fallo de proveedor | scenario_editor/codec/storage: no sustituye escena; error y recuperación | Proveedor nativo pendiente |
@@ -29,6 +29,8 @@ ENTREGA_12.md. Los pendientes Android se mantienen sin cambio de estado.
 | AC19 | Funcionamiento sin internet | Sin INTERNET ni APIs de red en runtime; ejemplos, banco y licencias locales | Radios desactivadas pendiente |
 | AC20 | APK verificable | Build debug, versión/código, permisos, firma y hash en ESTADO | Instalación pendiente |
 | AC21 | Editor con colocación rápida y paleta de terreno | editor_quick_tools: tipos sin desplegable/pintura accidental, colocación sin formulario, ficha/Deshacer/Rehacer, altura 2 y nivel existente, tamaños/escala | Pendiente |
+| AC22 | AA→A sin recuperar escenario temporal | session_vision: recuperación antigua ignorada sin escribir, estado compartido/segundo plano, disco real y biblioteca/progreso persistentes | Pendiente |
+| AC23 | Dictamen inmediato sobre mapa | session_vision: Editor/Simulador/Árbitro, cuatro estados, recálculo/limpieza, bases automáticas, vértice A1–D6/B4 y texto ampliado | Pendiente |
 
 El test E2E es `test/final_acceptance_test.dart`, caso «aceptación: crear, guardar,
 reabrir, visión, alcance, mover, ejercicio, resolver, JSON y PNG». Invoca creación
@@ -57,8 +59,10 @@ se genera porque no se proporcionó configuración de firma.
 1. Instalar encima de 11 con `adb install -r`, anotar fabricante/modelo y Android/API.
 2. Desactivar Wi-Fi/datos. Ejecutar AC01–AC09 desde los controles de la app y usar
    almacenamiento del dispositivo para JSON/PNG/TXT. Comparar los datos después.
-3. Esperar autoguardado, forzar cierre del paquete y abrir de nuevo. Verificar
-   biblioteca, escenas, ejercicio personal y progreso; no borrar datos para probar.
+3. Guardar explícitamente una escena, añadir cambios temporales y forzar cierre.
+   Al abrir debe haber escena vacía y figuras desde A; biblioteca, ejercicio y
+   progreso se conservan. Abrir manualmente el guardado no debe incluir los cambios
+   temporales. No borrar datos del paquete para probar.
 4. Repetir escenas pequeñas/grandes, muchas figuras y bases, pinza y zoom extremos,
    orientación y texto al 300 %. Activar TalkBack y comprobar etiquetas/orden.
 5. Medir arranque, navegación y análisis 40×40; registrar latencia, frames/problemas

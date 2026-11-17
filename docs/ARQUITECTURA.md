@@ -353,3 +353,24 @@ queda para edición posterior; sobre bloqueado se conserva confirmación de estu
 La ayuda transitoria se retira al colocar para no interceptar el lápiz inferior.
 ElevationDialog propone el nivel existente limitado inferiormente a 2; el usuario
 puede escribir 1 para volver a suelo. La capa de terreno no cambia su valor inicial.
+
+## Sesión temporal y dictamen inmediato — rc.3
+
+WorkspaceController usa `persistWorkingSession: false` por defecto. Inicializar
+prepara el documento en memoria sin leer ni escribir la recuperación antigua;
+editar y pasar a segundo plano no guardan `working.json`. Nuevo EditorController
+en cada apertura inicia BoardSession.initial con contador 1. Navegación y segundo
+plano conservan la misma instancia; Guardar/Guardar como siguen escribiendo en la
+biblioteca y el Entrenador conserva su repositorio persistente independiente.
+
+La compatibilidad heredada de recuperación se mantiene con opt-in explícito para
+sus pruebas de formatos/archivos. Las pruebas de producción usan el valor false,
+incluido arranque tras AA y disco real. Se ignora el working antiguo sin borrarlo
+ni modificar biblioteca. Reintentar guardado vuelve a ejecutar Guardar.
+
+Activar la herramienta Visión habilita su evaluación. VisionVerdictBar presenta
+el VisionEvaluation existente al completar extremos, con icono/color/texto y
+semántica liveRegion; tocar abre el informe compartido. Se reserva una franja sobre
+el mapa en Editor/Simulador/Árbitro. No duplica reglas ni publica el resultado
+anterior tras limpiar o invalidar extremos. Referencias automáticas son el valor
+predeterminado; la inspección manual sigue disponible al desactivarlas.

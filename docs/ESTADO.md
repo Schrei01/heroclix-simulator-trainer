@@ -1,110 +1,124 @@
-# Estado actual — ajustes del Editor
+# Estado actual — sesión temporal y visión inmediata
 
-2026-11-17 (America/Bogota). **1.0.0-rc.2+15**, candidata debug.
-Rama `codex/editor-quick-tools`, sobre `387a460` (entrega 12).
-Informe anterior: [ENTREGA_12.md](ENTREGA_12.md). Modos Editor/Simulador/Árbitro siguen separados.
+2026-11-17 (America/Bogota). **1.0.0-rc.3+16**, candidata debug.
+Rama `codex/temporary-scenario-vision`, sobre `298833a` (rc.2).
+Informe anterior: [ENTREGA_RC2.md](ENTREGA_RC2.md).
 
 ## A. Cambios operativos
 
-1. Terrenos muestra Bloqueado, Obstaculizado y Despejado como tres iconos centrados
-   al pie del mapa. Se elimina el desplegable de tipo. La selección tiene borde,
-   check, tooltip y semántica; seleccionar no pinta ni registra una edición.
-   Su franja está fuera del receptor de gestos y no tapa las casillas.
-2. Alturas propone **nivel 2** sobre suelo. Al editar un nivel existente mayor que
-   1 se conserva ese valor; se puede escribir 1 para volver a suelo. No se cambian
-   alturas guardadas ni el nivel inicial de las casillas.
-3. Personajes coloca inmediatamente en una casilla vacía con valores predeterminados:
-   Figura, primer equipo, base 1×1, tamaño Normal, velocidad 6, alcance 4, sin mejoras.
-   La ficha se abre después con el lápiz para editar. Colocación usa el comando de
-   creación existente, con validación, selección, Deshacer/Rehacer y autoguardado.
-   Sobre bloqueado se mantiene una confirmación de posición de estudio, sin formulario.
-4. Al colocar se retira la ayuda transitoria que podía interceptar el lápiz inferior.
-   En poco alto se usa barra lateral y controles de capa compactos, conservando
-   objetivos táctiles ≥48 y ayudas accesibles. No se recorta la escala de texto.
+- Cada apertura usa escenario vacío y figuras nuevas desde A. No se recupera ni
+  se escribe el `working.json` antiguo del Editor, aunque contenga figuras hasta AA
+  o esté dañado. Se ignora sin borrarlo ni modificar los escenarios de biblioteca.
+- La misma sesión se mantiene al navegar por Editor/Simulador/Árbitro y al pasar
+  a segundo plano mientras siga activa la instancia. Un arranque nuevo la reinicia.
+  Guardar/Guardar como persisten explícitamente en biblioteca; los guardados se
+  abren manualmente. Ejercicios y progreso del Entrenador conservan su persistencia.
+- Al elegir Línea de visión se habilita su evaluación. Tras escoger origen y
+  destino aparece el dictamen en una franja sobre el mapa, sin abrir un menú.
+  Muestra icono/color/texto, las referencias elegidas y acceso al informe completo
+  al tocarla. Bases reconocidas usan referencias automáticas; el modo manual sigue
+  disponible mediante Referencias automáticas del informe.
+- La franja se actualiza al cambiar terreno, figuras o contexto; conserva No evaluado
+  ante condiciones sin soporte y se retira al limpiar extremos. Comparte el mismo
+  resultado y motor de los informes, sin reglas duplicadas ni permiso de ataque.
+- Inicio, Guía, detalles y confirmaciones explican la sesión temporal. Reintentar
+  guardado vuelve a Guardar. En texto ampliado la franja prioriza el estado, con
+  contexto completo en tooltip/semántica/informe, sin recortar la escala global.
 
 ## B. Archivos
 
-- Nuevo `lib/presentation/editor/terrain_palette.dart`.
-- BoardCanvas, EditorScreen y LayerToolbar: paleta, disposición compacta y colocación.
-- ElevationControls: valor propuesto; AppInfo/pubspec: identidad de candidata/build.
-- Nuevo `test/editor_quick_tools_test.dart` con seis pruebas; tests previos de creación,
-  edición y terreno adaptados al nuevo flujo, conservando validaciones y casos de estudio.
-- PreviewTest añade cinco renders y escribe en carpeta propia de esta actualización.
-- README, README_FINAL, ARQUITECTURA, DECISIONES, ANDROID, ROADMAP y matriz de aceptación
-  actualizados; el informe de 12 queda archivado.
+WorkspaceController: política de sesión en memoria por defecto, guardados explícitos
+ y compatibilidad heredada de recuperación opt-in. EditorController habilita visión.
+Nuevo VisionVerdictBar e integración en EditorScreen/VisionScreen. Ayudas/Inicio y
+acciones de archivos ajustadas; AppInfo/pubspec con versión/build actuales.
+
+Nuevo `test/session_vision_test.dart` con 13 casos. Fixtures antiguas y E2E de
+recuperación activan explícitamente `persistWorkingSession: true`: se mantienen
+sus contratos de formatos/archivos, pero **la app no usa ese modo**. Los casos nuevos
+usan la configuración false de producción, incluido almacenamiento real. La prueba
+manual de base 2×2 declara su contexto de referencia manual explícitamente.
+
+PreviewTest usa sesión temporal; el render de error corresponde ahora a Guardar
+explícito. Añade seis capturas y escribe en `build/previews/session-vision/`.
 
 ## C. Verificación real
 
-Mismo entorno: Flutter 3.50.0, Dart 3.14.0, material_ui 1.11.0; Android SDK 24/36.
-Sin dependencias, permisos, reglas ni esquemas nuevos.
+Flutter 3.50.0, Dart 3.14.0, material_ui 1.11.0. Sin dependencias, permisos ni esquemas nuevos.
 
 | Comando | Resultado |
 | --- | --- |
-| `dart format --output=none --set-exit-if-changed lib test tool` | **150 archivos, 0 cambios**, 1,47 s. |
-| `flutter --no-version-check analyze --no-pub` | **No issues found**, 2,6 s. |
-| `flutter --no-version-check test --no-pub test/editor_quick_tools_test.dart --reporter expanded` | **6 aprobadas**, 9 s. |
-| `flutter --no-version-check test --no-pub --reporter expanded` | **444 aprobadas**, 168 s. |
-| `flutter --no-version-check test tool/preview_test.dart --no-pub --reporter expanded` | **78 renders aprobados**, 40 s. |
-| `flutter --no-version-check build apk --debug --no-pub` | Correcto, Gradle 72,0 s. |
-| `aapt dump badging` / `dump permissions` | 1.0.0-rc.2/código 15, SDK 24/36, sin INTERNET ni almacenamiento amplio. |
-| `apksigner verify --verbose --print-certs` | Verifies; firma v2 válida, mismo certificado. |
+| `dart format --output=none --set-exit-if-changed lib test tool` | 152 archivos, 0 cambios, 1,99 s. |
+| `flutter --no-version-check analyze --no-pub` | No issues found, 3,5 s. |
+| `flutter --no-version-check test --no-pub --reporter expanded` | **457 aprobadas**, 178 s. |
+| `flutter --no-version-check test --no-pub test/session_vision_test.dart --reporter expanded` | **13 aprobadas**, 11 s, después del ajuste final de texto ampliado. |
+| `flutter --no-version-check test tool/preview_test.dart --no-pub --reporter expanded` | **84 renders aprobados**, 53 s. |
+| `flutter --no-version-check test tool/preview_test.dart --no-pub --name 'renderiza session_' --reporter expanded` | **6 renders aprobados**, 9 s, después del ajuste final de texto ampliado. |
+| `flutter --no-version-check build apk --debug --no-pub` | Correcto, Gradle 23,7 s, recompilación final. |
+| `aapt dump badging` / `dump permissions` | 1.0.0-rc.3/código 16, SDK 24/36; sin INTERNET ni almacenamiento amplio. |
+| `apksigner verify --verbose --print-certs` | Verifies; firma v2 válida y mismo certificado. |
 
-Se conservan 438 pruebas y se añaden seis: paleta/elegir/pintar/ocultar sin ediciones
-accidentales; varias figuras por defecto sin formulario, ficha/Deshacer/Rehacer;
-altura inicial/existente/suelo; tamaños 360×800, 800×360 y 320×320 al 300 %.
-Las pruebas previas conservan rectángulos, coordenadas, errores de base/ocupación,
-confirmación de estudio, gestos, persistencia y motores de reglas.
+457 = 444 anteriores + 13 nuevos. Cobertura: recuperación anterior AA ignorada y
+arranque A sin escrituras, guardado/reintento explícito, biblioteca/progreso en
+archivos reales, navegación/pausa/resume de widgets, dictamen directo en los tres
+modos (despejada/H/B), No evaluado/invalidez/limpieza, bases automáticas, A1–D6/B4
+por vértice, tamaños 360×800/800×360/320×320 y texto al 300 %.
 
-La revisión detectó y corrigió interferencia de SnackBar sobre el lápiz y falta
-inicial de espacio con texto al 300 %. También se corrigieron imports/helpers
-nuevos de pruebas. No se desactivaron pruebas ni se silenciaron errores de hit test.
-Los resultados finales ya incluyen esas correcciones.
+La batería completa y los 84 renders pasaron antes del último ajuste exclusivamente
+de presentación con texto ampliado. Después se repitieron los 13 casos y seis
+renders afectados y se recompiló el APK. No se desactivaron pruebas ni errores de
+hit test. Se corrigió el helper de navegación a tarjetas con texto ampliado y se
+mantiene comprobación explícita del estado mostrado a escala 300 %.
 
-Renders: `build/previews/editor-quick-tools/`, 73 anteriores y cinco nuevos:
-quick_palette_portrait/landscape/compact, quick_character y quick_elevation.
-Los cinco nuevos se revisaron visualmente. Logs en build/ y evidencia en
-build/verification/editor-quick-tools/, fuera de Git. Capturas Flutter/Windows,
-no de Android real. No se repite ni se afirma una prueba nativa.
+Los seis renders nuevos (clear/blocked/hindered/unknown/compact/fresh) se revisaron
+visualmente. Son Flutter/Windows, no capturas de Android. Los 78 casos anteriores
+se conservan, renombrando el caso de error de autoguardado a guardado explícito.
+Logs en build/ y metadatos APK en build/verification/session-vision/, fuera de Git.
+No se vuelven a ejecutar pruebas nativas ni se afirma cierre real en un teléfono.
 
-### APK
+### APK definitivo de esta candidata
 
-- `build/releases/heroclix-1.0.0-rc.2-debug.apk`, **158513805 bytes** (151,17 MiB).
-- SHA-256: `F4D5950EAF5FD145C80267AD2E37F4435DC6A004C57B72F18E555EC5CBE922E8`.
-- Paquete `com.valinor.heroclixtrainer`, versión 1.0.0-rc.2, código 15.
+- `build/releases/heroclix-1.0.0-rc.3-debug.apk`, **158513961 bytes** (151,17 MiB).
+- SHA-256: `1F160502E7F90EE1C7E07DCCB16B1B7F6B0C93DF5BFAEA65533256A19C7A5538`.
+- Copia archivada y salida estándar con el mismo hash.
+- Paquete `com.valinor.heroclixtrainer`, versión 1.0.0-rc.3, código 16.
 - Certificado SHA-256: `57081ee91137c216eff437a7c75ac5bb6f552bc29167e63370d85628fc82ac54`.
-- Misma firma debug que versiones anteriores; copia archivada y salida estándar
-  con hash idéntico. APK anteriores conservados, binarios excluidos de Git.
+- Firma debug conservada; puede instalarse encima sin desinstalar para mantener
+  biblioteca/progreso. APK anteriores conservados y binarios excluidos de Git.
 
-## D. Comprobación manual
+## D. Comprobar manualmente en Android
 
-1. Instalar el APK encima de la versión anterior, sin desinstalar para conservar datos.
-2. Editor → Terrenos: elegir los tres iconos; solo tocar/arrastrar el mapa debe pintar.
-   Probar rectángulo, Deshacer/Rehacer, giro y texto ampliado.
-3. Alturas sobre suelo: comprobar que propone 2. Aplicar 3 y reabrir: conserva 3.
-   Cambiar a 1 debe recuperar suelo.
-4. Personajes: tocar varias casillas vacías. Debe colocar sin ficha. Seleccionar una
-   y pulsar lápiz, cambiar nombre/valores: conserva identidad. Deshacer/Rehacer.
-5. Colocar sobre bloqueado: cancelar conserva escenario; aceptar crea marca de estudio.
-6. Esperar autoguardado, cerrar y reabrir; verificar posiciones y cambios guardados.
+1. Guardar en biblioteca cualquier escena que se quiera conservar. Instalar el
+   APK encima de la versión anterior, sin desinstalar.
+2. Abrir: debe haber escenario vacío. Colocar figura: etiqueta A. Crear varias,
+   navegar a Simulador/Árbitro y volver: se mantienen. Segundo plano y regreso con
+   instancia viva: se mantienen. Cerrar completamente y abrir: vuelve vacío y A.
+3. Abrir manualmente la copia de biblioteca: datos conservados. Progreso y ejercicios
+   del Entrenador siguen disponibles. Cambios temporales sin guardar no reaparecen.
+4. Línea de visión: elegir dos figuras y comprobar dictamen arriba del mapa sin menú.
+   Tocar la franja abre explicación/referencias. Añadir H/B o efectos no soportados
+   debe actualizar el estado. Limpiar retira el resultado anterior.
+5. Probar base múltiple automática, referencia manual, giro y texto ampliado.
 
-Recorrido Android pendiente. Se mantiene la decisión del usuario de continuar sin
-teléfono; esta actualización no promueve 1.0.0 estable ni genera release con otra firma.
+Recorrido Android pendiente: se mantiene la decisión previa de continuar sin teléfono.
+La prueba de reconstruir controladores y de ciclo de vida de widgets no sustituye
+el cierre/pausa del proceso Android real.
 
 ## E. Límites
 
-Los perfiles de reglas y No evaluados siguen siendo los documentados de 06–12.
-En pantallas pequeñas o texto muy grande la paleta usa iconos con tooltip/semántica,
-sin nombres visibles para conservar espacio. El usuario puede editar los valores
-predeterminados después de colocar. Las comprobaciones nativas, TalkBack, radios
-apagadas y rendimiento Android siguen pendientes; no se suministraron claves release.
+Al abrir un escenario guardado se conservan sus identidades/contadores; no se
+renumera la biblioteca. Dentro de una sesión se mantiene unicidad de IDs y etiquetas.
+La escena temporal se pierde al terminar esa instancia; Guardar en biblioteca es
+la forma de conservarla. Progreso y snapshots de ejercicios son independientes.
 
-## F. Documentación
+Reglas y No evaluados siguen bajo el perfil documentado 2026-07-01. No cambia el
+motor, los formatos 1/2/3 ni las capacidades soportadas. La franja muestra un resumen;
+con texto muy grande puede abreviarse visualmente, pero tooltip/semántica/informe
+conservan el resultado completo. Aceptación nativa, TalkBack, radios apagadas y
+rendimiento Android siguen pendientes. Sin claves release, no se promueve estable.
 
-[README_FINAL](../README_FINAL.md) describe APK actual y uso; [MATRIZ_ACEPTACION](MATRIZ_ACEPTACION.md)
-incorpora AC21 para estos ajustes. El informe original de 12 permanece en ENTREGA_12.md.
-La actualización mantiene formatos y rutas de datos; no requiere migración.
+## F. Documentación y alcance
 
-## G. Alcance
-
-Solo ajustes del Editor solicitados por el usuario. La futura unificación de los
-tres modos no se ejecuta en esta actualización. Sin funciones de partida completa.
+README/README_FINAL, ESCENARIOS, ARQUITECTURA, DECISIONES, ANDROID, ENTRENADOR,
+ROADMAP y matriz de aceptación actualizados. AC22/23 cubren estos cambios.
+Rc.2 archivada en ENTREGA_RC2.md. Sin eliminar escenarios guardados ni datos del
+Entrenador; sin unificar modos y sin funciones de partida completa.

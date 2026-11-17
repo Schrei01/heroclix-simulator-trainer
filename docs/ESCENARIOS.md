@@ -4,7 +4,8 @@ Introducido en 04 y ampliado en 08–09, app 0.10.0+11. Formato UTF-8 JSON legib
 2 MiB, profundidad máxima 16 y 20.000 contenedores antes de decodificar.
 Se rechazan campos desconocidos/incompletos, tipos incorrectos, coordenadas fuera
 del tablero, identidades duplicadas, figuras solapadas y versiones desconocidas.
-No se modifica el tablero hasta validar y escribir su recuperación completa.
+Abrir/importar valida antes de cambiar el tablero; importar guarda una copia
+con identidad nueva en biblioteca. Desde rc.3 la sesión activa es temporal.
 
 ## Campos del documento
 
@@ -62,7 +63,7 @@ Ruta, alternativas, snapshot de comparación y ensayo de movimiento no se serial
 Las tres últimas se conservan como datos sin soporte reglamentario completo.
 Edición de alcance, duplicado y movimiento conservan todas las capacidades.
 
-## Biblioteca y recuperación
+## Biblioteca y sesión temporal
 
 La producción compone FileDocumentStore con el directorio privado Android
 `files/scenarios_v1`. Cada escenario vive en `<id>.json`; máximo 200 en biblioteca.
@@ -71,19 +72,25 @@ IDs/rutas se validan y se rechazan enlaces simbólicos al archivo de destino.
 La escritura usa temporal en el mismo directorio, flush y rename; los temporales
 se limpian. Un fallo se muestra y conserva el estado activo en memoria.
 
-`working.json` usa un envoltorio separado de hasta 3 MiB con campos exactos
-`workspaceSchemaVersion: 1`, `document`, `dirty` y `saved`. Las escrituras se
-serializan; cada cambio lógico programa autoguardado, agrupando los pendientes.
-La revisión impide marcar guardada una edición posterior a la copia escrita.
-Se solicita flush al pasar a segundo plano. El indicador confirma qué revisión
-está protegida; un cierre forzado antes de esa confirmación puede perder lo último.
+La app arranca con escenario vacío y contador de figuras desde A. La escena activa
+se mantiene en memoria al navegar y pasar a segundo plano mientras la instancia
+siga activa. Cada nueva apertura empieza de nuevo; no se recupera ni escribe el
+`working.json` antiguo. Ese archivo se ignora, incluso si contiene AA o está dañado;
+no se sobrescribe ni se borran los escenarios guardados.
 
-Al arrancar se recupera el documento completo. Si falta su copia de biblioteca,
-se conserva como borrador pendiente. Una recuperación dañada o de versión futura
-no se sobrescribe automáticamente: se informa y bloquea ese autoguardado. Al
-reemplazarla explícitamente se archiva su texto en `recovery-s-<id>.json`; si
-no se puede archivar, la sustitución falla. Un archivo de biblioteca incompatible
-no se sobreescribe con Guardar; se ofrece usar Guardar como.
+Guardar/Guardar como conservan explícitamente la escena en biblioteca. Abrir un
+guardado restaura sus figuras y contadores como parte de ese documento; no se
+reabre automáticamente al iniciar. Antes de cambiar una escena modificada se
+ofrece guardar/cancelar/continuar. Un fallo de guardado conserva memoria y archivo
+anterior; Reintentar guardado vuelve a guardar. Entrenamiento sigue usando su
+propio archivo persistente y conserva ejercicios/progreso.
+
+El repositorio conserva compatibilidad interna con el envoltorio heredado
+`workspaceSchemaVersion: 1`, `document`, `dirty`, `saved` (hasta 3 MiB), respaldo
+exacto de formatos antiguos y recuperación protegida ante corrupción. Sus pruebas
+lo activan explícitamente con `persistWorkingSession: true`; **la app no activa ese
+modo**. Las nuevas pruebas usan el valor de producción false y archivos reales.
+Un archivo de biblioteca incompatible no se sobrescribe con Guardar.
 
 Guardar conserva identidad. Guardar como/duplicar/importar generan otra identidad;
 importar no altera el original externo. Eliminar biblioteca pide confirmación y no
@@ -136,5 +143,6 @@ distintas de exportar el escenario completo con sus nombres. Véase ANALISIS_TAC
 En 12 los cinco ejemplos se previsualizan con controlador separado. Abrir copia
 usa importación interna con ID nuevo y protección de cambios sin guardar; los
 archivos anteriores permanecen en biblioteca. No se añade formato, campo ni capa.
-La aceptación recorre archivos JSON/PNG reales y restauración de controladores;
-la restauración después de cierre forzado Android sigue pendiente de dispositivo.
+La aceptación recorre archivos JSON/PNG reales y compatibilidad de recuperación
+heredada. Desde rc.3 las pruebas de producción exigen arranque vacío, AA→A y
+conservación de biblioteca/progreso. El recorrido Android sigue pendiente.
