@@ -92,21 +92,24 @@ void main() {
       },
     );
   }
-  testWidgets('los cuatro modos abren y comparten escena sin mutarla', (
-    tester,
-  ) async {
-    final c = await persistentController(MemoryStore());
-    c.loadScenario(localExamples.first.copy().session);
-    await tester.pumpWidget(HeroClixApp(controller: c));
-    final before = c.value.characters.all.first.position;
-    for (final id in ['editor', 'simulator', 'referee', 'trainer']) {
-      await press(tester, 'mode-$id');
-      expect(tester.takeException(), isNull);
-      expect(c.value.characters.all.first.position, before);
-      await tester.tap(find.byTooltip('Atrás'));
-      await tester.pumpAndSettle();
-    }
-  });
+  testWidgets(
+    'Editor y Entrenador abren sin mutar escena y sin modos retirados',
+    (tester) async {
+      final c = await persistentController(MemoryStore());
+      c.loadScenario(localExamples.first.copy().session);
+      await tester.pumpWidget(HeroClixApp(controller: c));
+      final before = c.value.characters.all.first.position;
+      expect(find.byKey(const ValueKey('mode-simulator')), findsNothing);
+      expect(find.byKey(const ValueKey('mode-referee')), findsNothing);
+      for (final id in ['editor', 'trainer']) {
+        await press(tester, 'mode-$id');
+        expect(tester.takeException(), isNull);
+        expect(c.value.characters.all.first.position, before);
+        await tester.tap(find.byTooltip('Atrás'));
+        await tester.pumpAndSettle();
+      }
+    },
+  );
   testWidgets(
     'ejemplo exige preservar cambios, cancelar conserva y abrir copia no reemplaza biblioteca',
     (tester) async {

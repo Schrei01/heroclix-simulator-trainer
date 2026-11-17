@@ -136,7 +136,7 @@ void main() {
         ),
         2,
       );
-      final c = await openRules(tester, data: world, mode: 'referee');
+      final c = await openRules(tester, data: world);
       await report(tester);
       expect(c.vision.result!.status, VisionStatus.clear);
       await press(tester, 'vision-reference-pairs');

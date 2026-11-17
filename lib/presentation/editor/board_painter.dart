@@ -319,12 +319,18 @@ final class BoardPainter extends CustomPainter {
   );
   void _elevations(Canvas canvas, BoardSession state) {
     const extent = BoardGeometry.cellExtent, gutter = BoardGeometry.gutter;
+    final transitionCells = {
+      for (final edge in state.terrain.transitions) ...[
+        edge.firstCell,
+        edge.secondCell,
+      ],
+    };
     for (var row = 0; row < dimensions.rows; row++) {
       for (var col = 0; col < dimensions.columns; col++) {
         final c = CellCoordinate(row: row, column: col);
         final level = state.terrain.at(c).level;
         final rect = _cellRect(c);
-        if (level > 1) {
+        if (level > 1 && !transitionCells.contains(c)) {
           final badge = Rect.fromLTWH(
             rect.right - 31,
             rect.bottom - 19,
@@ -372,38 +378,36 @@ final class BoardPainter extends CustomPainter {
         gutter + edge.column * extent + (vertical ? 0 : extent / 2),
         gutter + edge.row * extent + (vertical ? extent / 2 : 0),
       );
-      final diamond = Path()
-        ..moveTo(center.dx - 12, center.dy)
-        ..lineTo(center.dx, center.dy - 12)
-        ..lineTo(center.dx + 12, center.dy)
-        ..lineTo(center.dx, center.dy + 12)
-        ..close();
-      canvas.drawPath(diamond, Paint()..color = Colors.white);
-      canvas.drawPath(
-        diamond,
-        Paint()
-          ..color = const Color(0xffff7777)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2,
-      );
-      final offset = vertical ? const Offset(21, 0) : const Offset(0, 21);
-      final shift = vertical ? const Offset(0, -20) : const Offset(20, 0);
-      void label(String value, Offset point) {
-        canvas.drawRect(
-          Rect.fromCenter(center: point, width: 18, height: 18),
-          Paint()..color = AppTheme.background,
+      const depth = 22.0, halfBase = 18.0;
+      final tangent = vertical
+          ? const Offset(0, halfBase)
+          : const Offset(halfBase, 0);
+      final normal = vertical ? const Offset(depth, 0) : const Offset(0, depth);
+      void triangle(Offset tip, int level) {
+        final shape = Path()
+          ..moveTo((center - tangent).dx, (center - tangent).dy)
+          ..lineTo(tip.dx, tip.dy)
+          ..lineTo((center + tangent).dx, (center + tangent).dy)
+          ..close();
+        canvas.drawPath(shape, Paint()..color = Colors.white);
+        canvas.drawPath(
+          shape,
+          Paint()
+            ..color = const Color(0xffff7777)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2,
         );
-        _text(canvas, value, point, fontSize: 12, color: Colors.white);
+        _text(
+          canvas,
+          '$level',
+          center + (tip - center) / 3,
+          fontSize: 12,
+          color: const Color(0xff101c2b),
+        );
       }
 
-      label(
-        '${state.terrain.at(edge.firstCell).level}',
-        center - offset + shift,
-      );
-      label(
-        '${state.terrain.at(edge.secondCell).level}',
-        center + offset + shift,
-      );
+      triangle(center - normal, state.terrain.at(edge.firstCell).level);
+      triangle(center + normal, state.terrain.at(edge.secondCell).level);
     }
   }
 

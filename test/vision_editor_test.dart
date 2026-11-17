@@ -1,13 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:heroclix_simulator_trainer/app.dart';
+import 'package:heroclix_simulator_trainer/application/board/board_session.dart';
 import 'package:heroclix_simulator_trainer/domain/rules/line_of_sight.dart';
 import 'package:heroclix_simulator_trainer/domain/terrain/terrain.dart';
 import 'package:heroclix_simulator_trainer/presentation/editor/editor_controller.dart';
 import 'package:heroclix_simulator_trainer/presentation/editor/editor_screen.dart';
 import 'package:heroclix_simulator_trainer/presentation/editor/sight_painter.dart';
 import 'package:heroclix_simulator_trainer/presentation/vision/vision_controls.dart';
-import 'package:heroclix_simulator_trainer/presentation/vision/vision_screen.dart';
 
 import 'editor_test.dart' show cellPosition;
 import 'character_editor_test.dart' show press;
@@ -17,21 +17,18 @@ import 'support/vision_contract.dart';
 Finder vk(String id) => find.byKey(ValueKey(id));
 Future<EditorController> openRules(
   WidgetTester tester, {
-  String mode = 'editor',
   VisionSnapshot? data,
 }) async {
   final controller = EditorController();
   controller.loadScenario(visionSession(data));
   chooseVision(controller);
   await tester.pumpWidget(HeroClixApp(controller: controller));
-  final label = mode == 'editor'
-      ? 'Abrir editor'
-      : mode == 'referee'
-      ? 'Abrir árbitro'
-      : 'Abrir simulador';
+  const label = 'Abrir editor';
   await tester.ensureVisible(find.text(label));
   await tester.pumpAndSettle();
   await tester.tap(find.text(label));
+  await tester.pumpAndSettle();
+  controller.setTool(EditorTool.vision);
   await tester.pumpAndSettle();
   return controller;
 }
@@ -42,11 +39,13 @@ SightPainter vp(WidgetTester tester) => tester
     .whereType<SightPainter>()
     .single;
 Future<void> report(WidgetTester tester) async {
-  if (vk('vision-report').evaluate().isNotEmpty) {
-    await press(tester, 'vision-report');
+  if (vk('selected-target-summary').evaluate().isNotEmpty) {
+    await press(tester, 'selected-target-summary');
+  } else if (vk('sight-verdict').evaluate().isNotEmpty) {
+    await press(tester, 'sight-verdict');
   } else {
     await press(tester, 'board-view-options');
-    await tester.tap(find.text('Dictamen de visión'));
+    await tester.tap(find.text('Dictamen de visión').last);
     await tester.pumpAndSettle();
   }
 }
@@ -124,21 +123,19 @@ void main() {
     expect(tester.takeException(), isNull);
   });
   testWidgets(
-    'árbitro comparte escenario, no mueve al mantener pulsado y permite editar explícitamente',
+    'visión del Editor no mueve al mantener pulsado y permite volver a edición explícita',
     (tester) async {
-      final controller = await openRules(tester, mode: 'referee');
-      expect(find.text('Modo árbitro'), findsOneWidget);
+      final controller = await openRules(tester);
+      expect(find.byType(EditorScreen), findsOneWidget);
       final before = controller.value.characters;
       await tester.longPressAt(cellPosition(tester, controller, 'A1'));
       await tester.pumpAndSettle();
       expect(controller.value.characters, same(before));
-      await press(tester, 'vision-edit-scene');
+      await press(tester, 'tool-select');
       expect(find.byType(EditorScreen), findsOneWidget);
       controller.moveCharacter('figure-2', vc('D4'));
       await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Atrás').last);
-      await tester.pumpAndSettle();
-      expect(find.byType(VisionScreen), findsOneWidget);
+      await press(tester, 'tool-vision');
       expect(controller.vision.result!.destination!.cell, vc('D4'));
       expect(controller.vision.result!.status, VisionStatus.clear);
       await report(tester);
@@ -148,26 +145,24 @@ void main() {
       );
     },
   );
-  testWidgets(
-    'simulador reutiliza evaluación y el tablero solo selecciona extremos',
-    (tester) async {
-      final controller = await openRules(tester, mode: 'simulator');
-      expect(find.text('Simulador · Análisis'), findsOneWidget);
-      final before = controller.vision.result;
-      await press(tester, 'vision-fit');
-      expect(controller.vision.result, same(before));
-      expect(vp(tester).evaluation, same(before));
-      await report(tester);
-      expect(tester.widget<Text>(vk('vision-result')).data, 'DESPEJADA');
-      expect(tester.takeException(), isNull);
-    },
-  );
+  testWidgets('visión del Editor conserva evaluación al ajustar la cámara', (
+    tester,
+  ) async {
+    final controller = await openRules(tester);
+    final before = controller.vision.result;
+    await press(tester, 'reset-camera');
+    expect(controller.vision.result, same(before));
+    expect(vp(tester).evaluation, same(before));
+    await report(tester);
+    expect(tester.widget<Text>(vk('vision-result')).data, 'DESPEJADA');
+    expect(tester.takeException(), isNull);
+  });
   for (final (size, scale) in [
     (const Size(320, 568), 1.0),
     (const Size(800, 360), 1.0),
     (const Size(320, 320), 3.0),
   ]) {
-    testWidgets('árbitro e informe accesibles en $size texto $scale', (
+    testWidgets('Editor e informe accesibles en $size texto $scale', (
       tester,
     ) async {
       tester.view.devicePixelRatio = 1;
@@ -178,7 +173,6 @@ void main() {
       addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
       final controller = await openRules(
         tester,
-        mode: 'referee',
         data: vs(terrain: {'B1': TerrainType.hindering}),
       );
       await report(tester);

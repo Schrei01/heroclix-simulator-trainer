@@ -1,7 +1,7 @@
 /// Identidad de entrega. La prueba de distribución la contrasta con pubspec.
 abstract final class AppInfo {
-  static const version = '1.0.0-rc.3';
-  static const build = 16;
+  static const version = '1.0.0-rc.4';
+  static const build = 17;
   static const rules = '2026-07-01';
   static const source = 'https://wizkids.com/heroclix/gameplay/rules-format/';
   static const disclaimer =

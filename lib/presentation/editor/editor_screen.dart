@@ -357,9 +357,7 @@ class EditorScreen extends StatelessWidget {
                       final horizontal =
                           MediaQuery.orientationOf(context) ==
                               Orientation.landscape ||
-                          ((session.tool == EditorTool.terrain ||
-                                  session.tool == EditorTool.vision) &&
-                              constraints.maxHeight < 200);
+                          constraints.maxHeight < 200;
                       final canvas = Expanded(
                         child: Column(
                           children: [

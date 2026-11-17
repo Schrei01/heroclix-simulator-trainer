@@ -82,6 +82,9 @@ void main() {
   });
 
   for (final (name, size, dimensions) in [
+    ('transition_portrait', const Size(400, 900), null),
+    ('transition_landscape', const Size(1000, 700), null),
+    ('transition_compact', const Size(320, 568), null),
     ('session_clear', const Size(400, 900), null),
     ('session_blocked', const Size(400, 900), null),
     ('session_hindered', const Size(1000, 720), null),
@@ -128,7 +131,7 @@ void main() {
     ('advanced_laboratory', const Size(400, 900), BoardDimensions.initial),
     ('advanced_record', const Size(1000, 700), BoardDimensions.initial),
     ('advanced_form', const Size(400, 900), BoardDimensions.initial),
-    ('advanced_referee', const Size(400, 900), BoardDimensions.initial),
+    ('advanced_editor_report', const Size(400, 900), BoardDimensions.initial),
     (
       'tactical_distance',
       const Size(400, 900),
@@ -168,7 +171,7 @@ void main() {
     ('vision_unknown', const Size(400, 900), BoardDimensions.initial),
     ('vision_report', const Size(400, 900), BoardDimensions.initial),
     ('vision_record', const Size(400, 900), BoardDimensions.initial),
-    ('vision_referee', const Size(400, 900), BoardDimensions.initial),
+    ('vision_editor_summary', const Size(400, 900), BoardDimensions.initial),
     (
       'vision_a1_d6',
       const Size(400, 900),
@@ -306,6 +309,21 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      if (name.startsWith('transition_')) {
+        final cells = ['A2', 'B2', 'C2', 'D4'].map(CellCoordinate.parse);
+        var scene = BoardSession.initial()
+            .changeDimensions(BoardDimensions(rows: 4, columns: 4))
+            .paintElevation(cells, 2)
+            .paintElevation([CellCoordinate.parse('C3')], 3);
+        for (final (a, b) in [('A1', 'A2'), ('C2', 'C3'), ('C3', 'D3')]) {
+          scene = scene.setTransition(
+            EdgeWall.between(CellCoordinate.parse(a), CellCoordinate.parse(b)),
+            remove: false,
+          );
+        }
+        persistent.loadScenario(scene);
+        await press(tester, 'mode-editor');
+      }
       if (name.startsWith('session_')) {
         if (name != 'session_fresh') {
           persistent.loadScenario(
@@ -639,7 +657,7 @@ void main() {
           final elevated = [
             'advanced_elevation',
             'advanced_form',
-            'advanced_referee',
+            'advanced_editor_report',
           ].contains(name);
           final world = base
               ? ranged(
@@ -689,19 +707,8 @@ void main() {
           await tester.pumpAndSettle();
           controller.resetCamera();
           await tester.pumpAndSettle();
-          var context = tester.element(find.byType(EditorScreen));
-          if (name == 'advanced_referee') {
-            await tester.tap(find.byTooltip('Atrás').last);
-            await tester.pumpAndSettle();
-            await tester.ensureVisible(find.text('Abrir árbitro'));
-            await tester.tap(find.text('Abrir árbitro'));
-            await tester.pumpAndSettle();
-            controller.resetCamera();
-            await tester.pumpAndSettle();
-            context = tester.element(
-              find.byKey(const ValueKey('vision-report')),
-            );
-          }
+          final context = tester.element(find.byType(EditorScreen));
+
           if (name == 'advanced_laboratory') {
             controller.updateVision(
               (v) => v.laboratoryAbilities = {VisionAbility.blocking},
@@ -711,7 +718,7 @@ void main() {
             'advanced_base_report',
             'advanced_laboratory',
             'advanced_record',
-            'advanced_referee',
+            'advanced_editor_report',
           ].contains(name)) {
             showVisionReport(context, controller);
             await tester.pumpAndSettle();
@@ -814,16 +821,7 @@ void main() {
           await tester.pumpAndSettle();
           controller.resetCamera();
           await tester.pumpAndSettle();
-          if (name == 'vision_referee') {
-            await tester.tap(find.byTooltip('Atrás').last);
-            await tester.pumpAndSettle();
-            await tester.ensureVisible(find.text('Abrir árbitro'));
-            await tester.pumpAndSettle();
-            await tester.tap(find.text('Abrir árbitro'));
-            await tester.pumpAndSettle();
-            controller.resetCamera();
-            await tester.pumpAndSettle();
-          }
+
           if (name == 'vision_report' || name == 'vision_record') {
             await tester.tap(find.byKey(const ValueKey('board-view-options')));
             await tester.pumpAndSettle();
@@ -847,18 +845,21 @@ void main() {
               session: visionSession(world),
             );
             const codec = ScenarioCodec();
-            final file = File('build/verification/session-vision/$name.json');
+            final file = File(
+              'build/verification/editor-transitions/$name.json',
+            );
             await file.parent.create(recursive: true);
             await file.writeAsString(codec.encode(doc));
-            await File('build/verification/session-vision/$name-working.json')
-                .writeAsString(
-                  jsonEncode({
-                    'workspaceSchemaVersion': 1,
-                    'document': codec.toMap(doc),
-                    'dirty': true,
-                    'saved': false,
-                  }),
-                );
+            await File(
+              'build/verification/editor-transitions/$name-working.json',
+            ).writeAsString(
+              jsonEncode({
+                'workspaceSchemaVersion': 1,
+                'document': codec.toMap(doc),
+                'dirty': true,
+                'saved': false,
+              }),
+            );
           });
         }
       }
@@ -1024,7 +1025,7 @@ void main() {
                 analysis.priority,
               );
               final file = File(
-                'build/verification/session-vision/diagnostico.png',
+                'build/verification/editor-transitions/diagnostico.png',
               );
               await file.parent.create(recursive: true);
               await file.writeAsBytes(bytes);
@@ -1040,7 +1041,7 @@ void main() {
         final image = await boundary.toImage();
         try {
           final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-          final output = File('build/previews/session-vision/$name.png');
+          final output = File('build/previews/editor-transitions/$name.png');
           await output.parent.create(recursive: true);
           await output.writeAsBytes(bytes!.buffer.asUint8List());
         } finally {

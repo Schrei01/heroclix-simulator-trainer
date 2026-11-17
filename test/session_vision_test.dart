@@ -46,23 +46,18 @@ Future<EditorController> temporaryController(
 
 Future<EditorController> traceFromUi(
   WidgetTester tester, {
-  String mode = 'editor',
   VisionSnapshot? world,
   String first = 'A1',
   String last = 'D1',
 }) async {
   final c = EditorController()..loadScenario(visionSession(world ?? vs()));
   await tester.pumpWidget(HeroClixApp(controller: c));
-  final label = mode == 'editor'
-      ? 'Abrir editor'
-      : mode == 'referee'
-      ? 'Abrir árbitro'
-      : 'Abrir simulador';
+  const label = 'Abrir editor';
   await tester.ensureVisible(find.text(label));
   await tester.pumpAndSettle();
   await tester.tap(find.text(label));
   await tester.pumpAndSettle();
-  if (mode == 'editor') await press(tester, 'tool-vision');
+  await press(tester, 'tool-vision');
   expect(c.vision.enabled, isTrue);
   await tester.tapAt(cellPosition(tester, c, first));
   await tester.pumpAndSettle();
@@ -181,23 +176,22 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byTooltip('Atrás'));
       await tester.pumpAndSettle();
-      await press(tester, 'mode-simulator');
+      await press(tester, 'mode-trainer');
       expect(live.value.characters.all.map((f) => f.label), ['A', 'B']);
       expect(store.documents, isEmpty);
       expect(tester.takeException(), isNull);
     },
   );
-  for (final (mode, terrain, status) in [
-    ('editor', TerrainType.clear, VisionStatus.clear),
-    ('simulator', TerrainType.hindering, VisionStatus.hindered),
-    ('referee', TerrainType.blocking, VisionStatus.blocked),
+  for (final (terrain, status) in [
+    (TerrainType.clear, VisionStatus.clear),
+    (TerrainType.hindering, VisionStatus.hindered),
+    (TerrainType.blocking, VisionStatus.blocked),
   ]) {
     testWidgets(
-      '$mode: elegir dos figuras publica ${status.name} arriba del mapa sin abrir menús',
+      'Editor: elegir dos figuras publica ${status.name} arriba del mapa sin abrir menús',
       (tester) async {
         final c = await traceFromUi(
           tester,
-          mode: mode,
           world: vs(terrain: {'B1': terrain}),
         );
         final banner = find.byKey(const ValueKey('vision-map-verdict'));
@@ -275,13 +269,13 @@ void main() {
       );
     },
   );
-  for (final (mode, size, scale) in [
-    ('editor', const Size(360, 800), 1.0),
-    ('simulator', const Size(800, 360), 1.0),
-    ('editor', const Size(320, 320), 3.0),
+  for (final (size, scale) in [
+    (const Size(360, 800), 1.0),
+    (const Size(800, 360), 1.0),
+    (const Size(320, 320), 3.0),
   ]) {
     testWidgets(
-      'dictamen inmediato $mode sin desbordes en $size texto $scale',
+      'dictamen inmediato del Editor sin desbordes en $size texto $scale',
       (tester) async {
         tester.view.devicePixelRatio = 1;
         tester.view.physicalSize = size;
@@ -289,7 +283,7 @@ void main() {
         addTearDown(tester.view.resetDevicePixelRatio);
         addTearDown(tester.view.resetPhysicalSize);
         addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-        await traceFromUi(tester, mode: mode);
+        await traceFromUi(tester);
         if (scale > 1) {
           expect(
             tester

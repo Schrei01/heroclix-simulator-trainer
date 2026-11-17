@@ -119,7 +119,7 @@ class _ElevationDialogState extends State<_ElevationDialog> {
         child: const Text('Aplicar altura'),
       ),
       const Text(
-        'Para una transición de altura elige dos casillas vecinas ortogonales, de distinto nivel y sin muro entre ellas. Editar alturas retira transiciones que ya no unen niveles distintos. No se valida movimiento ni ataques de transición.',
+        'Para una transición de altura elige dos casillas vecinas ortogonales, de distinto nivel y sin muro entre ellas. Cada casilla se marca con un triángulo que contiene su nivel; los dos triángulos quedan unidos por el borde. Editar alturas retira transiciones que ya no unen niveles distintos.',
       ),
       TextButton(
         key: const ValueKey('transition-add'),

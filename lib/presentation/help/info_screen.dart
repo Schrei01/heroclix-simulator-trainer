@@ -54,16 +54,19 @@ class QuickGuideScreen extends StatelessWidget {
         'Editor: prepara y guarda figuras, terreno, muros y alturas. El arrastre libre sirve para construir el escenario.',
       ),
       Text(
-        'Simulador: consulta el mismo escenario, mide y ensaya rutas o posiciones. Una hipótesis solo se aplica al confirmar un movimiento válido.',
+        'Analizar en el Editor: consulta visión y alcance, ensaya rutas y compara posiciones. Una hipótesis solo se aplica al confirmar un movimiento válido; toca el dictamen para ver explicación y referencias.',
       ),
       Text(
-        'Entrenador: responde ejercicios con una copia independiente; Comprobar muestra explicación y registra el intento. Árbitro: consulta el dictamen y sus referencias.',
+        'Entrenador: responde ejercicios con una copia independiente; Comprobar muestra explicación y registra el intento.',
       ),
       Text(
         'D · Despejado: sin ese obstáculo. H · Obstaculizado: permite visión con restricción. B · Bloqueado y muros: pueden impedir visión y movimiento según el perfil y las capacidades declaradas.',
       ),
       Text(
         'Visión es una línea recta entre referencias permitidas. En un vértice se comparan ambos lados; la línea no se curva. Visible y en alcance no garantiza un ataque legal.',
+      ),
+      Text(
+        'Elevación: E2/E3… y borde rojo. Transición: dos triángulos numerados conectados, uno dentro de cada casilla, con su nivel. Una casilla elevada sin transición conserva la marca E2/E3….',
       ),
       Text(
         '? · No evaluado: faltan reglas o datos para decidir. No significa despejado, bloqueado, fallo del ejercicio ni permiso para actuar. Consulta el motivo antes de continuar.',

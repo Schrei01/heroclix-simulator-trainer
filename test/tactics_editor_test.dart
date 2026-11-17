@@ -58,18 +58,17 @@ openPosition(
 
 void main() {
   WidgetController.hitTestWarningShouldBeFatal = true;
-  testWidgets('Simulador ofrece analizar posición; cancelar cálculo no mueve', (
+  testWidgets('Editor ofrece analizar posición; cancelar cálculo no mueve', (
     t,
   ) async {
     final editor = EditorController()
       ..loadScenario(visionSession(tacticalWorld()));
     editor.selectCharacter('figure-1');
     await t.pumpWidget(HeroClixApp(controller: editor));
-    await t.ensureVisible(find.text('Abrir simulador'));
-    await t.tap(find.text('Abrir simulador'));
+    await t.ensureVisible(find.text('Abrir editor'));
+    await t.tap(find.text('Abrir editor'));
     await t.pumpAndSettle();
-    await press(t, 'analysis-mode');
-    await press(t, 'mode-position');
+    await press(t, 'tool-positionAnalysis');
     expect(find.byType(TacticalScreen), findsOneWidget);
     await press(t, 'position-run');
     if (pk('position-cancel').evaluate().isNotEmpty) {

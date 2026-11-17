@@ -5,7 +5,6 @@ import '../../domain/app_mode.dart';
 import '../theme/app_theme.dart';
 import '../editor/editor_controller.dart';
 import '../editor/editor_screen.dart';
-import '../vision/vision_screen.dart';
 import '../training/training_controller.dart';
 import '../training/training_screen.dart';
 import '../help/info_screen.dart';
@@ -89,15 +88,9 @@ class HomeScreen extends StatelessWidget {
                                                     controller:
                                                         trainingController,
                                                   )
-                                                : mode == AppMode.editor
-                                                ? EditorScreen(
+                                                : EditorScreen(
                                                     controller:
                                                         editorController,
-                                                  )
-                                                : VisionScreen(
-                                                    controller:
-                                                        editorController,
-                                                    mode: mode,
                                                   ),
                                           ),
                                         );
@@ -211,30 +204,18 @@ class _ModeCard extends StatelessWidget {
     final (title, description, icon) = switch (mode) {
       AppMode.editor => (
         'Editor',
-        'Construye escenarios con figuras, terreno y muros.',
+        'Construye escenarios, consulta visión y alcance, ensaya rutas y compara posiciones.',
         Icons.edit_outlined,
-      ),
-      AppMode.simulator => (
-        'Simulador',
-        'Compara posiciones, ensaya rutas y consulta alcance, objetivos y visión.',
-        Icons.route_outlined,
       ),
       AppMode.trainer => (
         'Entrenador',
         'Practica con ejercicios y explicaciones.',
         Icons.school_outlined,
       ),
-      AppMode.referee => (
-        'Árbitro',
-        'Consulta el motivo de cada evaluación.',
-        Icons.fact_check_outlined,
-      ),
     };
 
     final openLabel = switch (mode) {
       AppMode.editor => 'Abrir editor',
-      AppMode.simulator => 'Abrir simulador',
-      AppMode.referee => 'Abrir árbitro',
       AppMode.trainer => 'Abrir entrenador',
     };
     return Semantics(

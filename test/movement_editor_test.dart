@@ -95,26 +95,24 @@ void main() {
       expect(t.takeException(), isNull);
     },
   );
-  testWidgets(
-    'simulador ofrece movimiento y el toque ensaya sin reposicionar',
-    (t) async {
-      final c = await openRules(t, mode: 'simulator', data: mw());
-      await press(t, 'analysis-mode');
-      await press(t, 'mode-movement');
-      await press(t, 'movement-close');
-      await t.tapAt(cellPosition(t, c, 'A1'));
-      await t.pumpAndSettle();
-      await t.tapAt(cellPosition(t, c, 'B1'));
-      await t.pumpAndSettle();
-      expect(c.movement.route, [vc('A1'), vc('B1')]);
-      expect(c.value.characters.byId('figure-1')!.position, vc('A1'));
-      await press(t, 'movement-report');
-      await press(t, 'movement-special');
-      expect(t.widget<Text>(mk('movement-result')).data, 'NO EVALUADA');
-      expect(t.widget<FilledButton>(mk('movement-confirm')).onPressed, isNull);
-      expect(t.takeException(), isNull);
-    },
-  );
+  testWidgets('Editor ofrece movimiento y el toque ensaya sin reposicionar', (
+    t,
+  ) async {
+    final c = await openRules(t, data: mw());
+    await press(t, 'tool-movement');
+    await press(t, 'movement-close');
+    await t.tapAt(cellPosition(t, c, 'A1'));
+    await t.pumpAndSettle();
+    await t.tapAt(cellPosition(t, c, 'B1'));
+    await t.pumpAndSettle();
+    expect(c.movement.route, [vc('A1'), vc('B1')]);
+    expect(c.value.characters.byId('figure-1')!.position, vc('A1'));
+    await press(t, 'movement-report');
+    await press(t, 'movement-special');
+    expect(t.widget<Text>(mk('movement-result')).data, 'NO EVALUADA');
+    expect(t.widget<FilledButton>(mk('movement-confirm')).onPressed, isNull);
+    expect(t.takeException(), isNull);
+  });
   testWidgets('ficha persiste IM y editar alcance no la borra', (t) async {
     final c = await openRules(t, data: mw());
     showCharacterDialog(
