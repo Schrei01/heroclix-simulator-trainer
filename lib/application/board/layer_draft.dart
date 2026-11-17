@@ -11,6 +11,7 @@ final class LayerDraft {
     required this.rectangle,
     required this.eraseWalls,
     required this.eraseLayer,
+    this.brush = TerrainBrush.hindering,
     Iterable<CellCoordinate> cells = const [],
     Iterable<EdgeWall> edges = const [],
     this.figureId,
@@ -19,6 +20,7 @@ final class LayerDraft {
        edges = Set.unmodifiable(edges);
   final EditorTool tool;
   final TerrainType type;
+  final TerrainBrush brush;
   final bool rectangle, eraseWalls, pending;
   final EraseLayer eraseLayer;
   final Set<CellCoordinate> cells;
@@ -35,6 +37,7 @@ final class LayerDraft {
     rectangle: rectangle,
     eraseWalls: eraseWalls,
     eraseLayer: eraseLayer,
+    brush: brush,
     cells: cells ?? this.cells,
     edges: edges ?? this.edges,
     figureId: figureId,

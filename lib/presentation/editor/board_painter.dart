@@ -279,6 +279,20 @@ final class BoardPainter extends CustomPainter {
             ..style = PaintingStyle.stroke,
         );
       }
+      if (draft.tool == EditorTool.terrain &&
+          draft.brush == TerrainBrush.elevated &&
+          state != null) {
+        for (final cell in draft.cells) {
+          final next = state.terrain.at(cell).level + 1;
+          _text(
+            canvas,
+            next > 40 ? 'E40 máx.' : 'E$next',
+            _cellRect(cell).center,
+            fontSize: 16,
+            color: Colors.white,
+          );
+        }
+      }
       for (final edge in draft.edges) {
         _wall(canvas, edge, color);
       }
@@ -330,7 +344,11 @@ final class BoardPainter extends CustomPainter {
         final c = CellCoordinate(row: row, column: col);
         final level = state.terrain.at(c).level;
         final rect = _cellRect(c);
-        if (level > 1 && !transitionCells.contains(c)) {
+        final raising =
+            layerPreview?.tool == EditorTool.terrain &&
+            layerPreview?.brush == TerrainBrush.elevated &&
+            layerPreview!.cells.contains(c);
+        if (level > 1 && !transitionCells.contains(c) && !raising) {
           final badge = Rect.fromLTWH(
             rect.right - 31,
             rect.bottom - 19,

@@ -101,6 +101,17 @@ final class CharacterDraft {
   final Set<VisionAbility> abilities;
   final FigureSize size;
   final Set<MovementAbility> movementAbilities;
+  CharacterDraft withTeam(String teamId) => CharacterDraft(
+    name: name,
+    teamId: teamId,
+    position: position,
+    footprint: footprint,
+    speed: speed,
+    range: range,
+    abilities: abilities,
+    size: size,
+    movementAbilities: movementAbilities,
+  );
   CharacterDraft at(CellCoordinate position) => CharacterDraft(
     name: name,
     teamId: teamId,

@@ -83,6 +83,13 @@ void main() {
   });
 
   for (final (name, size, dimensions) in [
+    ('brush_hint_portrait', const Size(400, 900), null),
+    ('brush_hint_landscape', const Size(1000, 700), null),
+    ('brush_hint_compact', const Size(320, 320), null),
+    ('brush_elevation_preview', const Size(400, 900), null),
+    ('brush_elevation_done', const Size(400, 900), null),
+    ('brush_erase_done', const Size(400, 900), null),
+    ('brush_team_cycle', const Size(400, 900), null),
     ('increment_palette_portrait', const Size(400, 900), null),
     ('increment_palette_landscape', const Size(1000, 700), null),
     ('increment_palette_compact', const Size(320, 320), null),
@@ -399,6 +406,10 @@ void main() {
         tester.platformDispatcher.textScaleFactorTestValue = 3;
         addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
       }
+      if (name == 'brush_hint_compact') {
+        tester.platformDispatcher.textScaleFactorTestValue = 3;
+        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      }
       final key = GlobalKey();
       final store = MemoryStore();
       // Cada render posee su propio almacenamiento, sin canal de plataforma.
@@ -441,6 +452,64 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      TestGesture? brushGesture;
+      if (name.startsWith('brush_')) {
+        persistent.loadScenario(
+          BoardSession.initial()
+              .paintElevation([CellCoordinate.parse('E4')], 2)
+              .paintElevation([CellCoordinate.parse('F4')], 3)
+              .paintTerrain([
+                CellCoordinate.parse('E4'),
+                CellCoordinate.parse('B7'),
+              ], TerrainType.hindering)
+              .paintTerrain([CellCoordinate.parse('G2')], TerrainType.blocking),
+        );
+        await tester.ensureVisible(find.text('Abrir editor'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Abrir editor'));
+        await tester.pumpAndSettle();
+        if (name == 'brush_team_cycle' || name == 'brush_erase_done') {
+          persistent.saveCharacter(
+            CharacterDraft(
+              name: 'Figura',
+              teamId: 'team-1',
+              position: CellCoordinate.parse('E4'),
+            ),
+          );
+          await tester.pumpAndSettle();
+        }
+        if (name.startsWith('brush_hint') || name == 'brush_team_cycle') {
+          await press(tester, 'tool-characters');
+          if (name == 'brush_team_cycle') {
+            for (var i = 0; i < 2; i++) {
+              await tester.tapAt(cellPosition(tester, persistent, 'E4'));
+              await tester.pumpAndSettle();
+            }
+            expect(persistent.value.selectedCharacter!.teamId, 'team-2');
+          }
+        } else {
+          if (name == 'brush_erase_done') {
+            await press(tester, 'tool-erase');
+          } else {
+            await press(tester, 'tool-terrain');
+            await press(tester, 'terrain-elevated');
+          }
+          persistent.zoom(1.6);
+          await tester.pumpAndSettle();
+          brushGesture = await tester.startGesture(
+            cellPosition(tester, persistent, 'D4'),
+          );
+          await brushGesture.moveTo(cellPosition(tester, persistent, 'F4'));
+          await tester.pump();
+          await brushGesture.moveTo(cellPosition(tester, persistent, 'D4'));
+          await tester.pump();
+          if (name != 'brush_elevation_preview') {
+            await brushGesture.up();
+            brushGesture = null;
+            await tester.pumpAndSettle();
+          }
+        }
+      }
       if (name.startsWith('increment_')) {
         persistent.loadScenario(
           BoardSession.initial()
@@ -1035,21 +1104,18 @@ void main() {
               session: visionSession(world),
             );
             const codec = ScenarioCodec();
-            final file = File(
-              'build/verification/editor-increments/$name.json',
-            );
+            final file = File('build/verification/brush-teams/$name.json');
             await file.parent.create(recursive: true);
             await file.writeAsString(codec.encode(doc));
-            await File(
-              'build/verification/editor-increments/$name-working.json',
-            ).writeAsString(
-              jsonEncode({
-                'workspaceSchemaVersion': 1,
-                'document': codec.toMap(doc),
-                'dirty': true,
-                'saved': false,
-              }),
-            );
+            await File('build/verification/brush-teams/$name-working.json')
+                .writeAsString(
+                  jsonEncode({
+                    'workspaceSchemaVersion': 1,
+                    'document': codec.toMap(doc),
+                    'dirty': true,
+                    'saved': false,
+                  }),
+                );
           });
         }
       }
@@ -1215,7 +1281,7 @@ void main() {
                 analysis.priority,
               );
               final file = File(
-                'build/verification/editor-increments/diagnostico.png',
+                'build/verification/brush-teams/diagnostico.png',
               );
               await file.parent.create(recursive: true);
               await file.writeAsBytes(bytes);
@@ -1231,13 +1297,17 @@ void main() {
         final image = await boundary.toImage();
         try {
           final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-          final output = File('build/previews/editor-increments/$name.png');
+          final output = File('build/previews/brush-teams/$name.png');
           await output.parent.create(recursive: true);
           await output.writeAsBytes(bytes!.buffer.asUint8List());
         } finally {
           image.dispose();
         }
       });
+      if (brushGesture != null) {
+        await brushGesture.cancel();
+        await tester.pumpAndSettle();
+      }
     });
   }
 }

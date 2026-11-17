@@ -45,6 +45,7 @@ Future<bool> confirmLayerAction(
     false;
 
 String eraseName(EraseLayer layer) => switch (layer) {
+  EraseLayer.all => 'Borrar todo',
   EraseLayer.figures => 'Borrar figura',
   EraseLayer.terrain => 'Borrar terreno',
   EraseLayer.elevation => 'Borrar elevación',
@@ -112,7 +113,8 @@ Future<void> commitLayerDraft(
   if (draft == null) return;
   final erasingCells =
       draft.tool == EditorTool.erase &&
-      (draft.eraseLayer == EraseLayer.terrain ||
+      (draft.eraseLayer == EraseLayer.all ||
+          draft.eraseLayer == EraseLayer.terrain ||
           draft.eraseLayer == EraseLayer.elevation);
   if (draft.tool == EditorTool.terrain || erasingCells) {
     if (draft.cells.isEmpty) {
@@ -151,10 +153,15 @@ Future<void> commitLayerDraft(
   if (!context.mounted || controller.draft.value != draft) return;
   final error = controller.attempt((session) {
     if (draft.tool == EditorTool.terrain) {
+      if (draft.brush == TerrainBrush.elevated) {
+        return session.raiseElevations(draft.cells);
+      }
       return session.paintTerrain(draft.cells, draft.type);
     }
     if (draft.tool == EditorTool.erase) {
       switch (draft.eraseLayer) {
+        case EraseLayer.all:
+          return session.eraseCells(draft.cells);
         case EraseLayer.figures:
           return session.deleteCharacter(draft.figureId!);
         case EraseLayer.terrain:
@@ -211,7 +218,7 @@ Future<void> showLayerLegend(BuildContext context) => showDialog<void>(
     title: const Text('Leyenda y capas'),
     content: const Text(
       'D · Despejado: terreno predeterminado.\nH ··· Obstaculizado: puntos verdes y letra H.\nB /// Bloqueado: rayas ámbar y letra B.\n|| Muro: línea doble sobre borde interno.\n! Posición incompatible para estudio: figura sobre bloqueado.\n\n'
-      'Terreno, elevación, muros y figuras son capas independientes. Despejado limpia solo el tipo de terreno y conserva la altura. Borrar elemento permite elegir figura, terreno, elevación, transición o muro. Dos toques en la misma casilla con Seleccionar preguntan si quieres borrar, en ese orden de prioridad: personaje, terreno y elevación.\n\n'
+      'Terreno, elevación, muros y figuras son capas independientes. Despejado limpia solo el tipo de terreno y conserva la altura. Borrar empieza con Borrar todo por trazo y también permite elegir una capa. Retira la figura completa si toca su base; limpia el terreno, altura, muros y transiciones de las casillas recorridas. Dos toques en la misma casilla con Seleccionar preguntan si quieres borrar, en ese orden de prioridad: personaje, terreno y elevación.\n\n'
       'En Terrenos, Muros y Borrar, un dedo edita; dos dedos amplían y desplazan. Seleccionar permite pan con un dedo. Cancelar un gesto o añadir otro dedo descarta la edición en curso.\n\n'
       'Elevación: borde rojo y E2/E3… en casillas elevadas sin transición. Transición: triángulo blanco con su nivel en cada casilla conectada, formando un par sobre el borde.\n\n'
       'Los muros externos no se admiten. Consulta Visión o Movimiento para obtener un dictamen del perfil implementado.',

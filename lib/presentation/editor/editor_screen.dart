@@ -11,6 +11,7 @@ import 'editor_controller.dart';
 import 'character_dialog.dart';
 import 'layer_toolbar.dart';
 import 'terrain_palette.dart';
+import 'tool_hint.dart';
 import 'layer_actions.dart';
 import '../scenarios/scenario_actions.dart';
 import 'sight_controls.dart';
@@ -353,7 +354,19 @@ class EditorScreen extends StatelessWidget {
                             if (session.tool == EditorTool.vision)
                               VisionVerdictBar(controller: controller),
                             Expanded(
-                              child: BoardCanvas(controller: controller),
+                              child: Stack(
+                                children: [
+                                  Positioned.fill(
+                                    child: BoardCanvas(controller: controller),
+                                  ),
+                                  Positioned(
+                                    right: 8,
+                                    top: 8,
+                                    bottom: 8,
+                                    child: ToolHint(controller: controller),
+                                  ),
+                                ],
+                              ),
                             ),
                             if (session.tool == EditorTool.terrain)
                               TerrainPalette(controller: controller),
@@ -586,15 +599,6 @@ class _ToolBar extends StatelessWidget {
                             return;
                           }
                           if (id == 'vision' || id == 'distance') return;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                id == 'characters'
-                                    ? 'Toca una casilla vacía para crear. Mantén pulsada una figura y arrastra para moverla.'
-                                    : 'Editor: reposicionamiento libre. Toca para seleccionar; mantén pulsada una figura y arrastra para montar el escenario.',
-                              ),
-                            ),
-                          );
                         }
                       : null,
                   style: id == controller.value.tool.name

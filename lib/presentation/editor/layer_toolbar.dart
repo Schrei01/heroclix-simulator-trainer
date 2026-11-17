@@ -173,13 +173,15 @@ class LayerToolbar extends StatelessWidget {
     controller.draft.value = LayerDraft(
       tool: state.tool,
       type: state.terrainType,
+      brush: state.terrainBrush,
       rectangle: state.tool == EditorTool.terrain,
       eraseWalls: state.eraseWalls,
       eraseLayer: state.eraseLayer,
       cells:
           state.tool == EditorTool.terrain ||
               (state.tool == EditorTool.erase &&
-                  (state.eraseLayer == EraseLayer.terrain ||
+                  (state.eraseLayer == EraseLayer.all ||
+                      state.eraseLayer == EraseLayer.terrain ||
                       state.eraseLayer == EraseLayer.elevation))
           ? const EditingGeometry().rectangle(a, b)
           : [],

@@ -20,7 +20,7 @@ enum EditorTool {
   positionAnalysis,
 }
 
-enum EraseLayer { figures, terrain, elevation, transitions, walls }
+enum EraseLayer { all, figures, terrain, elevation, transitions, walls }
 
 enum TerrainBrush {
   blocking,
@@ -59,7 +59,7 @@ final class BoardSession {
     this.terrainBrush = TerrainBrush.hindering,
     this.rectangleBrush = false,
     this.eraseWalls = false,
-    this.eraseLayer = EraseLayer.figures,
+    this.eraseLayer = EraseLayer.all,
   });
 
   factory BoardSession.initial() => const BoardSession._(
@@ -135,7 +135,7 @@ final class BoardSession {
   final bool rectangleBrush, eraseWalls;
   final EraseLayer eraseLayer;
   bool get editsLayers =>
-      (tool == EditorTool.terrain && terrainBrush.type != null) ||
+      (tool == EditorTool.terrain && terrainBrush != TerrainBrush.transition) ||
       tool == EditorTool.walls ||
       tool == EditorTool.erase;
   Set<CellCoordinate> get studyConflicts => {
@@ -314,6 +314,19 @@ final class BoardSession {
     characters: characters.remove(id),
     clearSelection: selectedCharacterId == id,
   );
+  BoardSession cycleCharacterTeam(String id) {
+    final figure = characters.byId(id);
+    if (figure == null) {
+      throw const PlacementException('La figura ya no existe.');
+    }
+    if (teams.length < 2) return this;
+    final index = teams.indexWhere((t) => t.id == figure.teamId);
+    return editCharacter(
+      id,
+      figure.data.withTeam(teams[(index + 1) % teams.length].id),
+    );
+  }
+
   BoardSession addTeam({
     required String name,
     required int color,
@@ -517,7 +530,13 @@ final class BoardSession {
   }
 
   BoardSession paintElevation(Iterable<CellCoordinate> cells, int level) {
-    final next = terrain.paintElevation(cells, level, dimensions);
+    return _withElevation(terrain.paintElevation(cells, level, dimensions));
+  }
+
+  BoardSession raiseElevations(Iterable<CellCoordinate> cells) =>
+      _withElevation(terrain.raiseElevations(cells, dimensions));
+
+  BoardSession _withElevation(TerrainLayer next) {
     for (final f in characters.all) {
       if (f.occupiedCells.map((c) => next.at(c).level).toSet().length > 1) {
         throw const PlacementException(
@@ -526,6 +545,40 @@ final class BoardSession {
       }
     }
     return _copy(terrain: next);
+  }
+
+  BoardSession eraseCells(Iterable<CellCoordinate> cells) {
+    final targets = cells.toSet();
+    for (final cell in targets) {
+      if (!dimensions.contains(cell)) {
+        throw ArgumentError('Casilla fuera del tablero.');
+      }
+    }
+    if (targets.isEmpty) return this;
+    bool touches(EdgeWall e) =>
+        targets.contains(e.firstCell) || targets.contains(e.secondCell);
+    final edges = walls.edges.values.where(touches).toList();
+    final figures = characters.all
+        .where((f) => f.occupiedCells.any(targets.contains))
+        .toList();
+    final terrainChanged =
+        targets.any(terrain.cells.containsKey) ||
+        terrain.transitions.any(touches);
+    if (!terrainChanged && edges.isEmpty && figures.isEmpty) return this;
+    var remaining = characters;
+    for (final figure in figures) {
+      remaining = remaining.remove(figure.id);
+    }
+    return _copy(
+      terrain: terrainChanged
+          ? terrain.eraseCells(targets, dimensions)
+          : terrain,
+      walls: edges.isEmpty ? walls : walls.edit(edges, dimensions, erase: true),
+      characters: remaining,
+      clearSelection:
+          selectedCell != null && targets.contains(selectedCell) ||
+          figures.any((f) => f.id == selectedCharacterId),
+    );
   }
 
   BoardSession setTransition(EdgeWall edge, {required bool remove}) {

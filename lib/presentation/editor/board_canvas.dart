@@ -50,6 +50,7 @@ class _BoardCanvasState extends State<BoardCanvas> {
   bool _layerGesture = false;
   bool _compactDialogOpen = false;
   CellCoordinate? _lastSelectionTap;
+  String? _lastCharacterTap;
   bool _deleteDialogOpen = false;
 
   void _placeCharacter(CellCoordinate cell) {
@@ -152,7 +153,11 @@ class _BoardCanvasState extends State<BoardCanvas> {
     controller.draft.value = LayerDraft(
       tool: state.tool,
       type: state.terrainType,
-      rectangle: state.rectangleBrush && state.tool == EditorTool.terrain,
+      brush: state.terrainBrush,
+      rectangle:
+          state.rectangleBrush &&
+          state.tool == EditorTool.terrain &&
+          state.terrainBrush.type != null,
       eraseWalls: state.eraseWalls,
       eraseLayer: state.eraseLayer,
     );
@@ -191,7 +196,8 @@ class _BoardCanvasState extends State<BoardCanvas> {
         cells: figure?.occupiedCells ?? [],
       );
     } else if (draft.tool == EditorTool.erase &&
-        (draft.eraseLayer == EraseLayer.terrain ||
+        (draft.eraseLayer == EraseLayer.all ||
+            draft.eraseLayer == EraseLayer.terrain ||
             draft.eraseLayer == EraseLayer.elevation)) {
       controller.draft.value = draft.update(
         cells: {
@@ -256,6 +262,7 @@ class _BoardCanvasState extends State<BoardCanvas> {
         ? null
         : widget.controller.value.characters.at(cell);
     if (figure == null) return;
+    _lastCharacterTap = null;
     widget.controller.selectCharacter(figure.id);
     _dragColumnOffset = cell!.column - figure.position.column;
     _dragRowOffset = cell.row - figure.position.row;
@@ -350,6 +357,10 @@ class _BoardCanvasState extends State<BoardCanvas> {
   }
 
   void _onSession() {
+    if (widget.controller.value.tool != EditorTool.characters ||
+        widget.controller.value.selectedCharacterId == null) {
+      _lastCharacterTap = null;
+    }
     if (widget.controller.value.tool != EditorTool.select ||
         widget.controller.value.selectedCell == null) {
       _lastSelectionTap = null;
@@ -384,6 +395,7 @@ class _BoardCanvasState extends State<BoardCanvas> {
       _beginLayer(event.localPosition);
     }
     if (_pointers.length > 1) {
+      _lastCharacterTap = null;
       _lastSelectionTap = null;
       _blockTap = true;
       _multiTouch = true;
@@ -400,6 +412,7 @@ class _BoardCanvasState extends State<BoardCanvas> {
     }
     if (_pointerStart != null &&
         (event.localPosition - _pointerStart!).distance > kTouchSlop) {
+      _lastCharacterTap = null;
       _lastSelectionTap = null;
       _blockTap = true;
     }
@@ -539,9 +552,24 @@ class _BoardCanvasState extends State<BoardCanvas> {
                       }
                       return;
                     }
-                    if (session.tool == EditorTool.characters &&
-                        cell != null &&
-                        session.characters.at(cell) == null) {
+                    if (session.tool == EditorTool.characters && cell != null) {
+                      final figure = session.characters.at(cell);
+                      if (figure != null) {
+                        final repeated = _lastCharacterTap == figure.id;
+                        _lastCharacterTap = repeated ? null : figure.id;
+                        widget.controller.selectCharacter(figure.id);
+                        if (repeated) {
+                          final error = widget.controller.cycleCharacterTeam(
+                            figure.id,
+                          );
+                          if (error != null) {
+                            ScaffoldMessenger.of(context)
+                                .showSnackBar(SnackBar(content: Text(error)));
+                          }
+                        }
+                        return;
+                      }
+                      _lastCharacterTap = null;
                       widget.controller.tap(
                         BoardPoint(
                           details.localPosition.dx,
@@ -707,7 +735,9 @@ class _BoardCanvasState extends State<BoardCanvas> {
                                   children: [
                                     Text(
                                       'Vista previa · ${draft.tool == EditorTool.terrain
-                                          ? '${draft.cells.length} casillas · ${terrainName(draft.type)}'
+                                          ? '${draft.cells.length} casillas · ${draft.brush == TerrainBrush.elevated ? 'Elevar +1' : terrainName(draft.type)}'
+                                          : draft.eraseLayer == EraseLayer.all && draft.tool == EditorTool.erase
+                                          ? '${draft.cells.length} casillas · Borrado total'
                                           : draft.figureId != null
                                           ? 'Borrar figura'
                                           : '${draft.edges.length} bordes internos'}',

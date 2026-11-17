@@ -68,7 +68,7 @@ class TerrainPalette extends StatelessWidget {
       child: ExcludeSemantics(
         child: Tooltip(
           message: brush == TerrainBrush.elevated
-              ? 'Terreno elevado: toca para subir un nivel (E2, E3…)'
+              ? 'Terreno elevado: traza para subir un nivel por casilla (E2, E3…)'
               : brush == TerrainBrush.transition
               ? 'Transición: toca dos casillas vecinas de distinto nivel'
               : brushName(brush),

@@ -128,4 +128,51 @@ final class TerrainLayer {
         ..addAll(remove ? [] : [edge]),
     );
   }
+
+  /// Cada casilla se incrementa una sola vez respecto al comienzo del trazo.
+  TerrainLayer raiseElevations(
+    Iterable<CellCoordinate> targets,
+    BoardDimensions dimensions,
+  ) {
+    final values = {...cells};
+    for (final cell in targets.toSet()) {
+      if (!dimensions.contains(cell)) {
+        throw ArgumentError('Casilla fuera del tablero.');
+      }
+      final before = at(cell);
+      if (before.level >= 40) {
+        throw ArgumentError('La elevación máxima es E40.');
+      }
+      values[cell] = CellTerrain(
+        type: before.type,
+        elevation: before.level + 1,
+      );
+    }
+    final result = TerrainLayer._(values);
+    return TerrainLayer._(
+      result.cells,
+      transitions.where(
+        (e) => result.at(e.firstCell).level != result.at(e.secondCell).level,
+      ),
+    );
+  }
+
+  TerrainLayer eraseCells(
+    Iterable<CellCoordinate> targets,
+    BoardDimensions dimensions,
+  ) {
+    final cleared = targets.toSet();
+    for (final cell in cleared) {
+      if (!dimensions.contains(cell)) {
+        throw ArgumentError('Casilla fuera del tablero.');
+      }
+    }
+    return TerrainLayer._(
+      {...cells}..removeWhere((cell, _) => cleared.contains(cell)),
+      transitions.where(
+        (e) =>
+            !cleared.contains(e.firstCell) && !cleared.contains(e.secondCell),
+      ),
+    );
+  }
 }
