@@ -37,6 +37,7 @@ Future<void> startFigure(
   await press(tester, 'tool-characters');
   await tester.tapAt(cellPosition(tester, controller, cell));
   await tester.pumpAndSettle();
+  await openFigure(tester);
 }
 
 void main() {
@@ -210,7 +211,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('El anclaje indica'), findsOneWidget);
     await press(tester, 'save-character');
-    expect(controller.value.characters.isEmpty, isTrue);
+    expect(controller.value.characters.length, 1);
+    expect(controller.value.selectedCharacter!.footprint, Footprint.single);
     expect(find.textContaining('base completa'), findsOneWidget);
     await edit(tester, 'character-position', 'C3');
     await press(tester, 'save-character');

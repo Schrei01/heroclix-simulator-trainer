@@ -8,7 +8,8 @@ import 'editor_controller.dart';
 import '../../application/board/board_session.dart';
 import '../../application/board/sight_probe.dart';
 import '../../domain/board/cell_coordinate.dart';
-import 'character_dialog.dart';
+import '../../domain/characters/character.dart';
+import '../../domain/terrain/terrain.dart';
 import '../../application/board/layer_draft.dart';
 import '../../domain/terrain/editing_geometry.dart';
 
@@ -49,6 +50,33 @@ class _BoardCanvasState extends State<BoardCanvas> {
   CellCoordinate? _editAnchor;
   bool _layerGesture = false;
   bool _compactDialogOpen = false;
+
+  Future<void> _placeCharacter(CellCoordinate cell) async {
+    final controller = widget.controller;
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    if (controller.value.characters.at(cell) != null) return;
+    final data = CharacterDraft(
+      name: 'Figura',
+      teamId: controller.value.teams.first.id,
+      position: cell,
+    );
+    var allowStudy = false;
+    if (controller.value.terrain.at(cell).type == TerrainType.blocking) {
+      allowStudy = await confirmLayerAction(
+        context,
+        'Figura sobre bloqueado',
+        'La casilla ${cell.label} tiene terreno bloqueado. Puedes conservar la figura con valores predeterminados marcada con ! para estudio; esto no declara una posición legal.',
+        'Conservar para estudio',
+        'confirm-study-character',
+      );
+      if (!allowStudy || !mounted) return;
+    }
+    final error = controller.saveCharacter(data, allowStudy: allowStudy);
+    if (error != null && mounted) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(error)));
+    }
+  }
 
   Future<void> _compactPreview(LayerDraft draft) async {
     if (!mounted || widget.controller.draft.value != draft) {
@@ -509,11 +537,7 @@ class _BoardCanvasState extends State<BoardCanvas> {
                           details.localPosition.dy,
                         ),
                       );
-                      showCharacterDialog(
-                        context,
-                        widget.controller,
-                        position: cell,
-                      );
+                      _placeCharacter(cell);
                       return;
                     }
                     widget.controller.tap(

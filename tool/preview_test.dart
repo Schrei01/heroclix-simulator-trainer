@@ -82,6 +82,11 @@ void main() {
   });
 
   for (final (name, size, dimensions) in [
+    ('quick_palette_portrait', const Size(400, 900), BoardDimensions.initial),
+    ('quick_palette_landscape', const Size(1000, 700), BoardDimensions.initial),
+    ('quick_palette_compact', const Size(320, 320), BoardDimensions.initial),
+    ('quick_character', const Size(400, 900), null),
+    ('quick_elevation', const Size(400, 900), BoardDimensions.initial),
     ('final_home', const Size(1000, 720), null),
     ('final_about', const Size(400, 900), null),
     ('final_about_compact', const Size(320, 568), null),
@@ -245,6 +250,10 @@ void main() {
         tester.platformDispatcher.textScaleFactorTestValue = 2;
         addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
       }
+      if (name == 'quick_palette_compact') {
+        tester.platformDispatcher.textScaleFactorTestValue = 3;
+        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      }
       final key = GlobalKey();
       final store = MemoryStore();
       // Cada render posee su propio almacenamiento, sin canal de plataforma.
@@ -282,6 +291,13 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      if (name == 'quick_character') {
+        await press(tester, 'mode-editor');
+        await press(tester, 'tool-characters');
+        await tester.tapAt(cellPosition(tester, persistent, 'A1'));
+        await tester.pumpAndSettle();
+        expect(persistent.value.characters.length, 1);
+      }
       if (name.startsWith('final_') && name != 'final_home') {
         final button = name == 'final_guide'
             ? 'open-guide'
@@ -364,6 +380,22 @@ void main() {
         if (name.startsWith('ficha')) {
           await tester.tap(find.byKey(const ValueKey('edit-character')));
           await tester.pumpAndSettle();
+        }
+        if (name.startsWith('quick_palette')) {
+          controller.setTool(EditorTool.terrain);
+          await tester.pumpAndSettle();
+        }
+        if (name == 'quick_elevation') {
+          await press(tester, 'tool-elevation');
+          expect(
+            tester
+                .widget<TextField>(
+                  find.byKey(const ValueKey('elevation-level')),
+                )
+                .controller!
+                .text,
+            '2',
+          );
         }
         if (name.startsWith('terreno')) {
           controller.setTool(EditorTool.terrain);
@@ -760,18 +792,21 @@ void main() {
               session: visionSession(world),
             );
             const codec = ScenarioCodec();
-            final file = File('build/verification/prompt-12/$name.json');
+            final file = File(
+              'build/verification/editor-quick-tools/$name.json',
+            );
             await file.parent.create(recursive: true);
             await file.writeAsString(codec.encode(doc));
-            await File('build/verification/prompt-12/$name-working.json')
-                .writeAsString(
-                  jsonEncode({
-                    'workspaceSchemaVersion': 1,
-                    'document': codec.toMap(doc),
-                    'dirty': true,
-                    'saved': false,
-                  }),
-                );
+            await File(
+              'build/verification/editor-quick-tools/$name-working.json',
+            ).writeAsString(
+              jsonEncode({
+                'workspaceSchemaVersion': 1,
+                'document': codec.toMap(doc),
+                'dirty': true,
+                'saved': false,
+              }),
+            );
           });
         }
       }
@@ -936,7 +971,9 @@ void main() {
                 analysis.chosen,
                 analysis.priority,
               );
-              final file = File('build/verification/prompt-12/diagnostico.png');
+              final file = File(
+                'build/verification/editor-quick-tools/diagnostico.png',
+              );
               await file.parent.create(recursive: true);
               await file.writeAsBytes(bytes);
             });
@@ -951,7 +988,7 @@ void main() {
         final image = await boundary.toImage();
         try {
           final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-          final output = File('build/previews/prompt-12/$name.png');
+          final output = File('build/previews/editor-quick-tools/$name.png');
           await output.parent.create(recursive: true);
           await output.writeAsBytes(bytes!.buffer.asUint8List());
         } finally {

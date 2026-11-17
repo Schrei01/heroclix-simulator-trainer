@@ -27,7 +27,7 @@ class _ElevationDialogState extends State<_ElevationDialog> {
   late final to = TextEditingController(text: from.text);
   late final level = TextEditingController(
     text:
-        '${widget.controller.value.terrain.at(CellCoordinate.parse(from.text)).level}',
+        '${widget.controller.value.terrain.at(CellCoordinate.parse(from.text)).level.clamp(2, 40)}',
   );
   String? error;
   @override

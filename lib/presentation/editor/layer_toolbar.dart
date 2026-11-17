@@ -5,7 +5,6 @@ import '../../application/board/layer_draft.dart';
 import '../../domain/board/cell_coordinate.dart';
 import '../../domain/terrain/editing_geometry.dart';
 import '../../domain/terrain/edge_wall.dart';
-import '../../domain/terrain/terrain.dart';
 import '../theme/app_theme.dart';
 import 'editor_controller.dart';
 import 'layer_actions.dart';
@@ -13,47 +12,39 @@ import 'layer_actions.dart';
 class LayerToolbar extends StatelessWidget {
   const LayerToolbar({required this.controller, super.key});
   final EditorController controller;
-  Widget _choice(String text, {IconData? icon}) => Padding(
-    padding: const EdgeInsets.all(12),
-    child: Row(
-      children: [
-        if (icon != null) ...[Icon(icon), const SizedBox(width: 8)],
-        Text(text),
-        const Icon(Icons.arrow_drop_down),
-      ],
-    ),
-  );
+  Widget _choice(String text, {IconData? icon, bool compact = false}) => compact
+      ? SizedBox(
+          width: 48,
+          height: 48,
+          child: Icon(icon ?? Icons.layers_outlined),
+        )
+      : Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              if (icon != null) ...[Icon(icon), const SizedBox(width: 8)],
+              Text(text),
+              const Icon(Icons.arrow_drop_down),
+            ],
+          ),
+        );
   @override
   Widget build(BuildContext context) {
     final state = controller.value;
+    final compact =
+        MediaQuery.sizeOf(context).height < 400 &&
+        MediaQuery.textScalerOf(context).scale(20) > 32;
     return ColoredBox(
       color: AppTheme.surface,
       child: SizedBox(
         width: double.infinity,
-        height: MediaQuery.textScalerOf(context).scale(20) + 32,
+        height: compact ? 48 : MediaQuery.textScalerOf(context).scale(20) + 32,
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 8),
           child: Row(
             children: [
               if (state.tool == EditorTool.terrain) ...[
-                PopupMenuButton<TerrainType>(
-                  key: const ValueKey('terrain-type'),
-                  tooltip: 'Elegir terreno',
-                  onSelected: (type) => controller.configureLayers(type: type),
-                  itemBuilder: (_) => [
-                    for (final type in TerrainType.values)
-                      PopupMenuItem(
-                        value: type,
-                        child: Text(
-                          '${terrainMark(type)} · ${terrainName(type)}',
-                        ),
-                      ),
-                  ],
-                  child: _choice(
-                    '${terrainMark(state.terrainType)} · ${terrainName(state.terrainType)}',
-                  ),
-                ),
                 PopupMenuButton<bool>(
                   key: const ValueKey('terrain-brush'),
                   tooltip: 'Trazo o rectángulo',
@@ -71,6 +62,7 @@ class LayerToolbar extends StatelessWidget {
                   ],
                   child: _choice(
                     state.rectangleBrush ? 'Rectángulo' : 'Trazo',
+                    compact: compact,
                     icon: state.rectangleBrush
                         ? Icons.crop_square_outlined
                         : Icons.edit_outlined,
@@ -95,6 +87,7 @@ class LayerToolbar extends StatelessWidget {
                   ],
                   child: _choice(
                     state.eraseWalls ? 'Borrar muro' : 'Añadir muro',
+                    compact: compact,
                     icon: Icons.view_column_outlined,
                   ),
                 ),
@@ -118,19 +111,36 @@ class LayerToolbar extends StatelessWidget {
                     state.eraseLayer == EraseLayer.figures
                         ? 'Borrar figura'
                         : 'Borrar muro',
+                    compact: compact,
+                    icon: Icons.backspace_outlined,
                   ),
                 ),
-              TextButton.icon(
-                key: const ValueKey('edit-coordinates'),
-                onPressed: () => _coordinates(context),
-                icon: const Icon(Icons.edit_location_alt_outlined),
-                label: const Text('Coordenadas'),
-              ),
-              TextButton.icon(
-                onPressed: () => showLayerLegend(context),
-                icon: const Icon(Icons.info_outline),
-                label: const Text('Leyenda'),
-              ),
+              if (compact)
+                IconButton(
+                  key: const ValueKey('edit-coordinates'),
+                  tooltip: 'Editar por coordenadas',
+                  onPressed: () => _coordinates(context),
+                  icon: const Icon(Icons.edit_location_alt_outlined),
+                )
+              else
+                TextButton.icon(
+                  key: const ValueKey('edit-coordinates'),
+                  onPressed: () => _coordinates(context),
+                  icon: const Icon(Icons.edit_location_alt_outlined),
+                  label: const Text('Coordenadas'),
+                ),
+              if (compact)
+                IconButton(
+                  tooltip: 'Leyenda',
+                  onPressed: () => showLayerLegend(context),
+                  icon: const Icon(Icons.info_outline),
+                )
+              else
+                TextButton.icon(
+                  onPressed: () => showLayerLegend(context),
+                  icon: const Icon(Icons.info_outline),
+                  label: const Text('Leyenda'),
+                ),
             ],
           ),
         ),

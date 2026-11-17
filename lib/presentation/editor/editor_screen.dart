@@ -10,6 +10,7 @@ import 'board_size_dialog.dart';
 import 'editor_controller.dart';
 import 'character_dialog.dart';
 import 'layer_toolbar.dart';
+import 'terrain_palette.dart';
 import 'layer_actions.dart';
 import '../scenarios/scenario_actions.dart';
 import 'sight_controls.dart';
@@ -354,9 +355,19 @@ class EditorScreen extends StatelessWidget {
                     builder: (context, constraints) {
                       final horizontal =
                           MediaQuery.orientationOf(context) ==
-                          Orientation.landscape;
+                              Orientation.landscape ||
+                          (session.tool == EditorTool.terrain &&
+                              constraints.maxHeight < 200);
                       final canvas = Expanded(
-                        child: BoardCanvas(controller: controller),
+                        child: Column(
+                          children: [
+                            Expanded(
+                              child: BoardCanvas(controller: controller),
+                            ),
+                            if (session.tool == EditorTool.terrain)
+                              TerrainPalette(controller: controller),
+                          ],
+                        ),
                       );
                       final tools = _ToolBar(
                         vertical: horizontal,
