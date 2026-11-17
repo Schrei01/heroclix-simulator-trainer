@@ -63,7 +63,7 @@ Map<String, void Function()> targetCases() => {
   },
   'D02 §11.3a diferencias y límites de medición': () {
     final m = const DistanceService().measure(
-      BoardDimensions.initial,
+      BoardDimensions(rows: 4, columns: 4),
       vc('A1'),
       vc('D3'),
     );
@@ -73,14 +73,14 @@ Map<String, void Function()> targetCases() => {
     );
     ensure(
       !const DistanceService()
-          .measure(BoardDimensions.initial, vc('A1'), vc('D6'))
+          .measure(BoardDimensions(rows: 4, columns: 4), vc('A1'), vc('D6'))
           .evaluated,
       'fuera de tablero',
     );
     ensure(
       !const DistanceService()
           .measure(
-            BoardDimensions.initial,
+            BoardDimensions(rows: 4, columns: 4),
             vc('A1'),
             vc('D3'),
             rulesVersion: 'futura',

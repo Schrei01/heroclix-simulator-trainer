@@ -94,17 +94,11 @@ class _CharacterDialogState extends State<CharacterDialog> {
   late FigureSize _size;
   late Set<MovementAbility> _movementAbilities;
   bool _duplicate = false;
-  bool _allowStudy = false;
   String? _error;
   @override
   void initState() {
     super.initState();
     final figure = widget.character;
-    _allowStudy =
-        figure?.occupiedCells.any(
-          (cell) => widget.controller.value.studyConflicts.contains(cell),
-        ) ??
-        false;
     _name = TextEditingController(text: figure?.name ?? 'Figura');
     _position = TextEditingController(
       text: (figure?.position ?? widget.position)?.label ?? 'A1',
@@ -149,7 +143,6 @@ class _CharacterDialogState extends State<CharacterDialog> {
     final error = widget.controller.saveCharacter(
       data,
       id: _duplicate ? null : widget.character?.id,
-      allowStudy: _allowStudy,
     );
     if (error != null) {
       setState(() => _error = error);
@@ -165,7 +158,7 @@ class _CharacterDialogState extends State<CharacterDialog> {
         scrollable: true,
         title: const Text('¿Eliminar figura?'),
         content: const Text(
-          'La figura se eliminará de esta sesión. Deshacer estará disponible en una etapa posterior.',
+          'La figura se eliminará de esta sesión. Puedes recuperarla con Deshacer.',
         ),
         actions: [
           TextButton(
@@ -319,19 +312,6 @@ class _CharacterDialogState extends State<CharacterDialog> {
                   ),
                 ),
               ),
-            CheckboxListTile(
-              key: const ValueKey('allow-study-position'),
-              contentPadding: EdgeInsets.zero,
-              title: const Text(
-                'Permitir posición sobre bloqueado para estudio',
-              ),
-              subtitle: const Text(
-                'Se marcará con !. No afirma legalidad reglamentaria.',
-              ),
-              value: _allowStudy,
-              onChanged: (value) =>
-                  setState(() => _allowStudy = value ?? false),
-            ),
             DropdownButtonFormField<FigureSize>(
               key: const ValueKey('character-size'),
               isExpanded: true,
@@ -356,7 +336,9 @@ class _CharacterDialogState extends State<CharacterDialog> {
                 const Text(
                   'H no añade costo. Cada mejora ignora solo su componente; las opciones sin soporte dejan la ruta No evaluada.',
                 ),
-                for (final a in MovementAbility.values)
+                for (final a in MovementAbility.values.where(
+                  (a) => a != MovementAbility.other,
+                ))
                   CheckboxListTile(
                     key: ValueKey('movement-ability-${a.name}'),
                     contentPadding: EdgeInsets.zero,
@@ -374,28 +356,35 @@ class _CharacterDialogState extends State<CharacterDialog> {
                   ),
               ],
             ),
-            const Text(
-              'Cada mejora actúa solo sobre su obstáculo. Las opciones sin soporte producen No evaluado; no se interpretan cartas.',
-            ),
-            const Text('Improved Targeting · capacidades declaradas'),
-            for (final ability in VisionAbility.values)
-              CheckboxListTile(
-                key: ValueKey('ability-${ability.name}'),
-                contentPadding: EdgeInsets.zero,
-                title: Text(
-                  ability.label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+            ExpansionTile(
+              key: const ValueKey('targeting-abilities'),
+              title: const Text('Improved Targeting · visión'),
+              children: [
+                const Text(
+                  'Cada mejora actúa solo sobre su obstáculo. Las opciones sin soporte producen No evaluado; no se interpretan cartas.',
                 ),
-                value: _abilities.contains(ability),
-                onChanged: (checked) => setState(() {
-                  if (checked!) {
-                    _abilities.add(ability);
-                  } else {
-                    _abilities.remove(ability);
-                  }
-                }),
-              ),
+                for (final ability in VisionAbility.values.where(
+                  (a) => a != VisionAbility.other,
+                ))
+                  CheckboxListTile(
+                    key: ValueKey('ability-${ability.name}'),
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(
+                      ability.label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    value: _abilities.contains(ability),
+                    onChanged: (checked) => setState(() {
+                      if (checked!) {
+                        _abilities.add(ability);
+                      } else {
+                        _abilities.remove(ability);
+                      }
+                    }),
+                  ),
+              ],
+            ),
             if (widget.character != null && !_duplicate)
               Wrap(
                 children: [

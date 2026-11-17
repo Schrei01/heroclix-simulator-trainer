@@ -9,14 +9,13 @@ import '../../application/board/board_session.dart';
 import '../../application/board/sight_probe.dart';
 import '../../domain/board/cell_coordinate.dart';
 import '../../domain/characters/character.dart';
-import '../../domain/terrain/terrain.dart';
+
 import '../../application/board/layer_draft.dart';
 import '../../domain/terrain/editing_geometry.dart';
 
 import 'layer_actions.dart';
 import 'sight_controls.dart';
 import 'sight_painter.dart';
-import 'elevation_controls.dart';
 import '../movement/movement_painter.dart';
 
 class BoardCanvas extends StatefulWidget {
@@ -50,8 +49,10 @@ class _BoardCanvasState extends State<BoardCanvas> {
   CellCoordinate? _editAnchor;
   bool _layerGesture = false;
   bool _compactDialogOpen = false;
+  CellCoordinate? _lastSelectionTap;
+  bool _deleteDialogOpen = false;
 
-  Future<void> _placeCharacter(CellCoordinate cell) async {
+  void _placeCharacter(CellCoordinate cell) {
     final controller = widget.controller;
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     if (controller.value.characters.at(cell) != null) return;
@@ -60,18 +61,7 @@ class _BoardCanvasState extends State<BoardCanvas> {
       teamId: controller.value.teams.first.id,
       position: cell,
     );
-    var allowStudy = false;
-    if (controller.value.terrain.at(cell).type == TerrainType.blocking) {
-      allowStudy = await confirmLayerAction(
-        context,
-        'Figura sobre bloqueado',
-        'La casilla ${cell.label} tiene terreno bloqueado. Puedes conservar la figura con valores predeterminados marcada con ! para estudio; esto no declara una posición legal.',
-        'Conservar para estudio',
-        'confirm-study-character',
-      );
-      if (!allowStudy || !mounted) return;
-    }
-    final error = controller.saveCharacter(data, allowStudy: allowStudy);
+    final error = controller.saveCharacter(data);
     if (error != null && mounted) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(error)));
@@ -200,6 +190,15 @@ class _BoardCanvasState extends State<BoardCanvas> {
         figureId: figure?.id,
         cells: figure?.occupiedCells ?? [],
       );
+    } else if (draft.tool == EditorTool.erase &&
+        (draft.eraseLayer == EraseLayer.terrain ||
+            draft.eraseLayer == EraseLayer.elevation)) {
+      controller.draft.value = draft.update(
+        cells: {
+          ...draft.cells,
+          ...geometry.cellsAlong(previous, scene, state.dimensions),
+        },
+      );
     } else {
       final dx = scene.x - previous.x, dy = scene.y - previous.y;
       final steps = ((dx.abs() + dy.abs()) / (BoardGeometry.cellExtent / 8))
@@ -249,7 +248,6 @@ class _BoardCanvasState extends State<BoardCanvas> {
         widget.controller.value.tool == EditorTool.vision ||
         widget.controller.value.tool == EditorTool.distance ||
         widget.controller.value.tool == EditorTool.targets ||
-        widget.controller.value.tool == EditorTool.elevation ||
         widget.controller.value.tool == EditorTool.movement) {
       return;
     }
@@ -352,6 +350,10 @@ class _BoardCanvasState extends State<BoardCanvas> {
   }
 
   void _onSession() {
+    if (widget.controller.value.tool != EditorTool.select ||
+        widget.controller.value.selectedCell == null) {
+      _lastSelectionTap = null;
+    }
     final camera = widget.controller.value.camera;
     if (camera == _matrixCamera) return;
     _synchronizing = true;
@@ -382,6 +384,7 @@ class _BoardCanvasState extends State<BoardCanvas> {
       _beginLayer(event.localPosition);
     }
     if (_pointers.length > 1) {
+      _lastSelectionTap = null;
       _blockTap = true;
       _multiTouch = true;
       _cancelDrag();
@@ -397,6 +400,7 @@ class _BoardCanvasState extends State<BoardCanvas> {
     }
     if (_pointerStart != null &&
         (event.localPosition - _pointerStart!).distance > kTouchSlop) {
+      _lastSelectionTap = null;
       _blockTap = true;
     }
   }
@@ -477,17 +481,24 @@ class _BoardCanvasState extends State<BoardCanvas> {
                       return;
                     }
                     if (!widget.readOnly &&
-                        session.tool == EditorTool.elevation) {
+                        session.tool == EditorTool.terrain) {
                       if (cell != null) {
-                        if (session.selectedCell != cell) {
-                          widget.controller.tap(
-                            BoardPoint(
-                              details.localPosition.dx,
-                              details.localPosition.dy,
+                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                        final error =
+                            session.terrainBrush == TerrainBrush.elevated
+                            ? widget.controller.raiseElevation(cell)
+                            : widget.controller.transitionCell(cell);
+                        if (error != null ||
+                            widget.controller.transitionStart != null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                error ??
+                                    'Transición desde ${cell.label}: toca una casilla vecina de otro nivel.',
+                              ),
                             ),
                           );
                         }
-                        showElevationDialog(context, widget.controller);
                       }
                       return;
                     }
@@ -540,6 +551,23 @@ class _BoardCanvasState extends State<BoardCanvas> {
                       _placeCharacter(cell);
                       return;
                     }
+                    if (!widget.readOnly &&
+                        session.tool == EditorTool.select &&
+                        cell != null &&
+                        _lastSelectionTap == cell &&
+                        !_deleteDialogOpen &&
+                        hasDeletableContent(session, cell)) {
+                      _deleteDialogOpen = true;
+                      deleteAtCell(
+                        context,
+                        widget.controller,
+                        cell,
+                      ).whenComplete(() => _deleteDialogOpen = false);
+                      return;
+                    }
+                    _lastSelectionTap = session.tool == EditorTool.select
+                        ? cell
+                        : null;
                     widget.controller.tap(
                       BoardPoint(
                         details.localPosition.dx,

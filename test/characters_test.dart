@@ -27,7 +27,9 @@ void main() {
   test(
     'alta, edición y borrado conservan identidad y liberan todas las casillas',
     () {
-      final before = BoardSession.initial();
+      final before = BoardSession.initial().changeDimensions(
+        BoardDimensions(rows: 4, columns: 4),
+      );
       var state = before
           .createCharacter(draft('A1'))
           .createCharacter(draft('C1', team: 'team-2'));
@@ -57,9 +59,9 @@ void main() {
     },
   );
   test('duplicar asigna nueva identidad y preserva los datos del original', () {
-    var state = BoardSession.initial().createCharacter(
-      draft('A1', footprint: Footprint.square2),
-    );
+    var state = BoardSession.initial()
+        .changeDimensions(BoardDimensions(rows: 4, columns: 4))
+        .createCharacter(draft('A1', footprint: Footprint.square2));
     final original = state.selectedCharacter!;
     state = state.duplicateCharacter(original.id, CellCoordinate.parse('C3'));
     expect(state.characters.length, 2);
@@ -74,6 +76,7 @@ void main() {
   });
   test('movimiento atómico rechaza colisión y fuera, éxito libera origen', () {
     final state = BoardSession.initial()
+        .changeDimensions(BoardDimensions(rows: 4, columns: 4))
         .createCharacter(draft('A1'))
         .createCharacter(draft('B1'));
     final a = state.characters.all.first;
@@ -92,9 +95,9 @@ void main() {
   test(
     'base 2×2 valida sus cuatro celdas, bordes y movimiento sobre sí misma',
     () {
-      final state = BoardSession.initial().createCharacter(
-        draft('A1', footprint: Footprint.square2),
-      );
+      final state = BoardSession.initial()
+          .changeDimensions(BoardDimensions(rows: 4, columns: 4))
+          .createCharacter(draft('A1', footprint: Footprint.square2));
       final a = state.selectedCharacter!;
       expect(a.occupiedCells.map((cell) => cell.label), [
         'A1',
@@ -110,9 +113,9 @@ void main() {
       }
       for (final cell in ['D3', 'C4', 'D4']) {
         expect(
-          () => BoardSession.initial().createCharacter(
-            draft(cell, footprint: Footprint.square2),
-          ),
+          () => BoardSession.initial()
+              .changeDimensions(BoardDimensions(rows: 4, columns: 4))
+              .createCharacter(draft(cell, footprint: Footprint.square2)),
           throwsA(isA<PlacementException>()),
         );
       }
@@ -124,6 +127,7 @@ void main() {
   );
   test('editar base rechazada y reducir tablero nunca pierde figuras', () {
     final state = BoardSession.initial()
+        .changeDimensions(BoardDimensions(rows: 4, columns: 4))
         .createCharacter(draft('C3'))
         .createCharacter(draft('D4'));
     final a = state.characters.all.first;
@@ -144,7 +148,9 @@ void main() {
   test(
     'equipos tienen código y patrón, nuevos equipos elegibles y validados',
     () {
-      var state = BoardSession.initial();
+      var state = BoardSession.initial().changeDimensions(
+        BoardDimensions(rows: 4, columns: 4),
+      );
       expect(state.teams.map((team) => team.code), ['T1', 'T2']);
       expect(state.teams[0].pattern, isNot(state.teams[1].pattern));
       state = state.addTeam(
@@ -195,6 +201,7 @@ void main() {
     'selección por celda ocupada, zoom, pan y orientación conservan mundo',
     () {
       var state = BoardSession.initial()
+          .changeDimensions(BoardDimensions(rows: 4, columns: 4))
           .resizeViewport(ViewportSize(400, 800))
           .createCharacter(draft('B2', footprint: Footprint.square2));
       final repository = state.characters;
@@ -214,7 +221,9 @@ void main() {
     },
   );
   test('busca sitio para duplicar y detecta tablero lleno sin mutar', () {
-    var state = BoardSession.initial();
+    var state = BoardSession.initial().changeDimensions(
+      BoardDimensions(rows: 4, columns: 4),
+    );
     for (final cell in ['A1', 'C1', 'A3', 'C3']) {
       state = state.createCharacter(draft(cell, footprint: Footprint.square2));
     }

@@ -114,35 +114,33 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
-  testWidgets(
-    'bloqueado sobre figura ofrece cancelar o conservar marcada para estudio',
-    (tester) async {
-      final controller = await openEditor(tester);
-      controller.saveCharacter(data('B2'));
-      await tester.pump();
-      final characters = controller.value.characters;
-      await press(tester, 'tool-terrain');
-      await press(tester, 'terrain-blocking');
-      await tester.tapAt(cellPosition(tester, controller, 'B2'));
-      await tester.pumpAndSettle();
-      expect(find.text('Figuras sobre bloqueado'), findsOneWidget);
-      await tester.tap(find.text('Cancelar'));
-      await tester.pumpAndSettle();
-      expect(controller.value.terrain.isEmpty, isTrue);
-      expect(controller.value.characters, same(characters));
-      await tester.tapAt(cellPosition(tester, controller, 'B2'));
-      await tester.pumpAndSettle();
-      await press(tester, 'confirm-study-terrain');
-      expect(controller.value.studyConflicts, {c('B2')});
-      expect(controller.value.characters, same(characters));
-      await press(tester, 'terrain-clear');
-      await tester.tapAt(cellPosition(tester, controller, 'B2'));
-      await tester.pumpAndSettle();
-      expect(controller.value.studyConflicts, isEmpty);
-      expect(controller.value.characters, same(characters));
-      expect(tester.takeException(), isNull);
-    },
-  );
+  testWidgets('bloqueado sobre figura se rechaza sin opción de estudio', (
+    tester,
+  ) async {
+    final controller = await openEditor(tester);
+    controller.saveCharacter(data('B2'));
+    await tester.pump();
+    final characters = controller.value.characters;
+    await press(tester, 'tool-terrain');
+    await press(tester, 'terrain-blocking');
+    await tester.tapAt(cellPosition(tester, controller, 'B2'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('No se puede pintar bloqueado'), findsOneWidget);
+    expect(find.byKey(const ValueKey('confirm-study-terrain')), findsNothing);
+    expect(controller.value.terrain.isEmpty, isTrue);
+    expect(controller.value.characters, same(characters));
+    await tester.tapAt(cellPosition(tester, controller, 'B2'));
+    await tester.pumpAndSettle();
+    expect(controller.value.terrain.isEmpty, isTrue);
+    expect(controller.value.studyConflicts, isEmpty);
+    expect(controller.value.characters, same(characters));
+    await press(tester, 'terrain-clear');
+    await tester.tapAt(cellPosition(tester, controller, 'B2'));
+    await tester.pumpAndSettle();
+    expect(controller.value.studyConflicts, isEmpty);
+    expect(controller.value.characters, same(characters));
+    expect(tester.takeException(), isNull);
+  });
   testWidgets(
     'muros sobre bordes compartidos, trazo continuo y borrado solo de muro',
     (tester) async {
@@ -307,29 +305,27 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
-  testWidgets(
-    'crear figura sobre bloqueado requiere optar por estudio explícitamente',
-    (tester) async {
-      final controller = await openEditor(tester);
-      controller.attempt(
-        (s) => s.paintTerrain([c('A1')], TerrainType.blocking),
-      );
-      await tester.pump();
-      await press(tester, 'tool-characters');
-      await tester.tapAt(cellPosition(tester, controller, 'A1'));
-      await tester.pumpAndSettle();
-      expect(find.text('Figura sobre bloqueado'), findsOneWidget);
-      expect(controller.value.characters.isEmpty, isTrue);
-      await tester.tap(find.text('Cancelar'));
-      await tester.pumpAndSettle();
-      expect(controller.value.characters.isEmpty, isTrue);
-      await tester.tapAt(cellPosition(tester, controller, 'A1'));
-      await tester.pumpAndSettle();
-      await press(tester, 'confirm-study-character');
-      expect(controller.value.studyConflicts, {c('A1')});
-      expect(tester.takeException(), isNull);
-    },
-  );
+  testWidgets('crear figura sobre bloqueado se rechaza sin opción de estudio', (
+    tester,
+  ) async {
+    final controller = await openEditor(tester);
+    controller.attempt((s) => s.paintTerrain([c('A1')], TerrainType.blocking));
+    await tester.pump();
+    await press(tester, 'tool-characters');
+    await tester.tapAt(cellPosition(tester, controller, 'A1'));
+    await tester.pumpAndSettle();
+    expect(
+      find.textContaining('La base toca terreno bloqueado'),
+      findsOneWidget,
+    );
+    expect(find.byKey(const ValueKey('confirm-study-character')), findsNothing);
+    expect(controller.value.characters.isEmpty, isTrue);
+    await tester.tapAt(cellPosition(tester, controller, 'A1'));
+    await tester.pumpAndSettle();
+    expect(controller.value.characters.isEmpty, isTrue);
+    expect(controller.value.studyConflicts, isEmpty);
+    expect(tester.takeException(), isNull);
+  });
   testWidgets(
     'capas conservadas tras giro y volver al inicio; previa se cancela',
     (tester) async {

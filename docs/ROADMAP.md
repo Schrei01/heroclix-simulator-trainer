@@ -38,8 +38,15 @@ Nueva apertura vacía/figuras desde A, biblioteca y progreso persistentes, y dic
 inmediato sobre el mapa. Entrega rc.2 archivada en ENTREGA_RC2.md. Modos aún separados;
 candidata con aceptación Android pendiente.
 
-Actualización actual: **1.0.0-rc.4+17**, rama `codex/editor-transitions`.
+Actualización rc.4: **1.0.0-rc.4+17**, rama `codex/editor-transitions`.
 Inicio conserva Editor y Entrenador. Se retiran Simulador/Árbitro y se mantienen
 sus consultas y ensayos en Editor. Transiciones con dos triángulos numerados,
 uno por casilla conectada; elevadas normales E2/E3. Sin nuevas reglas ni formatos.
 Entrega rc.3 archivada en ENTREGA_RC3.md; aceptación Android pendiente.
+
+Actualización actual: **1.0.0-rc.5+18**, rama `codex/editor-terrain-gestures`.
+Inicio 10×10, Terrenos con cinco pinceles, E2/E3 por toque, transición por par,
+borrado de alturas/transiciones y confirmación por segundo toque. Ficha con Targeting
+plegable, sin permiso sobre bloqueado ni Other; visión igual limpia y dictamen solo
+arriba. Ajuste automático del mapa mientras no haya cámara manual. Rc.4 archivada
+en ENTREGA_RC4.md. Sin nuevas reglas/esquemas; aceptación Android pendiente.

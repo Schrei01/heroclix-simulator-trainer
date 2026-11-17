@@ -163,7 +163,7 @@ void main() {
   );
   test('extremos inválidos fallan incluso si aún falta el segundo', () {
     final p = SightProbe();
-    p.setEndpoint(ProbeEndpoint.cell(c('E1')), asOrigin: true);
+    p.setEndpoint(ProbeEndpoint.cell(c('K1')), asOrigin: true);
     p.evaluate(BoardSession.initial());
     expect(p.error, contains('fuera del tablero'));
     expect(p.trace, isNull);

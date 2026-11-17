@@ -76,8 +76,8 @@ void main() {
     tester,
   ) async {
     final controller = await openEditor(tester);
-    expect(controller.value.dimensions.cellCount, 16);
-    expect(find.text('Editor · 4 × 4'), findsOneWidget);
+    expect(controller.value.dimensions.cellCount, 100);
+    expect(find.text('Editor · 10 × 10'), findsOneWidget);
     expect(find.text('Cuadrícula vacía · toca una casilla'), findsOneWidget);
     await tester.tapAt(cellPosition(tester, controller, 'A1'));
     await tester.pump();

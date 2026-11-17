@@ -24,7 +24,7 @@ void main() {
         isNull,
       );
       expect(
-        () => initial.toggleCell(CellCoordinate.parse('E1')),
+        () => initial.toggleCell(CellCoordinate.parse('K1')),
         throwsRangeError,
       );
     },

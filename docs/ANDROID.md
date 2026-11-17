@@ -1,6 +1,6 @@
 # Preparar, compilar e instalar en Android
 
-Candidata actual: **1.0.0-rc.4+17**. Inicio contiene Editor y Entrenador; las consultas
+Candidata actual: **1.0.0-rc.5+18**. Inicio contiene Editor y Entrenador; las consultas
 y ensayos están en las herramientas del Editor. El recorrido vigente de transiciones
 está al final de este documento. Los apartados identificados por etapa describen
 sus versiones históricas. Resultados efectivamente ejecutados: [ESTADO](ESTADO.md).
@@ -286,7 +286,7 @@ extremo, limpiar línea, giro y texto ampliado. Regresiones/archivos/controlador
 verificados en Windows; cierre real, pausa Android, TalkBack y rendimiento siguen
 pendientes de dispositivo.
 
-## Editor y transiciones — candidata actual 1.0.0-rc.4+17
+## Editor y transiciones — candidata rc.4
 
 APK: build/releases/heroclix-1.0.0-rc.4-debug.apk. Instalar encima con la misma
 firma; no desinstalar para conservar biblioteca y progreso. Los apartados por
@@ -306,3 +306,31 @@ etapa anteriores describen aquellas versiones; la navegación vigente es esta:
 Pruebas Flutter/Windows y metadatos del APK en ESTADO.md. Instalación, interacción
 Android, TalkBack y rendimiento siguen pendientes; se mantiene la decisión del
 usuario de continuar sin teléfono. No se afirma aceptación nativa ni versión estable.
+
+## Incrementos del Editor — candidata actual 1.0.0-rc.5+18
+
+APK: build/releases/heroclix-1.0.0-rc.5-debug.apk. Instalar encima, sin desinstalar.
+Recorrido pendiente en dispositivo:
+
+1. Nuevo escenario: 10×10. Abrir un guardado antiguo mantiene su tamaño original.
+2. Terrenos: comprobar los cinco iconos, también con giro y texto ampliado.
+   Elegir Elevado y tocar B2 crea E2; repetir crea E3. Pintar H y luego Despejado
+   mantiene E3. Probar ajustes de zoom manual y ajuste automático al abrir barras.
+3. Transición: tocar dos vecinos de alturas diferentes, sin muro compartido.
+   Debe aparecer el par de triángulos. Igual casilla/nivel, diagonal, salto o muro
+   deben anunciar error y no pintar. Cambiar pincel descarta el extremo pendiente.
+4. Borrar: probar figura, terreno, elevación y transición; verificar otras capas y
+   Deshacer/Rehacer. Para transición, tocar el borde compartido.
+5. Seleccionar: tocar dos veces una casilla con figura/H/E2. Confirmar y comprobar
+   prioridad personaje→terreno→elevación; Cancelar no elimina. Repetir en vacío.
+6. Ficha: no hay permiso sobre bloqueado ni Otra excepción. Abrir Improved Targeting,
+   marcar varias mejoras y guardar. Bloqueado rechaza colocar, mover y editar una
+   figura, y pintar bajo ella; las bases completas también se validan.
+7. Visión: dictamen solo arriba del mapa. Elegir origen igual a destino limpia
+   línea, referencias y selección; después debe poder trazarse otra línea normal.
+8. Biblioteca, escenarios JSON/PNG, Entrenador/progreso y nuevo arranque A siguen
+   disponibles. Los datos antiguos incompatibles se conservan para corregirlos.
+
+No ejecutado en Android: se mantiene la instrucción de continuar sin teléfono.
+Capturas y tests Flutter/Windows no sustituyen instalación, TalkBack, selectores,
+proceso real ni rendimiento. La entrega continúa candidata debug.

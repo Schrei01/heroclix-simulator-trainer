@@ -34,15 +34,16 @@ ScenarioDocument sampleDocument() {
       );
   state = state
       .deleteCharacter('figure-2')
-      .paintTerrain([cell('C3')], TerrainType.blocking, allowStudy: true)
       .paintTerrain([cell('D4')], TerrainType.hindering)
       .editWalls([EdgeWall.between(cell('A1'), cell('B1'))], erase: false);
   state = state.replaceLayers(
-    terrain: state.terrain.put(
-      cell('D4'),
-      CellTerrain(type: TerrainType.hindering, elevation: 3),
-      state.dimensions,
-    ),
+    terrain: state.terrain
+        .paint([cell('C3')], TerrainType.blocking, state.dimensions)
+        .put(
+          cell('D4'),
+          CellTerrain(type: TerrainType.hindering, elevation: 3),
+          state.dimensions,
+        ),
     walls: state.walls,
     characters: state.characters,
   );

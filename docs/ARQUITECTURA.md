@@ -104,7 +104,7 @@ no hay una mutación del escenario por cada píxel del arrastre.
 
 BoardCanvas usa punteros para capturar un trazo y cancelar al añadir otro dedo.
 EditingGeometry convierte puntos mediante la cámara y evita huecos entre eventos.
-Al soltar, LayerActions confirma conflictos o borrado y aplica una sola operación.
+Al soltar, LayerActions valida conflictos o confirma borrado y aplica una sola operación.
 Los rectángulos esperan confirmación explícita; coordenadas ofrecen el mismo flujo.
 BoardPainter dibuja terreno, cuadrícula, figuras, muros, advertencias y previas.
 Las advertencias de estudio se derivan de las capas; no son reglas de HeroClix.
@@ -387,3 +387,25 @@ Los marcadores se derivan de los bordes de transición existentes. Las pruebas d
 exportación decodifican píxeles de ambas orientaciones y verifican retirada y JSON.
 El Editor coloca herramientas lateralmente cuando el área disponible es baja,
 para conservar el mapa y evitar desbordamientos también en Distancia/Objetivos.
+
+## Terrenos y gestos — rc.5
+
+BoardDimensions.initial pasa a 10×10. La restauración sigue usando las dimensiones
+del documento. ResizeViewport vuelve a ajustar únicamente una cámara que todavía
+coincidía con el ajuste automático anterior; la cámara manual conserva centro/zoom.
+
+TerrainBrush separa las cinco opciones de edición de TerrainType (tres tipos
+persistidos). Elevado y Transición usan toques, no trazos: el primero incrementa
+altura y el segundo guarda un extremo transitorio hasta validar el par. No se
+serializan pinceles ni selecciones. EraseLayer añade terreno, elevación y transiciones.
+LayerActions confirma borrado por segundo toque y aplica comandos a una sola capa.
+Las validaciones de base multinivel y los errores atómicos siguen en BoardSession.
+
+Los comandos de personajes y pintura dejan de aceptar allowStudy. Restore/codec
+conservan escenas antiguas incompatibles para corregirlas; ninguna acción de creación
+ofrece ese permiso. Se conservan IDs de capacidades antiguas, ocultando Other en
+las listas de la ficha. Targeting usa el mismo patrón de expansión que Movement.
+
+SetSightEndpoint limpia extremos/selección cuando coinciden en la herramienta
+Visión. No cambia la geometría pura ni el conteo cero de Distancia. La barra de
+cámara deja de repetir el dictamen: conserva referencias e instrucciones.

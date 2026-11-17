@@ -62,7 +62,7 @@ void main() {
     },
   );
   testWidgets(
-    'coordenadas inválidas no sustituyen trayectoria y casilla idéntica es explícita',
+    'coordenadas inválidas conservan trayectoria e iguales limpian la visión',
     (tester) async {
       final controller = await openEditor(tester);
       endpoints(controller);
@@ -75,9 +75,11 @@ void main() {
       expect(controller.sight.trace, same(original));
       await text(tester, 'sight-cell-destination', 'A1');
       await press(tester, 'apply-sight-endpoints');
-      expect(controller.sight.trace!.isDegenerate, isTrue);
+      expect(controller.sight.trace, isNull);
+      expect(controller.sight.origin, isNull);
+      expect(controller.sight.destination, isNull);
       await press(tester, 'sight-inspect');
-      expect(find.textContaining('segmento de longitud cero'), findsOneWidget);
+      expect(find.textContaining('Elige origen y destino'), findsWidgets);
       expect(tester.takeException(), isNull);
     },
   );

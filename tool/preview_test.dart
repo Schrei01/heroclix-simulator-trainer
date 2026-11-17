@@ -60,6 +60,7 @@ import '../test/support/tactics_contract.dart' show tacticalWorld, tacticCaps;
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  WidgetController.hitTestWarningShouldBeFatal = true;
 
   setUpAll(() async {
     final sdkPath =
@@ -82,6 +83,13 @@ void main() {
   });
 
   for (final (name, size, dimensions) in [
+    ('increment_palette_portrait', const Size(400, 900), null),
+    ('increment_palette_landscape', const Size(1000, 700), null),
+    ('increment_palette_compact', const Size(320, 320), null),
+    ('increment_transition', const Size(400, 900), null),
+    ('increment_invalid', const Size(400, 900), null),
+    ('increment_delete', const Size(400, 900), null),
+    ('increment_character', const Size(400, 900), null),
     ('transition_portrait', const Size(400, 900), null),
     ('transition_landscape', const Size(1000, 700), null),
     ('transition_compact', const Size(320, 568), null),
@@ -91,11 +99,27 @@ void main() {
     ('session_unknown', const Size(400, 900), null),
     ('session_compact', const Size(320, 320), null),
     ('session_fresh', const Size(400, 900), null),
-    ('quick_palette_portrait', const Size(400, 900), BoardDimensions.initial),
-    ('quick_palette_landscape', const Size(1000, 700), BoardDimensions.initial),
-    ('quick_palette_compact', const Size(320, 320), BoardDimensions.initial),
+    (
+      'quick_palette_portrait',
+      const Size(400, 900),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
+    (
+      'quick_palette_landscape',
+      const Size(1000, 700),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
+    (
+      'quick_palette_compact',
+      const Size(320, 320),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
     ('quick_character', const Size(400, 900), null),
-    ('quick_elevation', const Size(400, 900), BoardDimensions.initial),
+    (
+      'quick_elevation',
+      const Size(400, 900),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
     ('final_home', const Size(1000, 720), null),
     ('final_about', const Size(400, 900), null),
     ('final_about_compact', const Size(320, 568), null),
@@ -119,19 +143,71 @@ void main() {
     ('training_personal', const Size(400, 900), null),
     ('training_manual', const Size(400, 900), null),
     ('training_unknown', const Size(400, 900), null),
-    ('movement_route', const Size(400, 900), BoardDimensions.initial),
-    ('movement_invalid', const Size(400, 900), BoardDimensions.initial),
-    ('movement_report', const Size(400, 900), BoardDimensions.initial),
-    ('movement_comparison', const Size(1000, 700), BoardDimensions.initial),
-    ('movement_alternatives', const Size(400, 900), BoardDimensions.initial),
-    ('movement_unknown', const Size(400, 900), BoardDimensions.initial),
-    ('advanced_elevation', const Size(400, 900), BoardDimensions.initial),
-    ('advanced_base', const Size(400, 900), BoardDimensions.initial),
-    ('advanced_base_report', const Size(400, 900), BoardDimensions.initial),
-    ('advanced_laboratory', const Size(400, 900), BoardDimensions.initial),
-    ('advanced_record', const Size(1000, 700), BoardDimensions.initial),
-    ('advanced_form', const Size(400, 900), BoardDimensions.initial),
-    ('advanced_editor_report', const Size(400, 900), BoardDimensions.initial),
+    (
+      'movement_route',
+      const Size(400, 900),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
+    (
+      'movement_invalid',
+      const Size(400, 900),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
+    (
+      'movement_report',
+      const Size(400, 900),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
+    (
+      'movement_comparison',
+      const Size(1000, 700),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
+    (
+      'movement_alternatives',
+      const Size(400, 900),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
+    (
+      'movement_unknown',
+      const Size(400, 900),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
+    (
+      'advanced_elevation',
+      const Size(400, 900),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
+    (
+      'advanced_base',
+      const Size(400, 900),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
+    (
+      'advanced_base_report',
+      const Size(400, 900),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
+    (
+      'advanced_laboratory',
+      const Size(400, 900),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
+    (
+      'advanced_record',
+      const Size(1000, 700),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
+    (
+      'advanced_form',
+      const Size(400, 900),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
+    (
+      'advanced_editor_report',
+      const Size(400, 900),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
     (
       'tactical_distance',
       const Size(400, 900),
@@ -164,24 +240,76 @@ void main() {
     ),
     ('inicio_vertical', const Size(400, 900), null),
     ('inicio_horizontal', const Size(1000, 700), null),
-    ('vision_clear', const Size(400, 900), BoardDimensions.initial),
-    ('vision_hindered', const Size(400, 900), BoardDimensions.initial),
-    ('vision_blocked', const Size(400, 900), BoardDimensions.initial),
-    ('vision_corner', const Size(1000, 600), BoardDimensions.initial),
-    ('vision_unknown', const Size(400, 900), BoardDimensions.initial),
-    ('vision_report', const Size(400, 900), BoardDimensions.initial),
-    ('vision_record', const Size(400, 900), BoardDimensions.initial),
-    ('vision_editor_summary', const Size(400, 900), BoardDimensions.initial),
+    (
+      'vision_clear',
+      const Size(400, 900),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
+    (
+      'vision_hindered',
+      const Size(400, 900),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
+    (
+      'vision_blocked',
+      const Size(400, 900),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
+    (
+      'vision_corner',
+      const Size(1000, 600),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
+    (
+      'vision_unknown',
+      const Size(400, 900),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
+    (
+      'vision_report',
+      const Size(400, 900),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
+    (
+      'vision_record',
+      const Size(400, 900),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
+    (
+      'vision_editor_summary',
+      const Size(400, 900),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
     (
       'vision_a1_d6',
       const Size(400, 900),
       BoardDimensions(rows: 6, columns: 4),
     ),
-    ('geometria_vertical', const Size(400, 900), BoardDimensions.initial),
-    ('geometria_horizontal', const Size(1000, 600), BoardDimensions.initial),
-    ('geometria_inspector', const Size(400, 900), BoardDimensions.initial),
-    ('geometria_eventos', const Size(400, 900), BoardDimensions.initial),
-    ('geometria_base', const Size(400, 900), BoardDimensions.initial),
+    (
+      'geometria_vertical',
+      const Size(400, 900),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
+    (
+      'geometria_horizontal',
+      const Size(1000, 600),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
+    (
+      'geometria_inspector',
+      const Size(400, 900),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
+    (
+      'geometria_eventos',
+      const Size(400, 900),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
+    (
+      'geometria_base',
+      const Size(400, 900),
+      BoardDimensions(rows: 4, columns: 4),
+    ),
     (
       'geometria_40x40',
       const Size(1000, 700),
@@ -267,6 +395,10 @@ void main() {
         tester.platformDispatcher.textScaleFactorTestValue = 3;
         addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
       }
+      if (name == 'increment_palette_compact') {
+        tester.platformDispatcher.textScaleFactorTestValue = 3;
+        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      }
       final key = GlobalKey();
       final store = MemoryStore();
       // Cada render posee su propio almacenamiento, sin canal de plataforma.
@@ -309,6 +441,63 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      if (name.startsWith('increment_')) {
+        persistent.loadScenario(
+          BoardSession.initial()
+              .paintElevation([
+                CellCoordinate.parse('C2'),
+                CellCoordinate.parse('D4'),
+              ], 2)
+              .paintElevation([CellCoordinate.parse('D3')], 3)
+              .paintTerrain([
+                CellCoordinate.parse('C2'),
+              ], TerrainType.hindering),
+        );
+        await tester.ensureVisible(find.text('Abrir editor'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Abrir editor'));
+        await tester.pumpAndSettle();
+        if (name == 'increment_delete' || name == 'increment_character') {
+          persistent.saveCharacter(
+            CharacterDraft(
+              name: 'Figura',
+              teamId: 'team-1',
+              position: CellCoordinate.parse('B2'),
+            ),
+          );
+          await tester.pumpAndSettle();
+          if (name == 'increment_character') {
+            await press(tester, 'edit-character');
+            await press(tester, 'targeting-abilities');
+            await tester.ensureVisible(
+              find.byKey(const ValueKey('ability-blocking')),
+            );
+            await tester.pumpAndSettle();
+          } else {
+            for (var i = 0; i < 2; i++) {
+              await tester.tapAt(cellPosition(tester, persistent, 'B2'));
+              await tester.pumpAndSettle();
+            }
+          }
+        } else {
+          await press(tester, 'tool-terrain');
+          await press(
+            tester,
+            name.startsWith('increment_palette')
+                ? 'terrain-elevated'
+                : 'terrain-transition',
+          );
+          if (!name.startsWith('increment_palette')) {
+            for (final cell in [
+              'B2',
+              name == 'increment_invalid' ? 'B3' : 'C2',
+            ]) {
+              await tester.tapAt(cellPosition(tester, persistent, cell));
+              await tester.pumpAndSettle();
+            }
+          }
+        }
+      }
       if (name.startsWith('transition_')) {
         final cells = ['A2', 'B2', 'C2', 'D4'].map(CellCoordinate.parse);
         var scene = BoardSession.initial()
@@ -408,11 +597,10 @@ void main() {
                 CellCoordinate.parse('A1'),
                 CellCoordinate.parse('A2'),
               ], TerrainType.hindering)
-              .paintTerrain(
-                [CellCoordinate.parse('D1'), CellCoordinate.parse('C4')],
-                TerrainType.blocking,
-                allowStudy: true,
-              )
+              .paintTerrain([
+                CellCoordinate.parse('D1'),
+                CellCoordinate.parse('D4'),
+              ], TerrainType.blocking)
               .editWalls([
                 EdgeWall.between(
                   CellCoordinate.parse('A1'),
@@ -458,7 +646,9 @@ void main() {
           await tester.pumpAndSettle();
         }
         if (name == 'quick_elevation') {
-          await press(tester, 'tool-elevation');
+          await press(tester, 'tool-terrain');
+          await press(tester, 'terrain-elevated');
+          await press(tester, 'edit-coordinates');
           expect(
             tester
                 .widget<TextField>(
@@ -589,7 +779,7 @@ void main() {
           if (name == 'geometria_base') {
             final point = controller.value.camera.sceneToViewport(
               const BoardGeometry().cellCenter(
-                CellCoordinate.parse('C4'),
+                CellCoordinate.parse('D4'),
                 dimensions,
               ),
             );
@@ -846,12 +1036,12 @@ void main() {
             );
             const codec = ScenarioCodec();
             final file = File(
-              'build/verification/editor-transitions/$name.json',
+              'build/verification/editor-increments/$name.json',
             );
             await file.parent.create(recursive: true);
             await file.writeAsString(codec.encode(doc));
             await File(
-              'build/verification/editor-transitions/$name-working.json',
+              'build/verification/editor-increments/$name-working.json',
             ).writeAsString(
               jsonEncode({
                 'workspaceSchemaVersion': 1,
@@ -1025,7 +1215,7 @@ void main() {
                 analysis.priority,
               );
               final file = File(
-                'build/verification/editor-transitions/diagnostico.png',
+                'build/verification/editor-increments/diagnostico.png',
               );
               await file.parent.create(recursive: true);
               await file.writeAsBytes(bytes);
@@ -1041,7 +1231,7 @@ void main() {
         final image = await boundary.toImage();
         try {
           final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-          final output = File('build/previews/editor-transitions/$name.png');
+          final output = File('build/previews/editor-increments/$name.png');
           await output.parent.create(recursive: true);
           await output.writeAsBytes(bytes!.buffer.asUint8List());
         } finally {
