@@ -430,5 +430,7 @@ borrado por capa siguen disponibles explícitamente.
 
 ToolHint recibe un registro transitorio con identidad y texto del controlador.
 Su widget posee un Timer de cuatro segundos, se renueva con identidad nueva y se
-cancela al desmontar. RotatedBox/IgnorePointer lo ubican vertical al borde derecho
-sin cambiar geometría ni interceptar gestos. No se persiste ni se exporta al PNG.
+cancela al desmontar. Desde rc.7 se muestra sin rotación, en una columna de texto
+derecho con ajuste de líneas y bloques. IgnorePointer lo ubica al borde derecho
+sin cambiar geometría ni interceptar gestos. El alto limita las líneas visibles y
+la semántica conserva el texto completo. No se persiste ni se exporta al PNG.

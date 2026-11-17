@@ -550,3 +550,12 @@ verificado ni implementado ninguna regla del juego.
   la vista previa en elevación y borrado, con la misma política de pintura existente.
 - 1.0.0-rc.6+19, sin nuevas reglas, esquemas, dependencias ni permisos. Firma debug
   conservada; aceptación nativa pendiente según decisión de continuar sin teléfono.
+## 2026-11-17 — Lectura del aviso rc.7
+
+- Aclaración del usuario: vertical significa texto derecho, leído en columna de
+  arriba hacia abajo, sin girar el celular. Retirar RotatedBox y distribuir las
+  acciones en bloques separados, con ajuste de líneas y ancho lateral adaptable.
+- Mantener cuatro segundos, renovación, posición derecha, cámara y paso de gestos.
+  Limitar líneas al alto disponible, conservando el mensaje completo en semántica.
+- Corrección de presentación: 1.0.0-rc.7+20, misma firma debug y formatos. Pruebas
+  afectadas y renders completos; aceptación nativa pendiente como antes.

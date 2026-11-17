@@ -1,13 +1,13 @@
 # HeroClix Simulator & Trainer
 
-Aplicación Android Flutter/Dart, offline y en español. Versión **1.0.0-rc.6+19**.
-La actualización del Editor está en la rama `codex/editor-brush-teams` del repositorio privado
+Aplicación Android Flutter/Dart, offline y en español. Versión **1.0.0-rc.7+20**.
+La actualización del Editor está en la rama `codex/upright-tool-hints` del repositorio privado
 [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer).
 
 ```powershell
 git clone https://github.com/Schrei01/heroclix-simulator-trainer.git
 cd heroclix-simulator-trainer
-git switch codex/editor-brush-teams
+git switch codex/upright-tool-hints
 ```
 
 ## Qué existe
@@ -59,6 +59,9 @@ en Borrar todo y limpia todas las capas de las casillas recorridas; tocar una ba
 retira la figura completa. Un Deshacer recupera el trazo. En Personajes, dos toques
 sobre una figura pasan al equipo siguiente y el último vuelve al primero. Los
 avisos de herramienta aparecen verticalmente a la derecha del mapa durante 4 s.
+
+En rc.7 el aviso se lee con el texto derecho, en una columna de arriba hacia abajo,
+sin girar el teléfono. Mantiene su posición lateral y los cuatro segundos.
 
 ## Analizar y comparar posiciones
 
@@ -341,7 +344,7 @@ flutter --no-version-check build apk --debug
 
 `--no-version-check` evita una consulta de actualización del SDK; no cambia su
 versión ni omite análisis o pruebas. Los renders se escriben en
-`build/previews/brush-teams/`; son capturas Flutter, no de un dispositivo.
+`build/previews/upright-hints/`; son capturas Flutter, no de un dispositivo.
 
 Preparación Android y firma release en [ANDROID.md](docs/ANDROID.md).
 El APK debug y sus resultados/hash se registran en [ESTADO.md](docs/ESTADO.md).

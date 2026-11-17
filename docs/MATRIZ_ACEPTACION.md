@@ -3,7 +3,7 @@
 Fecha: 2026-11-17. La ejecución automatizada es Flutter/Dart en Windows y archivos
 locales reales o fallos inyectados explícitos. No equivale a un recorrido en Android.
 Resultados completos y APK: ESTADO.md. No se declaran aprobados pasos nativos sin ejecutar.
-La candidata actual es 1.0.0-rc.6+19; la entrega 12 original se conserva en
+La candidata actual es 1.0.0-rc.7+20; la entrega 12 original se conserva en
 ENTREGA_12.md. Los pendientes Android se mantienen sin cambio de estado.
 
 | ID | Recorrido / condición | Evidencia automatizada | Android |
@@ -37,7 +37,7 @@ ENTREGA_12.md. Los pendientes Android se mantienen sin cambio de estado.
 | AC27 | Improved Targeting desplegable | editor_increments/advanced_editor: guardar capacidades, sin checkbox de estudio ni opción Otra excepción | Pendiente |
 | AC28 | Inicio 10×10 y ajuste automático de cámara | editor/editor_increments: nuevo tamaño, A1/J10 visibles al abrir Terrenos; pruebas anteriores conservan cámara manual | Pendiente |
 | AC29 | Dos toques cambian equipo en Personajes | editor_brush_teams: ciclos de dos/tres equipos y uno solo, base múltiple, ficha completa/IDs/contador conservados y Deshacer/Rehacer | Pendiente |
-| AC30 | Aviso lateral vertical temporal | editor_brush_teams: cuatro segundos, renovación, sin SnackBar ni interceptar gestos, cámara intacta y tamaños/escala | Pendiente |
+| AC30 | Aviso lateral legible de arriba abajo | editor_brush_teams: texto derecho sin rotación, varias líneas, cuatro segundos, renovación, sin SnackBar ni interceptar gestos, cámara intacta y tamaños/escala | Pendiente |
 | AC31 | Elevación por trazo mixto | editor_brush_teams: interpolación, regreso sin doble incremento, nivel original por casilla, vista previa, base completa/E40 atómicos, cancelar/pinza y Deshacer | Pendiente |
 | AC32 | Borrado total por trazo | editor_brush_teams: todas las capas, figura completa, otros elementos/contadores conservados, vacío sin historial, cancelar/pinza y recuperación completa | Pendiente |
 

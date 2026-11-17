@@ -51,8 +51,13 @@ plegable, sin permiso sobre bloqueado ni Other; visión igual limpia y dictamen 
 arriba. Ajuste automático del mapa mientras no haya cámara manual. Rc.4 archivada
 en ENTREGA_RC4.md. Sin nuevas reglas/esquemas; aceptación Android pendiente.
 
-Actualización actual: **1.0.0-rc.6+19**, rama `codex/editor-brush-teams`.
+Actualización rc.6: **1.0.0-rc.6+19**, rama `codex/editor-brush-teams`.
 Personajes cambia de equipo por pares de toques; avisos verticales laterales de
 cuatro segundos; Elevado por trazo mixto y Borrar todo por trazo. Deshacer/Rehacer
 y cancelación/pinza conservados. Rc.5 archivada en ENTREGA_RC5.md. Sin nuevas reglas
 ni formatos; aceptación Android pendiente.
+
+Actualización actual: **1.0.0-rc.7+20**, rama `codex/upright-tool-hints`.
+Aviso lateral con texto derecho, en columna de arriba hacia abajo, conservando
+cuatro segundos y paso de gestos. Corrección de presentación; rc.6 archivada en
+ENTREGA_RC6.md. Aceptación Android pendiente.

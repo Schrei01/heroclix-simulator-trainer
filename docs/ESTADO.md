@@ -1,89 +1,62 @@
-# Estado actual — equipos, avisos y trazos
+# Estado actual — aviso legible de arriba hacia abajo
 
-2026-11-17 (America/Bogota). **1.0.0-rc.6+19**, candidata debug.
-Rama `codex/editor-brush-teams`, sobre `7d8f95b` (rc.5). Código: 0382420.
-Informe anterior: [ENTREGA_RC5.md](ENTREGA_RC5.md).
+2026-11-17 (America/Bogota). **1.0.0-rc.7+20**, candidata debug.
+Rama `codex/upright-tool-hints`, sobre `24c66ca` (rc.6). Código: f99f8c3.
+Informe anterior: [ENTREGA_RC6.md](ENTREGA_RC6.md).
 
-## Cambios
+## Corrección
 
-- Personajes: cada par de toques sobre una figura existente pasa al equipo siguiente
-  de la lista disponible; después del último vuelve al primero. La colocación sigue
-  usando el primer equipo y no cuenta como un toque de cambio. Se conservan ID,
-  etiqueta, nombre, posición, base, tamaño, atributos y capacidades. Un solo equipo
-  no produce cambios; cada cambio real permite Deshacer/Rehacer.
-- Ayuda de herramienta en una franja vertical a la derecha del mapa durante cuatro
-  segundos, con renovación al seleccionar otra herramienta/pincel. RotatedBox e
-  IgnorePointer: no desplaza cámara/viewport ni intercepta los gestos. El temporizador
-  se cancela al desmontar. Los errores de validación siguen usando sus avisos.
-- Elevado comparte el trazo interpolado de terreno. Cada casilla única sube un nivel
-  desde el valor previo al trazo (1→2, 2→3…), aunque se regrese sobre ella sin soltar.
-  Se muestra el nivel de destino en la vista previa, sin el badge antiguo debajo.
-  Tipo de terreno y figuras se conservan. Las bases completas se validan al final;
-  una región parcial que las dejaría entre niveles o E40 rechazan todo el trazo.
-- Borrar entra siempre en Borrar todo: trazar devuelve las casillas recorridas a
-  suelo despejado y retira muros/transiciones incidentes y figuras completas cuya
-  base toca. Otras casillas, equipos y contadores se conservan. No pide confirmación
-  para el trazo total; un Deshacer lo recupera completo. Siguen las variantes de
-  borrado de una capa elegidas explícitamente en el menú.
-- En ambos trazos, cancelar o añadir un segundo dedo descarta la vista previa sin
-  cambios parciales. Cada trazo se confirma en una operación al soltar. Borrar vacío
-  no crea historial. Selección con confirmación de borrado y demás herramientas conservadas.
+La aclaración del usuario se aplica como columna lateral de texto derecho, leído
+por líneas de arriba hacia abajo, sin rotación ni necesidad de girar el celular.
+Las acciones se separan en bloques. El ancho se adapta entre 96 y 144 px y las
+líneas visibles se limitan al alto disponible; semántica conserva el mensaje completo.
 
-## Verificación real
+Mantiene posición derecha, cuatro segundos, renovación del aviso y paso de gestos.
+No cambia cámara ni herramientas. Con altura extrema/texto ampliado puede abreviarse
+visualmente. Sin cambios de reglas, documentos, dependencias ni permisos.
 
-Flutter 3.50.0, Dart 3.14.0, material_ui 1.11.0, Windows. Sin nuevas dependencias,
-permisos ni esquemas. Los avisos y pinceles son transitorios y no se exportan.
+## Verificación ejecutada en esta corrección
+
+Flutter 3.50.0, Dart 3.14.0, material_ui 1.11.0, Windows.
 
 | Comando | Resultado |
 | --- | --- |
 | `dart format --output=none --set-exit-if-changed lib test tool` | 155 archivos, 0 cambios |
-| `flutter --no-version-check analyze --no-pub` | No issues found, 3,8 s |
-| `flutter --no-version-check test --no-pub --reporter expanded` | **485 aprobadas**, 230 s |
-| `flutter --no-version-check test tool/preview_test.dart --no-pub --reporter expanded` | **101 renders aprobados**, 55 s |
-| `flutter --no-version-check build apk --debug --no-pub` | Correcto; Gradle 49,3 s |
-| `aapt dump badging` / `dump permissions` | 1.0.0-rc.6/código 19, SDK 24/36; sin INTERNET ni almacenamiento amplio |
+| `flutter --no-version-check analyze --no-pub` | No issues found, 4,3 s |
+| `flutter --no-version-check test --no-pub test/editor_brush_teams_test.dart --reporter expanded` | **12 aprobadas** |
+| `flutter --no-version-check test --no-pub test/final_acceptance_test.dart --plain-name 'versión distribuida, perfil y pubspec coinciden' --reporter expanded` | **1 aprobada** |
+| `flutter --no-version-check test tool/preview_test.dart --no-pub --reporter expanded` | **101 renders aprobados**, 48 s |
+| `flutter --no-version-check build apk --debug --no-pub` | Correcto; Gradle 49,0 s |
+| `aapt dump badging` / `dump permissions` | 1.0.0-rc.7/código 20, SDK 24/36; sin INTERNET ni almacenamiento amplio |
 | `apksigner verify --verbose --print-certs` | Verifies; firma v2 válida, mismo certificado |
 
-Nuevo editor_brush_teams_test: 12 casos. Ciclos de dos/tres equipos y uno solo,
-base múltiple y ficha completa, identidad/contador, Undo/Redo; niveles mixtos con
-regreso y vista previa, validación final de base/E40; borrado con todas las capas,
-base completa y elementos ajenos conservados, contador/no-op e historial único;
-cancelación/segundo dedo en ambos pinceles; cuatro segundos exactos/renovación del
-aviso, posición, ausencia de SnackBar y no interceptar gestos, tres tamaños/escala.
-La prueba anterior Borrar figura elige ahora explícitamente esa variante; no se
-retiran sus aserciones de conservación. Las regresiones anteriores se mantienen.
+La prueba de ayuda comprueba ausencia de RotatedBox tanto en ancestros como dentro
+del aviso, texto con ajuste en varias líneas, posición, duración/renovación y no
+interceptar gestos ni cambiar cámara. Se repiten los demás casos afectados de equipos,
+trazos y tamaños/escala. Las 485 pruebas completas corresponden a rc.6 y están en
+ENTREGA_RC6.md; esta corrección ejecutó 13 casos y los renders completos.
 
-Previews: se conservan los 94 anteriores y se añaden siete: ayuda vertical en
-400×900, 1000×700 y 320×320 con texto al 300 %, altura durante/después de un trazo
-con regreso, resultado de borrado total y figura cambiada a T2. Revisión visual de
-los nuevos casos; advertencias de hit test fatales. Con altura extrema/texto grande
-la ayuda puede abreviarse visualmente, pero semántica conserva el texto completo;
-mapa y herramientas permiten zoom/pan. Capturas Flutter, no Android real.
-Logs en build/; renders en build/previews/brush-teams/; metadatos del APK en
-build/verification/brush-teams/, excluidos de Git.
+Capturas en build/previews/upright-hints/: 101 renders con hit test fatal. Se revisa
+visualmente texto derecho en vertical/horizontal y presentación compacta. Son
+capturas Flutter, no Android. Logs en build/; metadatos del APK en
+build/verification/upright-hints/, excluidos de Git.
 
 ## APK entregable
 
-- `build/releases/heroclix-1.0.0-rc.6-debug.apk`, 158529325 bytes.
-- SHA-256: `A3DEF9F8B32B0B1F0CCA19F8B0F117AA4BAA71E3A101A9CEA3D7A4DBF328169B`.
-- Archivo archivado y salida estándar con el mismo hash; APK anteriores conservados.
-- Paquete `com.valinor.heroclixtrainer`, versión 1.0.0-rc.6/código 19, SDK 24/36.
+- `build/releases/heroclix-1.0.0-rc.7-debug.apk`, 158530269 bytes.
+- SHA-256: `9A1F06ACFAFC29F3A060C2122D9E53F1DC8DC6FC41F2C61E7E950C2D32344A1E`.
+- Copia archivada y salida estándar con el mismo hash; APK anteriores conservados.
+- Paquete `com.valinor.heroclixtrainer`, 1.0.0-rc.7/código 20, SDK 24/36.
 - Certificado SHA-256: `57081ee91137c216eff437a7c75ac5bb6f552bc29167e63370d85628fc82ac54`.
-- Firma debug conservada. Instalar encima, sin desinstalar, para conservar biblioteca
+- Firma debug conservada; instalar encima sin desinstalar para mantener biblioteca
   y progreso. NOTICES.Z comprobado; binarios y claves fuera de Git.
 
-## Pendientes y límites
+## Pendiente
 
-Recorrido manual actualizado en ANDROID.md. Sigue pendiente la comprobación real
-en Android de instalación, gestos, giro/texto, TalkBack, archivos, radios apagadas,
-cierre/pausa de proceso y rendimiento. Se mantiene la decisión de continuar sin
-teléfono. No se repite el emulador fallido ni se declara aceptación nativa a partir
-de Windows. Sin claves release, no se genera release ni se promueve a estable.
+Comprobar lectura del aviso en Android real, vertical/horizontal y texto ampliado.
+Se mantiene la decisión previa de continuar sin teléfono. Instalación, TalkBack,
+selectores, radios apagadas, ciclo de proceso y rendimiento siguen pendientes;
+no se declara estable ni se genera release sin claves del propietario.
 
-No se cambian reglas de visión, movimiento, transiciones ni los formatos 1/2/3.
-Las bases siguen requiriendo un único nivel; no se permite colocar sobre bloqueado.
-Borrar una figura no reinicia identidades durante la sesión. El nuevo arranque
-sigue vacío, 10×10 y figuras desde A; biblioteca y progreso persistentes.
-
-README/README_FINAL, Guía/leyenda, arquitectura, decisiones, Android, hoja de ruta y
-matriz de aceptación actualizados. AC29–32 añadidos. Rc.5 en ENTREGA_RC5.md.
+README/README_FINAL, arquitectura, decisiones, Android, matriz AC30 y hoja de ruta
+actualizados. Rc.6 archivada en ENTREGA_RC6.md.

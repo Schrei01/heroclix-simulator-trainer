@@ -1,6 +1,6 @@
 # Preparar, compilar e instalar en Android
 
-Candidata actual: **1.0.0-rc.6+19**. Inicio contiene Editor y Entrenador; las consultas
+Candidata actual: **1.0.0-rc.7+20**. Inicio contiene Editor y Entrenador; las consultas
 y ensayos están en las herramientas del Editor. El recorrido vigente del Editor
 está al final de este documento. Los apartados identificados por etapa describen
 sus versiones históricas. Resultados efectivamente ejecutados: [ESTADO](ESTADO.md).
@@ -335,7 +335,7 @@ No ejecutado en Android: se mantiene la instrucción de continuar sin teléfono.
 Capturas y tests Flutter/Windows no sustituyen instalación, TalkBack, selectores,
 proceso real ni rendimiento. La entrega continúa candidata debug.
 
-## Equipos y trazos — candidata actual 1.0.0-rc.6+19
+## Equipos y trazos — candidata rc.6
 
 APK: build/releases/heroclix-1.0.0-rc.6-debug.apk. Instalar encima sin desinstalar.
 Recorrido todavía pendiente en dispositivo:
@@ -361,3 +361,12 @@ Recorrido todavía pendiente en dispositivo:
 No ejecutado en Android: continúa la decisión de trabajar sin teléfono. Los tests,
 capturas Flutter y metadatos del APK no sustituyen instalación, gestos nativos,
 TalkBack, radios apagadas, selectores, ciclo de proceso ni rendimiento.
+
+## Aviso derecho — candidata actual 1.0.0-rc.7+20
+
+APK: build/releases/heroclix-1.0.0-rc.7-debug.apk, instalar encima sin desinstalar.
+Al elegir una herramienta, comprobar que el aviso lateral tiene letras derechas
+y se lee por líneas de arriba hacia abajo. Debe durar cuatro segundos, renovarse
+al cambiar herramienta y dejar pasar los gestos sin alterar cámara. Probar vertical,
+horizontal y texto ampliado. Verificación Android pendiente; pruebas y capturas
+Flutter/Windows en ESTADO.md. Se mantiene la decisión de continuar sin teléfono.
