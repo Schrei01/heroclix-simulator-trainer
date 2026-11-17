@@ -1,22 +1,24 @@
-# Escenarios e intercambio — esquema 1
+# Escenarios e intercambio — esquema 3 (lectura de 1/2/3)
 
-Implementado en Prompt 04, app 0.5.0+5. Formato UTF-8 JSON legible, máximo
+Introducido en 04 y ampliado en 08–09, app 0.10.0+11. Formato UTF-8 JSON legible, máximo
 2 MiB, profundidad máxima 16 y 20.000 contenedores antes de decodificar.
 Se rechazan campos desconocidos/incompletos, tipos incorrectos, coordenadas fuera
 del tablero, identidades duplicadas, figuras solapadas y versiones desconocidas.
-No se modifica el tablero hasta validar y escribir su recuperación completa.
+Abrir/importar valida antes de cambiar el tablero; importar guarda una copia
+con identidad nueva en biblioteca. Desde rc.3 la sesión activa es temporal.
 
 ## Campos del documento
 
 | Campo | Contenido |
 | --- | --- |
-| `schemaVersion` | Entero 1; no hay migración de otras versiones |
+| `schemaVersion` | Entero 3 al exportar; importa también 1/2 mediante migración compatible |
 | `metadata` | `id`, `name`, `rulesVersion`, `createdAt`, `modifiedAt` |
 | `board` | `rows`, `columns`: enteros independientes 2–40 |
 | `teams` | Lista de `id`, `code`, `name`, `color`, `pattern` |
-| `characters` | Lista de `id`, `label`, `name`, `teamId`, `position`, `footprint`, `speed`, `range` |
-| `terrain` | Lista de `cell`, `type`, `elevation`; despejado/nivel 0 es implícito |
+| `characters` | Lista de `id`, `label`, `name`, `teamId`, `position`, `footprint`, `speed`, `range`, `visionAbilities`, `size`, `movementAbilities` |
+| `terrain` | Lista de `cell`, `type`, `elevation`; 0 histórico es alias del suelo 1 |
 | `walls` | Lista de `id`, `axis`, `column`, `row`; solo bordes internos unitarios |
+| `transitions` | Lista de `axis`, `column`, `row`, con vecinos internos de altura distinta y sin muro compartido |
 | `counters` | `nextCharacter`, `nextTeam`: identidad siguiente, sin reutilización |
 
 El ID de escenario tiene forma `s-` seguida de 32 dígitos hexadecimales aleatorios.
@@ -28,17 +30,40 @@ Equipos: 1–32, nombres únicos de hasta 40 unidades, `team-N`/`TN`, color ente
 ARGB opaco (0xff000000–0xffffffff) y patrón `solid`, `stripes` o `dots`.
 Figuras: `figure-N`, etiqueta derivada
 de N (A…Z, AA…), nombre hasta 80, equipo existente, coordenada A1…AN40,
-`footprint: {width, height}` igual a 1×1 o 2×2, velocidad/alcance enteros 0–99.
+`footprint: {width, height}` con enteros 1–40; formatos soportados en la matriz
+de capacidades. Otros formatos se preservan sin evaluarlos. Velocidad/alcance: 0–99.
 Se valida toda la huella; no puede salir del tablero ni solapar otra figura.
 Los contadores deben superar cualquier ID existente; máximo 1.000.000.000.
 
-Terreno: `clear`, `hindering`, `blocking`; elevación entera 0–40 como dato preparado.
+Terreno: `clear`, `hindering`, `blocking`; elevación entera 0–40. El editor muestra
+el nivel efectivo 1–40. Tipo, nivel y transiciones son propiedades independientes.
+`visionAbilities` usa IDs tipados, únicos y conocidos; `size` es `normal`, `tiny`,
+`giant` o `colossal`. Tamaño y huella no se infieren uno del otro. Las condiciones
+sin interpretación soportada se conservan como datos y producen No evaluado.
 Muros: eje `horizontal`/`vertical`, ID canónico `h:columna:fila` o `v:columna:fila`,
 índices desde cero. LayerCodec valida los límites y no permite duplicar bordes.
 El orden exportado es determinista; la cámara, selección, herramientas, previas
-y el historial no pertenecen al documento.
+y el historial no pertenecen al documento. Tampoco se serializa el laboratorio.
 
-## Biblioteca y recuperación
+## Migración 1/2 a 3
+
+Abrir un esquema 1/2 no modifica su archivo. Se conservan sus campos/capas;
+1 recibe capacidades de visión vacías, tamaño Normal y transiciones vacías.
+1/2 reciben `movementAbilities` vacías. Antes de su primer reemplazo se escribe
+una copia exacta `schema1-ID.json` o `schema2-ID.json` (también `working`),
+fuera del índice de biblioteca. Un fallo del respaldo impide sobrescribir el
+antiguo. Esas copias usan IDs validados en el mismo directorio privado; no son
+rutas proporcionadas por el usuario. Pruebas con un JSON real de 07 y con el
+adaptador de archivos en disco: `test/scenario_migration_test.dart` y
+`test/movement_migration_test.dart`. Las capas mantienen `layerSchemaVersion: 2`.
+Ruta, alternativas, snapshot de comparación y ensayo de movimiento no se serializan.
+
+`movementAbilities` es una lista sin duplicados: `elevated`, `blocking`,
+`characters`, `moveThrough`, `outdoorBlocking`, `destroyBlocking`, `other`.
+Las tres últimas se conservan como datos sin soporte reglamentario completo.
+Edición de alcance, duplicado y movimiento conservan todas las capacidades.
+
+## Biblioteca y sesión temporal
 
 La producción compone FileDocumentStore con el directorio privado Android
 `files/scenarios_v1`. Cada escenario vive en `<id>.json`; máximo 200 en biblioteca.
@@ -47,19 +72,25 @@ IDs/rutas se validan y se rechazan enlaces simbólicos al archivo de destino.
 La escritura usa temporal en el mismo directorio, flush y rename; los temporales
 se limpian. Un fallo se muestra y conserva el estado activo en memoria.
 
-`working.json` usa un envoltorio separado de hasta 3 MiB con campos exactos
-`workspaceSchemaVersion: 1`, `document`, `dirty` y `saved`. Las escrituras se
-serializan; cada cambio lógico programa autoguardado, agrupando los pendientes.
-La revisión impide marcar guardada una edición posterior a la copia escrita.
-Se solicita flush al pasar a segundo plano. El indicador confirma qué revisión
-está protegida; un cierre forzado antes de esa confirmación puede perder lo último.
+La app arranca con escenario vacío y contador de figuras desde A. La escena activa
+se mantiene en memoria al navegar y pasar a segundo plano mientras la instancia
+siga activa. Cada nueva apertura empieza de nuevo; no se recupera ni escribe el
+`working.json` antiguo. Ese archivo se ignora, incluso si contiene AA o está dañado;
+no se sobrescribe ni se borran los escenarios guardados.
 
-Al arrancar se recupera el documento completo. Si falta su copia de biblioteca,
-se conserva como borrador pendiente. Una recuperación dañada o de versión futura
-no se sobrescribe automáticamente: se informa y bloquea ese autoguardado. Al
-reemplazarla explícitamente se archiva su texto en `recovery-s-<id>.json`; si
-no se puede archivar, la sustitución falla. Un archivo de biblioteca incompatible
-no se sobreescribe con Guardar; se ofrece usar Guardar como.
+Guardar/Guardar como conservan explícitamente la escena en biblioteca. Abrir un
+guardado restaura sus figuras y contadores como parte de ese documento; no se
+reabre automáticamente al iniciar. Antes de cambiar una escena modificada se
+ofrece guardar/cancelar/continuar. Un fallo de guardado conserva memoria y archivo
+anterior; Reintentar guardado vuelve a guardar. Entrenamiento sigue usando su
+propio archivo persistente y conserva ejercicios/progreso.
+
+El repositorio conserva compatibilidad interna con el envoltorio heredado
+`workspaceSchemaVersion: 1`, `document`, `dirty`, `saved` (hasta 3 MiB), respaldo
+exacto de formatos antiguos y recuperación protegida ante corrupción. Sus pruebas
+lo activan explícitamente con `persistWorkingSession: true`; **la app no activa ese
+modo**. Las nuevas pruebas usan el valor de producción false y archivos reales.
+Un archivo de biblioteca incompatible no se sobrescribe con Guardar.
 
 Guardar conserva identidad. Guardar como/duplicar/importar generan otra identidad;
 importar no altera el original externo. Eliminar biblioteca pide confirmación y no
@@ -94,3 +125,24 @@ Referencias primarias de la integración:
 [Android SAF](https://developer.android.com/training/data-storage/shared/documents-files),
 [FileProvider](https://developer.android.com/reference/androidx/core/content/FileProvider),
 [Dart File.rename](https://api.dart.dev/dart-io/File/rename.html).
+
+## Copias para Entrenador (10)
+
+Convertir desde la biblioteca copia el snapshot a almacenamiento separado; no
+modifica el documento del Editor. Entrenamiento tiene formato propio versionado,
+descrito en ENTRENADOR.md, e incluye escenarios mediante el mismo ScenarioCodec.
+Esquema de escenario continúa 3. Progreso, pistas y respuestas no se insertan en
+el JSON de escenarios ni aparecen como archivos de biblioteca.
+
+En 11 los diagnósticos, caché e hipótesis siguen siendo transitorios. Confirmar
+una ruta cambia únicamente la posición mediante el historial existente. Crear
+ejercicio copia la escena y rutas al formato 3 del Entrenador; no añade campos al
+JSON de escenarios. TXT/PNG de diagnóstico son salidas separadas con datos genéricos,
+distintas de exportar el escenario completo con sus nombres. Véase ANALISIS_TACTICO.md.
+
+En 12 los cinco ejemplos se previsualizan con controlador separado. Abrir copia
+usa importación interna con ID nuevo y protección de cambios sin guardar; los
+archivos anteriores permanecen en biblioteca. No se añade formato, campo ni capa.
+La aceptación recorre archivos JSON/PNG reales y compatibilidad de recuperación
+heredada. Desde rc.3 las pruebas de producción exigen arranque vacío, AA→A y
+conservación de biblioteca/progreso. El recorrido Android sigue pendiente.

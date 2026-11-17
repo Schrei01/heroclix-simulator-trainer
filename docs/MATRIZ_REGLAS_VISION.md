@@ -1,5 +1,8 @@
 # Matriz de reglas de visión — Prompt 06
 
+Registro de origen de 06, con expectativas R14/R15 actualizadas en 08.
+La cobertura completa actual se documenta en [MATRIZ_CAPACIDADES_VISION](MATRIZ_CAPACIDADES_VISION.md).
+
 Fuente primaria consultada el 2026-11-14; contratos comprobados el 15 e integración
 verificada el 16; corrección de vértices oblicuos comprobada el mismo día:
 [página oficial](https://wizkids.com/heroclix/gameplay/rules-format/) y
@@ -28,8 +31,8 @@ de ocupación, elevación, habilidades y bases múltiples. La página de
 | V05 | Bloqueado atravesado impide la línea. | 16.3b / 40 | Sin excepciones de poderes o destrucción; R03, R07, R11. |
 | V06 | Un muro cruzado bloquea. | 16.4b / 40 | Interior del borde; R04. Vértices mediante V07. |
 | V07 | En intersecciones se usa el lado menos restrictivo. | 16.8b / 44 | Comparar celdas laterales, figuras y sus muros incidentes, incluso en líneas oblicuas; R08–R10, R17, R23–R25. |
-| V08 | La elevación puede cambiar la visión. | 16.5c / 42 | Fuera de cobertura; R14. |
-| V09 | Las bases múltiples tienen reglas de referencia propias. | 24.2e / 70 | Se difiere su evaluación; R15. |
+| V08 | La elevación puede cambiar la visión. | 16.5c / 42 | Implementada en 08; R14, E01–E06. |
+| V09 | Las bases múltiples tienen reglas de referencia propias. | 24.2e / 70 | Bases reconocidas implementadas en 08; R15, B01–B04. |
 | V10 | La ocupación superpuesta o sobre bloqueado es incompatible. | 13.2 / 35 | Rechazar dictamen de escena de estudio incompatible; R07, R16. |
 | V11 | Las habilidades pueden introducir excepciones. | 19.3 / 54; 27.6 / 87 | Declaración explícita de caso especial; R13. No implementar esas excepciones. |
 | V12 | Hay mapas con reglas particulares. | 15.6 / 38 | Contexto tipado sin soporte; R13. |
@@ -59,8 +62,8 @@ calculan llamando al algoritmo bajo prueba. Cada identificador nombra un test.
 | R11 | H en B2 y B en C3 de A1–D4: bloqueada. | 16.3b, 16.2b |
 | R12 | Cambiar B1 de C a H a B cambia el resultado, sin mutar la copia inicial. | V01, V04, V05 |
 | R13 | Versión futura o efecto especial declarado: No evaluada. | SCOPE; V11, V12 |
-| R14 | Elevación relevante: No evaluada; fuera de trayectoria no la invalida. | SCOPE; 16.5c |
-| R15 | Base múltiple relevante: No evaluada; ajena a la trayectoria no la invalida. | SCOPE; 24.2e |
+| R14 | Desde 08: altura 2 solo en origen/destino del ejemplo permite visión; intermedia en B1 bloquea; fuera de trayectoria no afecta. | 16.5c |
+| R15 | Desde 08: base 2×2 en origen se evalúa; intermedia bloquea; ajena a la trayectoria no afecta. | 24.2e |
 | R16 | IDs/referencias inválidas, límites o figuras superpuestas: No evaluada. | SCOPE; 13.2 |
 | R17 | A1–D10 pasa por varios vértices en una línea oblicua: despejada; A1–E3 también despejada. | 16.8b / 44 |
 | R18 | Sí mismo en C: despejada; en H: clasificación No evaluada. | 11.4b y SCOPE |
@@ -69,12 +72,12 @@ calculan llamando al algoritmo bajo prueba. Cada identificador nombra un test.
 | R21 | Invertir A1(H)–D1 cambia la clasificación al cambiar origen/destino. | 16.2b |
 | R22 | Alcance anotado 0 no cambia este diagnóstico de visión. | Separación de 11.3 y 11.4; alcance en 07 |
 | R23 | A1–D6 con B4 bloqueado: despejada en ambos sentidos. La línea solo toca B4 en el vértice (2,3); C3 libre es el lado menos restrictivo. | 16.8b / 44 |
-| R24 | A1–D6, nueve pares C/H/B en B4/C3, ambos sentidos: tabla de menor restricción. Una figura lateral deja paso si el otro lado está libre; ambas bloquean. Bloqueado realmente atravesado en B3 o C4 bloquea; elevación relevante sigue No evaluada. | 16.8b, 11.4c, 16.3b; SCOPE para elevación |
+| R24 | A1–D6, nueve pares C/H/B en B4/C3: menor restricción. Una figura lateral deja paso con el otro lado libre; ambas bloquean. B interior bloquea. Desde 08, B4 bloqueado y C3 elevado a 2 bloquean ambos lados. | 16.8b, 11.4c, 16.3b, 16.5c |
 | R25 | A1–D6, 16 subconjuntos de cuatro muros incidentes, ambos sentidos: bloqueada solo si ambos lados están cerrados. | 16.8b, 16.4b |
 
 ## Alcance de implementación y pendientes explícitos
 
-El perfil asume figuras genéricas normales, sin poderes, en una superficie plana.
+El perfil original de 06 asumía figuras genéricas normales, sin poderes, en una superficie plana.
 La elevación 0 del modelo significa ausencia de altura modelada, no un nivel
 oficial adicional. No se deducen poderes o tamaños de los nombres escritos.
 La casilla de origen debe contener una figura. El destino puede ser figura o
@@ -88,7 +91,7 @@ El resultado de la trayectoria completa toma la restricción mayor entre sus pas
 Las marcas decisivas excluyen alternativas descartadas y efectos menos restrictivos
 que el resultado final. La dirección importa para el H de los extremos.
 
-No se resuelven en 06: elevación relevante distinta de 0, bases múltiples
+No se resolvían en 06: elevación relevante distinta de 0, bases múltiples
 relevantes, poderes/tamaños declarados, fuentes remotas, reglas especiales de mapa,
 versión no admitida, ocupación incompatible y clasificación de línea a sí mismo
 en H. Para este último no se extrapola una interpretación de 11.4b/16.2b.
@@ -104,19 +107,19 @@ No evaluado tiene precedencia conservadora aunque haya un bloqueo aparente,
 pues una excepción pendiente podría cambiarlo. No equivale a bloqueado.
 Solo despejada y obstaculizada devuelven canSee=true; bloqueada false; No evaluado
 null. No se produce un permiso de ataque ni se aplica el modificador de defensa
-de un ataque a distancia. Referencias de poderes/elevación/bases explican la
-frontera de soporte, no indican que esas reglas ya estén implementadas.
+de un ataque a distancia. Desde 08 las referencias de elevación, bases reconocidas
+y cuatro mejoras corresponden a soporte real, delimitado en la matriz de capacidades.
 
 ## Contratos y reutilización
 
 - LineOfSightService.evaluate es la única entrada reglamentaria; consume snapshot
   inmutable, extremos y VisionContext versionado. Usa SightGeometry sin replicarlo.
-- Editor, Simulador y Árbitro comparten VisionAnalysis y el mismo escenario.
+- Editor usa VisionAnalysis sobre el escenario; sus herramientas concentran las consultas desde rc.4.
 - El registro incluye contexto, extremos resueltos, geometría, reglas, observaciones
   por evento y elementos decisivos. No incluye fecha aleatoria: es determinista.
 - Cambios de dimensiones, figuras, terreno, muros, extremos o contexto invalidan
   la caché. Cámara, selección y visibilidad no recomputan el dictamen.
-- Archivo JSON conserva esquema 1; el perfil declarado y las superposiciones son
+- En 06 el JSON conservaba esquema 1; desde 08 migra a 2. El laboratorio y las superposiciones son
   transitorios. Al cargar otra escena se limpian extremos, resultado y declaración.
 - `dart run tool/verify_vision.dart` ejecuta R01–R25 sin Flutter. La suite Flutter
   reutiliza los contratos y añade estado, navegación, accesibilidad y regresiones.

@@ -311,3 +311,193 @@ verificado ni implementado ninguna regla del juego.
 - Rendimiento medido con Dart en el PC Windows del desarrollo; no se presentan
   esos tiempos como FPS ni mediciones Android. Detalle y equipo en ESTADO.md.
 - 0.8.0+9, sin nuevas dependencias ni permisos. No se inicia 08.
+
+## 2026-11-16 — Prompt 08
+
+- Se conserva Comprehensive Rulebook 2026-07-01; §16.5/16.7, §24.2 y §27.6.
+  La PAC oficial enlazada (2023) confirma las cuatro mejoras usadas; no se adoptan
+  excepciones que requieren mapa indoor/outdoor o resolución de ataques.
+- Composición independiente de nivel, H/B, muro y figura, seguida de restricciones
+  por vértice. Cada mejora ignora solo su componente, con referencia y explicación.
+- Huellas 1×1, 1×2/2×1, 2×2, 2×4/4×2 y 3×6/6×3; tamaño de personaje independiente.
+  Se consultan pares, hasta 324. La distancia y visión de Objetivos proceden del
+  mismo par. Visión automática no depende del alcance; inspección manual permanece.
+- Normal como extremo; otros tamaños/capacidades no modeladas conservan SCOPE.
+  El registro diferencia límites del producto de restricciones reglamentarias.
+- Altura de casilla/región, bordes derivados y transición de altura canónica.
+  El 0 legado sigue siendo alias del suelo 1, para no perder datos originales.
+  Limpiar tipo conserva altura/transiciones; modificar nivel puede retirar las
+  transiciones que ya no conectan alturas distintas. Historial por operación.
+- Cuatro mejoras declaradas en ficha, conservadas por duplicado, movimiento y
+  edición de alcance. Laboratorio explícito, temporal, sin modificar personaje/JSON.
+- Esquema 2 con lectura de 1/2; respaldo exacto antes de reemplazar legado y sin
+  escritura al abrir. Si el respaldo falla, el documento anterior se conserva.
+- Caché incluye tamaño, capacidades y laboratorio, acotada a 1024 pares del mundo.
+- Barra corta sin virtualización de sus botones: permite conservar accesibilidad
+  y localizar controles al desplazarse. No se silencian hit tests. La revisión
+  visual corrigió el pie para mostrar el par real y separó los números de transición.
+- Se conserva el modo offline y la configuración Android, sin dependencias nuevas.
+  Versión 0.9.0+10. No se inicia 09.
+
+## 2026-11-16 — Prompt 09
+
+- Se conserva la edición oficial 2026-07-01: §10.2/10.5/10.7/10.8, §13.2,
+  §16.2a/16.3a/16.4a/16.5a/16.7b/16.8a/c, §24.2d y §27.5a/b/e/f.
+  H no tiene costo adicional; cruzar altura obliga a terminar salvo excepción.
+- MovementRulesService separa paso, traslación y ruta; RoutePlanner usa BFS de
+  costo unitario. Reutiliza aristas/adyacencia por consulta y valida completa cada
+  alternativa ofrecida. Hasta tres por distinto primer paso, ordenadas por costo.
+  Ausencia de resultado no demuestra imposibilidad bajo poderes fuera del perfil.
+- IM Elevación, Bloqueado, Personajes y Atravesar son independientes. Solo
+  Personajes concede separación automática. La separación con dado queda
+  No evaluada: no se inventa una tirada ni un éxito. No se añade permiso de acción.
+- Bases: referencia fija en ancla superior izquierda, traslación sin giro y toda
+  la huella comprobada. §24.2d admite maniobras más amplias; una restricción en
+  otra parte que requiera otra referencia/giro queda No evaluada, no ilegalidad
+  general. Destino sobre B/figura/muro, fuera o mixto normal sí es inválido.
+- Perfil conservador con figuras Normal. Tamaños especiales, vuelo, destrucción,
+  clasificación exterior y efectos arbitrarios conservan No evaluado. Mejoras de
+  visión no conceden movimiento ni viceversa. Capacidades persistentes en ficha.
+- Ensayo en memoria y snapshot inicial inmutable; comparaciones recalculan visión
+  y alcance de la ficha en un snapshot futuro. Cancelar/reset no mueven; confirmar
+  revalida el contenido actual y aplica un único comando reversible. Carga,
+  edición o salida de herramienta limpian ensayo; cámara no escribe ni lo borra.
+- Editor mantiene arrastre libre para montar escenas. Simulador ofrece Movimiento
+  reglamentario; tocar allí construye ruta y no reposiciona libremente.
+- Esquema 3, lectura 1/2/3, IM vacías al migrar. Copia exacta previa de esquema 1/2
+  y working, fuera del índice. Fallo de respaldo protege original. Capas siguen 2.
+- UI desplazable a texto ampliado, sin silenciar hit tests. Se acotó el encabezado
+  del registro para poder abrirlo al 300 % en 320×320. No se crean dependencias,
+  permisos ni solicitudes de red en runtime. Versión 0.10.0+11. No se inicia 10.
+
+## 2026-11-16 — Prompt 10
+
+- Se conserva edición 2026-07-01. No se añaden reglas de juego: todos los correctores
+  delegan en servicios de 06–09 y validan la solución literal guardada antes de
+  permitir autocorrección. No evaluado o edición distinta no cuentan como fallo.
+- Banco curado v1 de 24 ejercicios, cuatro por categoría, tres dificultades y cinco
+  tipos automáticos. Escenarios sintéticos originales, deterministas y testeables.
+  No se presentan como mapas o ejemplos publicados por WizKids.
+- ID estable más revisión y edición para progreso. Abrir una revisión muestra su
+  feedback guardado, sin usar otro motor para recalificar respuestas antiguas.
+  Las actualizaciones compatibles del banco conservan IDs y contadores.
+- Intentos se registran solo al comprobar. Repetir, revisar y pedir pista no suman.
+  Pistas no penalizan porcentaje; se conserva uso en último intento. Practicar
+  errores usa último fallo elegible de la revisión/edición actual, no todo fallo
+  histórico. Completado exige un acierto automático; manual se cuenta aparte.
+- Respuesta textual manual requiere guía y no se puntúa automáticamente. Autor
+  ofrece visión, distancia, alcance/visión, ruta o manual; valida soluciones antes
+  de guardar. Tipos tocar objetivo/casilla se incluyen en el banco curado.
+- Ensayo de aprendizaje con tablero y controlador separados: no cambia Editor,
+  historial ni archivos de escenarios. Personal copia snapshot de biblioteca.
+  La comparación sencilla no evalúa valor estratégico ni inicia 11.
+- Persistencia privada separada bajo scenarios_v1/training_v1. Esquema entrenador
+  2 lee 1/2, conserva copia exacta de 1 antes de escribir y protege futuro/corrupto.
+  Compatibilidad 1 probada con datos sintéticos; no existía Entrenador publicado
+  en 09. Escenarios siguen esquema 3. Sin dependencias ni permisos nuevos.
+- 0.11.0+12. La revisión visual conserva la respuesta manual legible y el feedback
+  entra automáticamente en vista al comprobar. No se inicia Prompt 11.
+
+## 2026-11-16 — Prompt 11
+
+- Mantener el perfil 2026-07-01 y una implementación por regla. Visibilidad cuenta
+  H; alcance es independiente. Amenazas conocidas requieren línea y alcance en
+  un mismo par, sin declarar ataque legal, mejor jugada ni probabilidad de victoria.
+- Limitar a 12 destinos/página y 32 enemigos por posición, con progreso y worker
+  separado. Omitidos son No evaluados; diferencias parciales no dan números exactos
+  y resultados incompletos no reciben ranking categórico. Orden por página explícito.
+- Caché de ocho páginas y de pares acotada por enemigo. Cambios de contenido,
+  capacidades, versión o efectos limpian; prioridad/cámara conservan. Cancelar mata
+  el isolate y descarta mensajes tardíos. No se requiere servicio externo.
+- Snapshot hipotético inmutable. La comparación sin mejoras retira únicamente
+  capacidades soportadas del activo; no borra poderes desconocidos para forzar un
+  resultado. Confirmar revalida la ruta declarada y crea una operación reversible.
+- Crear ejercicios de ruta/visibilidad mediante el corrector de 10, en isolate,
+  con rutas literales guardadas y hasta cuatro posiciones. No se persisten fichas
+  modificadas de laboratorio. Cancelar antes de guardar descarta la generación.
+- Entrenamiento formato 3 lee 1/2/3 y respalda exactamente 1/2 antes de reemplazar.
+  Escenarios siguen 3. Tests conservan ejercicios y contadores de 10 y protegen
+  original ante fallo de respaldo. Banco curado v1 y sus 24 soluciones se conservan.
+- TXT/PNG con datos controlados y etiquetas genéricas; no captura de pantalla con
+  nombres ni metadatos. Sin nuevas dependencias, permisos ni red en runtime.
+- 0.12.0+13; evidencia real y límites nativos en ESTADO.md. No se inicia Prompt 12.
+
+## 2026-11-17 — Prompt 12
+
+- Entrega candidata 1.0.0-rc.1+14. No congelar estable hasta comprobar instalación,
+  restauración tras cierre, selectores, offline con radios apagadas y rendimiento
+  en Android. Se intentó AVD API 37/WHPX: quedó offline y se detuvo sin borrar datos.
+  El usuario indicó continuar sin teléfono; no se confunde Windows con Android.
+- Conservar los cuatro modos/motor/datos y tema existente, añadiendo ayuda breve,
+  cobertura/versiones y licencias locales en Acerca de. AppInfo se contrasta con
+  pubspec y perfil; no se añade un plugin para consultar la versión.
+- Cinco ejemplos originales reutilizan snapshots del banco verificado: H, vértice
+  A1–D6, muro, elevación y rodeo. Vista previa independiente y copia con ID nuevo,
+  protección de cambios y biblioteca conservada, sin sembrar datos al iniciar.
+- Corregir incompatibilidad real de TXT en Android mediante MIME/extensión exactos;
+  mantener 2 MiB para texto/JSON y 16 MiB para PNG. Sin permisos nuevos. Corregir
+  esquema antiguo en detalles y selección de consulta individual desde caché.
+- Matriz E2E explícita; test de archivos/controladores reales y respuesta en UI,
+  migraciones/regresiones anteriores intactas. Fallo de espacio se inyecta como
+  OSError 28 y comprueba documento anterior y recuperación, sin llenar el disco.
+- Accesibilidad básica verificada con guías de objetivos táctiles/etiquetas/contraste
+  y colores de estado ≥4,5:1. No implica validación TalkBack real. Ayudas adaptables
+  y mapa siguen separados; no se añaden reglas, contenido oficial ni juego completo.
+- Sin claves release suministradas; se conserva firma debug para actualizar las
+  entregas anteriores y se documenta custodia/firma segura. No se usa debug como
+  sustituto de release. APK, claves, logs y renders excluidos de Git.
+
+## 2026-11-17 — Ajustes del Editor posteriores a 12
+
+- Mantener separados Editor/Simulador/Árbitro mientras se ajusta la edición, según
+  la petición del usuario. Sin nuevas reglas, esquemas ni permisos.
+- Sustituir el desplegable del tipo de terreno por tres iconos al pie del mapa,
+  centrados, con selección, tooltip y semántica. Reservar su espacio fuera del
+  receptor de gestos para que elegir no pinte ni tape casillas. En altura escasa
+  usar barra lateral y controles compactos accesibles, sin reducir el texto global.
+- Proponer altura 2 sobre nivel 1; respetar alturas existentes y permitir volver
+  manualmente a suelo. No cambiar nivel por defecto de las casillas ni documentos.
+- Colocar Figura/primer equipo/base 1×1/Normal/velocidad 6/alcance 4 sin formulario;
+  usar el mismo comando de creación, validación, historial y autoguardado. Edición
+  posterior mediante la ficha existente. Bloqueado conserva confirmación de estudio.
+- Ocultar la ayuda transitoria al colocar para dejar accesible el lápiz inferior.
+- 1.0.0-rc.2+15 conserva firma debug; aceptación nativa sigue pendiente por decisión
+  de continuar sin teléfono. No se promueve estable ni se unifican los modos.
+
+## 2026-11-17 — Sesión temporal y dictamen sobre el mapa
+
+- Petición del usuario: cerrar/reabrir empieza con escenario vacío y figuras desde
+  A. Desactivar recuperación y escritura automáticas del escenario de trabajo por
+  defecto, sin borrar archivos ni biblioteca. Navegación/segundo plano conservan
+  la instancia viva. Guardar explícito y progreso del Entrenador siguen persistentes.
+- Mantener APIs/formato de recuperación antigua con activación explícita en sus
+  pruebas de compatibilidad. Añadir pruebas con la configuración de producción,
+  AA→A, working no leído/escrito, biblioteca y progreso en disco real. No se da por
+  probado el comportamiento Android a partir de una prueba de controladores.
+- Habilitar visión al elegir la herramienta y mostrar el mismo dictamen en franja
+  superior al completar extremos. Color/icono/texto y acceso directo a referencias;
+  No evaluado conserva incertidumbre. Bases automáticas sin diálogo; referencia
+  manual disponible mediante el control existente.
+- Actualizar mensajes de Inicio/Guía/estado para no prometer autoguardado temporal.
+  Error de Guardar permite reintentar guardado; los renders usan sesión temporal y
+  el caso de fallo es ahora de guardado explícito, no autoguardado.
+- 1.0.0-rc.3+16, misma firma debug; formatos/perfiles sin cambios. Sin unificar modos,
+  sin partida completa ni promoción a estable mientras falte aceptación nativa.
+
+## 2026-11-17 — Editor como espacio de análisis y transiciones
+
+- Petición del usuario: retirar Simulador y Árbitro. Inicio y AppMode conservan
+  Editor y Entrenador. Se elimina VisionScreen; informes y motores de visión,
+  distancia, objetivos, movimiento y posiciones siguen en las herramientas del Editor.
+  Esta decisión sustituye la separación de módulos registrada en entregas anteriores.
+- Triángulo blanco con borde rojo y número de nivel dentro de cada casilla de
+  transición; dos triángulos comparten base sobre el borde. Referencia gráfica:
+  Comprehensive Rules 2026-07-01 §16.7, página impresa 43. Geometría dibujada por la
+  app, sin copiar imágenes oficiales. Elevadas normales conservan E2/E3 y borde rojo.
+- El PNG usa el mismo BoardPainter y añade explicación en su leyenda. Sin cambio
+  de esquema, alturas, validación de transiciones ni reglas de movimiento/visión.
+- Se migran las pruebas de las vistas retiradas a las herramientas del Editor,
+  conservando consultas, informes, caché, movimiento y accesibilidad. Se corrige
+  el desbordamiento con texto al 300 % usando herramientas laterales cuando falta altura.
+- 1.0.0-rc.4+17, misma firma debug. Android real continúa pendiente por la decisión
+  previa de continuar sin teléfono. Biblioteca y progreso conservados.

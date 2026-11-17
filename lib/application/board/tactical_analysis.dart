@@ -16,13 +16,21 @@ final class TacticalVisionCache implements VisionEvaluator {
   void prepare(VisionSnapshot snapshot, VisionContext context) {
     final figures = <Object>[
       for (final f in snapshot.characters)
-        (f.id, f.label, f.teamId, f.position, f.footprint),
+        (
+          f.id,
+          f.label,
+          f.teamId,
+          f.position,
+          f.footprint,
+          f.size,
+          (f.abilities.map((a) => a.index).toList()..sort()).join(','),
+        ),
     ];
     final key = (
       snapshot.dimensions,
       snapshot.terrain,
       snapshot.walls,
-      context.rulesVersion,
+      '${context.rulesVersion}:${context.laboratoryKey}',
       context.features.map((f) => f.index).toList()..sort(),
     );
     // La lista de capacidades se compara por contenido, no por identidad.
@@ -62,7 +70,7 @@ final class TacticalVisionCache implements VisionEvaluator {
       destination.cell,
       destination.figureId,
     );
-    if (_entries.length >= 256 && !_entries.containsKey(key)) _entries.clear();
+    if (_entries.length >= 1024 && !_entries.containsKey(key)) _entries.clear();
     return _entries.putIfAbsent(key, () {
       evaluations++;
       return delegate.evaluate(snapshot, origin, destination, context);
@@ -132,6 +140,7 @@ final class TacticalAnalysis {
       sourceId,
       context.rulesVersion,
       context.features.map((f) => f.index).join(','),
+      context.laboratoryKey,
     );
     if (key != _previous) {
       _previous = key;

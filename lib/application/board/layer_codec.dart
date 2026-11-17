@@ -17,7 +17,7 @@ final class LayerCodec {
     final walls = session.walls.edges.values.toList()
       ..sort((a, b) => a.id.compareTo(b.id));
     return {
-      'layerSchemaVersion': 1,
+      'layerSchemaVersion': 2,
       'rows': session.dimensions.rows,
       'columns': session.dimensions.columns,
       'terrain': [
@@ -37,6 +37,12 @@ final class LayerCodec {
             'row': edge.row,
           },
       ],
+      'transitions': [
+        for (final edge
+            in session.terrain.transitions.toList()
+              ..sort((a, b) => a.id.compareTo(b.id)))
+          {'axis': edge.axis.name, 'column': edge.column, 'row': edge.row},
+      ],
     };
   }
 
@@ -53,14 +59,16 @@ final class LayerCodec {
       return Map<Object?, Object?>.from(value);
     }
 
+    final version = input is Map ? input['layerSchemaVersion'] : null;
     final root = object(input, {
       'layerSchemaVersion',
       'rows',
       'columns',
       'terrain',
       'walls',
+      if (version == 2) 'transitions',
     });
-    if (root['layerSchemaVersion'] != 1 ||
+    if ((version != 1 && version != 2) ||
         root['layerSchemaVersion'] is! int ||
         root['rows'] is! int ||
         root['columns'] is! int ||
@@ -128,10 +136,38 @@ final class LayerCodec {
         }
         walls.add(edge);
       }
-      return (
-        terrain: terrain,
-        walls: const WallLayer.empty().edit(walls, dimensions, erase: false),
+      final wallLayer = const WallLayer.empty().edit(
+        walls,
+        dimensions,
+        erase: false,
       );
+      final transitions = version == 2
+          ? root['transitions']
+          : const <Object?>[];
+      if (transitions is! List ||
+          transitions.length > dimensions.cellCount * 2) {
+        throw const FormatException('Transiciones inválidas.');
+      }
+      final seenTransitions = <String>{};
+      for (final raw in transitions) {
+        final data = object(raw, {'axis', 'column', 'row'});
+        final axis = EdgeAxis.values
+            .where((a) => a.name == data['axis'])
+            .firstOrNull;
+        if (axis == null || data['column'] is! int || data['row'] is! int) {
+          throw const FormatException('Transición inválida.');
+        }
+        final edge = EdgeWall(
+          axis: axis,
+          column: data['column'] as int,
+          row: data['row'] as int,
+        );
+        if (!seenTransitions.add(edge.id) || wallLayer.contains(edge)) {
+          throw const FormatException('Transición duplicada o sobre un muro.');
+        }
+        terrain = terrain.setTransition(edge, dimensions, remove: false);
+      }
+      return (terrain: terrain, walls: wallLayer);
     } on ArgumentError catch (error) {
       throw FormatException('Capa inválida: $error');
     }

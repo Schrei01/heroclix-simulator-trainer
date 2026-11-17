@@ -1,5 +1,7 @@
 import '../board/board_dimensions.dart';
 import '../board/cell_coordinate.dart';
+import 'vision_ability.dart';
+import 'movement_ability.dart';
 
 final class Footprint {
   factory Footprint.rectangle({required int width, required int height}) {
@@ -15,6 +17,17 @@ final class Footprint {
   const Footprint._(this.width, this.height);
   static const single = Footprint._(1, 1);
   static const square2 = Footprint._(2, 2);
+  static const supported = [
+    single,
+    square2,
+    Footprint._(1, 2),
+    Footprint._(2, 1),
+    Footprint._(2, 4),
+    Footprint._(4, 2),
+    Footprint._(3, 6),
+    Footprint._(6, 3),
+  ];
+  bool get isSupported => supported.contains(this);
   final int width;
   final int height;
   String get label => '$width × $height';
@@ -45,6 +58,9 @@ final class CharacterDraft {
     Footprint footprint = Footprint.single,
     int speed = 6,
     int range = 4,
+    Iterable<VisionAbility> abilities = const [],
+    FigureSize size = FigureSize.normal,
+    Iterable<MovementAbility> movementAbilities = const [],
   }) {
     final cleaned = name.trim();
     if (cleaned.isEmpty || cleaned.length > 80) {
@@ -53,7 +69,17 @@ final class CharacterDraft {
     if (teamId.isEmpty) throw ArgumentError('Selecciona un equipo.');
     RangeError.checkValueInInterval(speed, 0, 99, 'speed');
     RangeError.checkValueInInterval(range, 0, 99, 'range');
-    return CharacterDraft._(cleaned, teamId, position, footprint, speed, range);
+    return CharacterDraft._(
+      cleaned,
+      teamId,
+      position,
+      footprint,
+      speed,
+      range,
+      Set.unmodifiable(abilities),
+      size,
+      Set.unmodifiable(movementAbilities),
+    );
   }
   const CharacterDraft._(
     this.name,
@@ -62,6 +88,9 @@ final class CharacterDraft {
     this.footprint,
     this.speed,
     this.range,
+    this.abilities,
+    this.size,
+    this.movementAbilities,
   );
   final String name;
   final String teamId;
@@ -69,6 +98,9 @@ final class CharacterDraft {
   final Footprint footprint;
   final int speed;
   final int range;
+  final Set<VisionAbility> abilities;
+  final FigureSize size;
+  final Set<MovementAbility> movementAbilities;
   CharacterDraft at(CellCoordinate position) => CharacterDraft(
     name: name,
     teamId: teamId,
@@ -76,6 +108,9 @@ final class CharacterDraft {
     footprint: footprint,
     speed: speed,
     range: range,
+    abilities: abilities,
+    size: size,
+    movementAbilities: movementAbilities,
   );
 }
 
@@ -94,6 +129,9 @@ final class Character {
   Footprint get footprint => data.footprint;
   int get speed => data.speed;
   int get range => data.range;
+  Set<VisionAbility> get abilities => data.abilities;
+  FigureSize get size => data.size;
+  Set<MovementAbility> get movementAbilities => data.movementAbilities;
   Iterable<CellCoordinate> get occupiedCells => footprint.cellsAt(position);
   Character revised(CharacterDraft data) =>
       Character(id: id, label: label, data: data);

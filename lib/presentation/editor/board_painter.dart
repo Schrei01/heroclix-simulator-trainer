@@ -235,9 +235,19 @@ final class BoardPainter extends CustomPainter {
           );
         }
         _text(canvas, '${figure.label}\n${team.code}', rect.center);
+        if (figure.abilities.isNotEmpty) {
+          _text(
+            canvas,
+            'IT',
+            rect.bottomLeft + const Offset(14, -10),
+            fontSize: 10,
+            color: Colors.white,
+          );
+        }
       }
     }
     if (state != null) {
+      _elevations(canvas, state);
       for (final edge in state.walls.edges.values) {
         _wall(canvas, edge, const Color(0xfff5d28b));
       }
@@ -307,6 +317,100 @@ final class BoardPainter extends CustomPainter {
     BoardGeometry.cellExtent,
     BoardGeometry.cellExtent,
   );
+  void _elevations(Canvas canvas, BoardSession state) {
+    const extent = BoardGeometry.cellExtent, gutter = BoardGeometry.gutter;
+    final transitionCells = {
+      for (final edge in state.terrain.transitions) ...[
+        edge.firstCell,
+        edge.secondCell,
+      ],
+    };
+    for (var row = 0; row < dimensions.rows; row++) {
+      for (var col = 0; col < dimensions.columns; col++) {
+        final c = CellCoordinate(row: row, column: col);
+        final level = state.terrain.at(c).level;
+        final rect = _cellRect(c);
+        if (level > 1 && !transitionCells.contains(c)) {
+          final badge = Rect.fromLTWH(
+            rect.right - 31,
+            rect.bottom - 19,
+            30,
+            18,
+          );
+          canvas.drawRect(badge, Paint()..color = AppTheme.background);
+          _text(
+            canvas,
+            'E$level',
+            badge.center,
+            fontSize: 12,
+            color: Colors.white,
+          );
+        }
+        for (final n in [
+          if (col + 1 < dimensions.columns)
+            CellCoordinate(row: row, column: col + 1),
+          if (row + 1 < dimensions.rows)
+            CellCoordinate(row: row + 1, column: col),
+        ]) {
+          if (level != state.terrain.at(n).level) {
+            final edge = EdgeWall.between(c, n);
+            final start = Offset(
+              gutter + edge.column * extent,
+              gutter + edge.row * extent,
+            );
+            canvas.drawLine(
+              start,
+              start +
+                  (edge.axis == EdgeAxis.vertical
+                      ? const Offset(0, extent)
+                      : const Offset(extent, 0)),
+              Paint()
+                ..color = const Color(0xffff7777)
+                ..strokeWidth = 3,
+            );
+          }
+        }
+      }
+    }
+    for (final edge in state.terrain.transitions) {
+      final vertical = edge.axis == EdgeAxis.vertical;
+      final center = Offset(
+        gutter + edge.column * extent + (vertical ? 0 : extent / 2),
+        gutter + edge.row * extent + (vertical ? extent / 2 : 0),
+      );
+      const depth = 22.0, halfBase = 18.0;
+      final tangent = vertical
+          ? const Offset(0, halfBase)
+          : const Offset(halfBase, 0);
+      final normal = vertical ? const Offset(depth, 0) : const Offset(0, depth);
+      void triangle(Offset tip, int level) {
+        final shape = Path()
+          ..moveTo((center - tangent).dx, (center - tangent).dy)
+          ..lineTo(tip.dx, tip.dy)
+          ..lineTo((center + tangent).dx, (center + tangent).dy)
+          ..close();
+        canvas.drawPath(shape, Paint()..color = Colors.white);
+        canvas.drawPath(
+          shape,
+          Paint()
+            ..color = const Color(0xffff7777)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2,
+        );
+        _text(
+          canvas,
+          '$level',
+          center + (tip - center) / 3,
+          fontSize: 12,
+          color: const Color(0xff101c2b),
+        );
+      }
+
+      triangle(center - normal, state.terrain.at(edge.firstCell).level);
+      triangle(center + normal, state.terrain.at(edge.secondCell).level);
+    }
+  }
+
   void _wall(Canvas canvas, EdgeWall edge, Color color) {
     final start = Offset(
       BoardGeometry.gutter + edge.column * BoardGeometry.cellExtent,

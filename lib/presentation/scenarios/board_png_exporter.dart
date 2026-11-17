@@ -55,6 +55,9 @@ final class BoardPngExporter {
         'D Despejado · H puntos: obstaculizado · B rayas: bloqueado · || muro',
       );
       row(
+        'Elevación: borde rojo y E2/E3… · Transición: dos triángulos numerados unidos por el borde.',
+      );
+      row(
         '! Figura sobre bloqueado: representación incompatible para estudio. No se evalúan reglas.',
       );
       for (final team in session.teams) {

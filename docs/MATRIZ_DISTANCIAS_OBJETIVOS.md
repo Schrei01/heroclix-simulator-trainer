@@ -1,5 +1,7 @@
 # Distancias, alcance y objetivos — etapa 07
 
+Desde 08 se amplía a bases/alturas verificadas; ver [MATRIZ_CAPACIDADES_VISION](MATRIZ_CAPACIDADES_VISION.md).
+
 Consulta del 2026-11-16 a la [página oficial de WizKids](https://wizkids.com/heroclix/gameplay/rules-format/)
 y al [Comprehensive Rulebook 2026-07-01](https://wizkids.com/wp-content/uploads/2026/07/HeroClix%20Comprehensive%20Rules%2007.01.26.pdf).
 La página sigue enlazando esa edición. Se revisaron las secciones 11.2–11.5 y 12.1,
@@ -15,7 +17,7 @@ lectura y su SHA-256 están registrados en MATRIZ_REGLAS_VISION.md; no se redist
 | D03 | §11.4a, p. 27 | Usar la misma casilla de origen para medir y trazar visión. |
 | D04 | §11.5, p. 28 | Para figuras normales, rango y visión parten de la misma referencia. |
 | D05 | §12.1, p. 28 | El análisis no verifica todas las condiciones de ataque. Adyacencia pendiente: también §11.2a, p. 26. |
-| D06 | §24.2e, p. 70 | Distancia/rango de bases múltiples pendientes; no elegir una referencia arbitraria como resultado completo. |
+| D06 | §24.2e, p. 70 | Desde 08 se evalúan pares de bases reconocidas; alcance y visión usan el mismo par. |
 | SCOPE | Límite de implementación | No evaluado conserva la incertidumbre, sin atribuir esa política al reglamento. |
 
 La fórmula `max(abs(Δfila), abs(Δcolumna))` se deriva del conteo de §11.3a:
@@ -36,10 +38,10 @@ visión estructurada, restricciones comprobadas/pendientes y referencias.
    categoría correspondiente.
 
 El rango anotado no es un cálculo automático de modificadores de una carta.
-Efectos especiales declarados invalidan la comparación. En bases múltiples de
-extremos, distancia y rango quedan sin evaluar. Una elevación relevante deja
-pendiente la visión; puede conservarse la cuenta entre casillas y su comparación
-con el valor anotado, sin emitir una categoría aprobada de objetivo.
+Otros efectos sin modelar declarados invalidan la comparación. Desde 08 se
+resuelven bases reconocidas y niveles con las mejoras tipadas soportadas; las
+formas o condiciones sin soporte mantienen dimensiones pendientes. Ninguna
+categoría equivale a un ataque legal.
 
 Se consultan todas las demás figuras, excluyendo el propio origen. El filtro
 inicial muestra enemigas, con opciones Aliadas/Todas. El filtro no decide permisos
@@ -61,7 +63,7 @@ Dart puro (`dart run tool/verify_targets.dart`) y en la suite Flutter.
 | T03 | H intermedio: dentro + obstaculizada; B intermedio: bloqueada. | 16.2b, 16.3b |
 | T04 | Figura intermedia, de cualquier equipo: bloqueada. | 11.4c |
 | T05 | Muro cruzado: bloqueada; alcance insuficiente conserva también ese diagnóstico independiente. | 16.4b, 11.3b |
-| T06 | Bases relevantes: distancia/rango pendientes; elevación: visión pendiente; efectos o versión desconocida: No evaluado. | 24.2e, 16.5c y SCOPE |
+| T06 | Desde 08: forma 3×3 sin soporte pendiente; altura intermedia 2 bloquea; efectos/versión desconocidos conservan No evaluado. | 24.2e, 16.5c y SCOPE |
 | T07 | Origen inexistente: informe con error; origen único: lista vacía. | SCOPE |
 | T08 | Figuras superpuestas o sobre B: No evaluado. | 13.2 y SCOPE |
 | T09 | Alcance 0: las demás figuras están fuera; aliados consultables con aviso. | 11.3b, 12.1 |
@@ -77,7 +79,7 @@ escrituras por consultas, edición persistente del alcance y accesibilidad al 30
 La aplicación calcula fuera de `build`. La caché de visión compara dimensiones,
 posiciones/huellas/identidades/equipos/etiquetas, terreno, muros y contexto. Cambiar
 solo rango/nombre conserva sus resultados; cámara/filtro/selección no recalculan.
-Se limita a un mundo/contexto y 256 pares. Cambiar el mundo descarta resultados;
+Se limita a un mundo/contexto; desde 08 admite 1024 pares. Cambiar el mundo descarta resultados;
 el análisis de distancia/rango se actualiza aunque la visión pueda reutilizarse.
 
 `tool/benchmark_targets.dart` mide una primera llamada, 25 muestras sin caché,

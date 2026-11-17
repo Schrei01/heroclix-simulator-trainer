@@ -26,7 +26,7 @@ movement y training conservan documentación de alcance para etapas futuras.
 
 ## Estado y persistencia
 
-El inicio usa un catálogo inmutable; Editor, Simulador y Árbitro están disponibles. `BoardSession`
+El inicio usa un catálogo inmutable con Editor y Entrenador. `BoardSession`
 es la única fuente de verdad del tablero: dimensiones, selección, cámara,
 viewport, opciones de visualización, figuras, equipos, terreno y muros. Es inmutable y no importa Flutter.
 
@@ -46,8 +46,8 @@ siempre es CellCoordinate, nunca un Offset o píxel de pantalla.
 
 `LocalDocumentStore` define leer/escribir/eliminar/listar. FileDocumentStore
 implementa archivos privados con límites y reemplazo mediante temporal/rename.
-ScenarioRepository separa biblioteca de recuperación; ScenarioCodec valida el
-documento completo de esquema 1. WorkspaceController serializa I/O y revisiones,
+ScenarioRepository separa biblioteca de recuperación; ScenarioCodec valida
+documentos 1/2/3 y exporta esquema 3. WorkspaceController serializa I/O y revisiones,
 conserva la sesión ante fallos y publica una nueva solo después de protegerla.
 LayerCodec sigue validando terreno/bordes como parte del documento completo.
 
@@ -70,8 +70,8 @@ se almacenan como si fueran terreno ni figuras.
 ## Motor compartido
 
 Geometría ya emite intersecciones exactas y la UI representa sus resultados.
-LineOfSightService interpreta el perfil básico de 06. Editor, Simulador y Árbitro
-usan el mismo servicio; Entrenador lo reutilizará más adelante. Las condiciones
+LineOfSightService interpreta el perfil básico de 06. Editor y Entrenador
+usan el mismo servicio. Las condiciones
 fuera de cobertura devuelven «No evaluado». No se decide la legalidad de un ataque.
 
 ## Plataforma y red
@@ -164,10 +164,9 @@ Cámara, selección y resaltados no recomputan las reglas. El cambio de versión
 metadatos también invalida aunque las capas sean idénticas. Cargar otra escena
 limpia referencias, resultado y declaración de efectos; no cambia el esquema JSON.
 
-Editor, Simulador y Árbitro usan la misma instancia de EditorController y la misma
-entrada evaluate. VisionScreen es una vista de selección/navegación con acceso
-explícito a Editor. Una vista de lectura cubierta no modifica el viewport compartido:
-se evita que dos rutas alternen tamaños y provoquen cuadros de render continuos.
+El Editor concentra edición y análisis en una instancia de EditorController y la
+misma entrada evaluate. Simulador, Árbitro y su VisionScreen se retiraron en rc.4;
+VisionControls y los motores siguen disponibles dentro del Editor.
 
 VisionControls muestra dictamen y registro; SightPainter solo proyecta el resultado,
 colorea la línea y resalta causas. No decide reglas en widgets. La inspección
@@ -184,7 +183,7 @@ restricciones comprobadas/pendientes y referencias. No produce permiso de ataque
 TacticalAnalysis es estado transitorio en aplicación, coordinado por el mismo
 EditorController. Cambios del mundo, extremos, alcance, versión o condiciones
 actualizan resultados; cámara y selección no escriben ni invalidan el mundo.
-TacticalVisionCache limita a 256 pares del mismo mundo/contexto. Compara las
+En 07, TacticalVisionCache limitaba a 256 pares del mismo mundo/contexto. Compara las
 figuras mediante registros tipados de identidad, posición, huella, equipo y etiqueta;
 rango/nombre no afectan los obstáculos. Cambiarlos reutiliza visión y recalcula
 distancia/comparación/lista. El filtro también reutiliza resultados.
@@ -194,4 +193,197 @@ mediante Elegir análisis con el mismo controlador. TacticalControls representa
 resultados ya calculados; editar alcance pasa por saveCharacter y el historial.
 SightPainter proyecta anotación y contorno del objetivo; no calcula distancia ni
 alcance. El exportador PNG usa BoardPainter y excluye análisis transitorios.
-No cambia el esquema JSON 1. Al cargar se limpian origen, objetivo, filtro y caché.
+En 07 se conservó el esquema JSON 1. Al cargar se limpian origen, objetivo, filtro y caché.
+
+## Elevación, referencias y capacidades en 08
+
+CellTerrain mantiene tipo y elevación separados; `level` interpreta el 0 legado
+como suelo 1. TerrainLayer añade transiciones canónicas entre vecinos. Los bordes
+de altura se derivan de niveles, sin guardarlos como muros. Editar altura conserva
+tipo; limpiar tipo conserva altura y transiciones. Historial y validación usan
+las mismas capas inmutables. La edición de región copia el mapa una vez.
+
+CharacterDraft guarda VisionAbility tipadas y FigureSize independiente de Footprint.
+Se conservan al mover, duplicar, editar alcance y serializar. El motor consume
+las cuatro mejoras verificadas; otras condiciones generan SCOPE. El laboratorio
+es una sustitución inmutable de capacidades en VisionContext, transitoria.
+
+LineOfSightService compone terreno, nivel, ocupación y capacidades antes de evaluar
+cada lado de un vértice. Registra exclusiones y restricciones activas. Geometría
+permanece sin reglas. TargetAnalysisService consulta pares de huella (hasta 324),
+usando una referencia común para distancia/visión. VisionAnalysis puede buscar
+una línea visible sin depender de alcance; en Objetivos recibe el resultado del
+par coherente elegido por TacticalAnalysis. Canvas y pie muestran esa traza real.
+
+La caché tipada incorpora capacidades, tamaño y contexto de laboratorio; máximo
+1024 pares de un mundo. Cámara/filtro y cambios de rango conservan visión cuando
+los obstáculos no cambian. No se calcula en los widgets ni en el painter.
+
+ScenarioCodec/LayerCodec exportan esquema 2 y leen 1/2. La lectura no modifica el
+archivo. ScenarioRepository conserva bytes anteriores antes de reemplazar un
+esquema 1; FileDocumentStore acepta solo IDs de respaldo validados y los excluye
+de biblioteca. No se cambia el directorio privado existente. El Editor usa el
+informe compartido con pares, reglas, eventos y modificaciones.
+
+## Movimiento en 09
+
+MovementRulesService implementa paso, traslación de base y validación de ruta en
+Dart puro. La ruta contiene coordenadas lógicas, origen incluido; eventos registran
+paso, casilla, regla y motivo. Distingue paso permitido, parada obligatoria,
+invalidez y condición sin soporte. La velocidad declarada es el presupuesto.
+
+RoutePlanner realiza búsquedas BFS por primer paso, con costo 1 y memoización de
+aristas/adyacencia dentro de la consulta. No expande estados que deben terminar.
+Los destinos ilegales pueden ser prefijos transitables con la mejora correcta.
+Cada alternativa se valida otra vez como ruta completa antes de ofrecerse.
+
+MovementAnalysis conserva snapshot original, ruta, resultado, alternativas y
+comparaciones antes/después. Usa TargetAnalysisService/LineOfSightService de
+06–08 sobre un mundo futuro separado; no escribe. EditorController invalida por
+cambio de contenido y revalida al confirmar; aplica moveCharacter mediante el
+historial existente. Cancelar/reset no hacen operaciones de contenido.
+
+MovementToolbar/MovementDialog muestran estado, presupuesto, motivos, capacidades
+y comparación. BoardCanvas añade casillas al ensayo desde la herramienta Movimiento
+del Editor; MovementPainter solo proyecta ruta numerada y las huellas original/final.
+El arrastre libre del Editor es independiente de la validez reglamentaria.
+
+ScenarioCodec exporta documento 3 y lee 1/2/3. Añade movementAbilities, preservadas
+al mover, duplicar y editar alcance. ScenarioRepository respalda exactamente 1/2
+antes del primer reemplazo; FileDocumentStore admite IDs schema1/schema2 validados.
+LayerCodec mantiene esquema 2. No hay persistencia de rutas ni posiciones de ensayo.
+
+## Entrenador en 10
+
+Exercise, Answer, Evaluation, Feedback, SkillCategory, RuleSetVersion y progreso
+son Dart puro. El banco curado versión 1 guarda 24 escenarios y soluciones
+literales de regresión. ExerciseEvaluator delega en servicios de visión,
+distancia, objetivos y movimiento, sin copiar reglas en widgets. Si la edición o
+la solución no coinciden, o un servicio devuelve No evaluado, no autocorrige.
+
+TrainingCodec/TrainingRepository almacenan snapshots personales y contadores en
+un directorio privado separado. Documento de entrenamiento 2, lectura 1/2, copia
+exacta del legado antes de reemplazar. Snapshots reutilizan ScenarioCodec 1/2/3.
+No cambia el formato 3 del Editor. IDs/revisión/edición separan progreso y revisiones
+antiguas; los resultados guardados no se recalifican al consultarlos.
+
+TrainingController coordina lectura, comprobación y escritura serializada. Solo
+confirmar una respuesta registra un intento; revisar, pista y repetir no escriben.
+Un token impide duplicados de confirmación. Publica estado tras guardar; fallos
+conservan el anterior. App espera escrituras en curso al pasar a segundo plano.
+
+TrainingScreen filtra banco y progreso; ExerciseScreen controla respuestas y un
+EditorController independiente sin workspace. BoardCanvas recibe un callback de
+casilla y TrainingPainter neutro, sin reutilizar la escena abierta ni los diálogos
+de visión. Tras comprobar, desplaza la vista al feedback y cierra el teclado.
+PersonalExerciseDialog copia un escenario de biblioteca, recoge pregunta/opciones
+pista/solución y verifica antes de guardar. Texto libre se declara manual.
+
+La única comparación de posiciones de 10 es un predicado de ejercicio: un paso
+legal con alcance y visión despejada. No se introducen métricas ni recomendaciones
+tácticas de 11. Límites, banco y almacenamiento: ENTRENADOR.md.
+
+## Análisis de posiciones en 11
+
+TacticalAnalysisService y diagnósticos son Dart puro. Componen los servicios de
+movimiento, distancia y visión mediante TargetAnalysisService. Separan visión
+independiente de alcance de la consulta combinada que requiere un mismo par de
+referencias. Cada métrica conserva conocidos/desconocidos y límites por edición.
+
+PositionAnalysisController toma un snapshot inmutable del Editor y manda lotes de
+12 destinos a un isolate con progreso por enemigo/posición. Cancelar mata el worker;
+tokens de generación descartan mensajes tardíos. Caché de ocho páginas invalidada
+por contenido, ficha, versión y efectos; cámara/prioridad no invalidan. El cálculo
+limita a 32 enemigos y conserva omitidos como desconocidos. Resultados completos
+se ordenan por prioridad transparente; incompletos quedan separados.
+
+TacticalScreen usa cámara propia. El mapa representa anclas y la ruta valida toda
+la huella. Confirmar revalida y aplica un solo comando con Deshacer. Comparar sin
+mejoras soportadas del activo es una hipótesis; no modifica fichas ni elimina
+incertidumbre por capacidades que no se saben evaluar.
+
+AnalysisExerciseRequest y fábrica en isolate crean ejercicios con rutas guardadas,
+verificados por ExerciseEvaluator antes de añadirlos al repositorio existente.
+TrainingScope comparte el controlador del Entrenador con las rutas del analizador.
+TrainingCodec pasa a esquema 3 y lee 1/2/3: candidateRoutes es opcional para legado.
+Se respalda exactamente formato 1/2 antes de reemplazar y se conservan contadores.
+El esquema de escenarios continúa 3; no se guardan métricas en la escena.
+
+DiagnosticSummary y DiagnosticPng generan artefactos desde datos controlados,
+remapeando etiquetas/equipos y sin nombres, IDs ni metadatos de la escena. PNG no
+captura widgets. Reutiliza selector/compartir Android existente sin permisos nuevos.
+Definiciones, límites y mediciones en ANALISIS_TACTICO.md.
+
+## Consolidación en 12
+
+AppInfo identifica versión/build y edición, contrastados con pubspec y el motor
+en test. Inicio añade navegación a Guía rápida, Acerca de y catálogo original.
+InformationScreen comparte estructura desplazable, anchura máxima y altura de
+barra ajustada al texto. La página de licencias usa LicenseRegistry de Flutter
+y los avisos empaquetados, sin servicios remotos.
+
+LocalExample referencia escenas del banco curado ya verificado y crea documentos
+con ID nuevo. La vista previa usa un EditorController independiente; abrir copia
+pasa por la misma protección de cambios sin guardar que biblioteca/importación.
+Se deshabilita durante recuperación/escritura y conserva escenas anteriores.
+No se escribe el catálogo en biblioteca al arrancar ni se cambia esquema alguno.
+
+El puente nativo verifica pares exactos MIME/extensión: JSON/PNG/TXT, con límites
+2/16/2 MiB y nombres controlados. Se corrige el rechazo del resumen táctico TXT
+de 11. Detalles de escenario muestran esquema vigente; caché táctica recupera
+también selección de una consulta individual. No hay dependencias ni permisos nuevos.
+
+La aceptación automatizada combina controladores y almacenamiento real con UI
+de ejercicio, restauración e intercambio de archivos. La matriz separa esa prueba
+del recorrido instrumental pendiente. Se mantiene 1.0.0-rc.1 sin afirmar aceptación
+nativa ni rendimiento en Android; README_FINAL explica cómo cerrar esos criterios.
+
+## Interacciones rápidas del Editor — rc.2
+
+TerrainPalette sustituye el selector de tipo desplegable y ocupa una franja propia
+centrada al pie del mapa, fuera del receptor de gestos. Usa configureLayers, sin
+registrar una edición hasta pintar. En poco alto el Editor mueve herramientas a
+la izquierda y compacta la barra de capas mediante iconos/tooltip accesibles.
+No se superponen controles a las casillas ni se alteran formatos o reglas.
+
+BoardCanvas coloca CharacterDraft con los valores predeterminados mediante el
+saveCharacter existente, conservando validación/historial/autoguardado. La ficha
+queda para edición posterior; sobre bloqueado se conserva confirmación de estudio.
+La ayuda transitoria se retira al colocar para no interceptar el lápiz inferior.
+ElevationDialog propone el nivel existente limitado inferiormente a 2; el usuario
+puede escribir 1 para volver a suelo. La capa de terreno no cambia su valor inicial.
+
+## Sesión temporal y dictamen inmediato — rc.3
+
+WorkspaceController usa `persistWorkingSession: false` por defecto. Inicializar
+prepara el documento en memoria sin leer ni escribir la recuperación antigua;
+editar y pasar a segundo plano no guardan `working.json`. Nuevo EditorController
+en cada apertura inicia BoardSession.initial con contador 1. Navegación y segundo
+plano conservan la misma instancia; Guardar/Guardar como siguen escribiendo en la
+biblioteca y el Entrenador conserva su repositorio persistente independiente.
+
+La compatibilidad heredada de recuperación se mantiene con opt-in explícito para
+sus pruebas de formatos/archivos. Las pruebas de producción usan el valor false,
+incluido arranque tras AA y disco real. Se ignora el working antiguo sin borrarlo
+ni modificar biblioteca. Reintentar guardado vuelve a ejecutar Guardar.
+
+Activar la herramienta Visión habilita su evaluación. VisionVerdictBar presenta
+el VisionEvaluation existente al completar extremos, con icono/color/texto y
+semántica liveRegion; tocar abre el informe compartido. Se reserva una franja sobre
+el mapa en Editor. No duplica reglas ni publica el resultado
+anterior tras limpiar o invalidar extremos. Referencias automáticas son el valor
+predeterminado; la inspección manual sigue disponible al desactivarlas.
+
+## Editor y transiciones — rc.4
+
+AppMode y HomeCatalog contienen solo editor/trainer. HomeScreen abre EditorScreen
+o TrainingScreen; VisionScreen se elimina. Los servicios y controles de análisis
+se reutilizan en EditorScreen. No hay datos persistidos de modos que migrar.
+
+BoardPainter diferencia elevaciones normales (E2/E3) de transiciones (dos triángulos
+blancos con borde rojo y sus niveles, uno dentro de cada casilla conectada).
+BoardPngExporter reutiliza el painter; no cambia TerrainMap ni ScenarioCodec.
+Los marcadores se derivan de los bordes de transición existentes. Las pruebas de
+exportación decodifican píxeles de ambas orientaciones y verifican retirada y JSON.
+El Editor coloca herramientas lateralmente cuando el área disponible es baja,
+para conservar el mapa y evitar desbordamientos también en Distancia/Objetivos.

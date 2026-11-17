@@ -1,3 +1,5 @@
+import '../../domain/characters/movement_ability.dart';
+
 import 'dart:convert';
 
 import '../board/board_session.dart';
@@ -5,6 +7,7 @@ import '../board/layer_codec.dart';
 import '../../domain/board/board_dimensions.dart';
 import '../../domain/board/cell_coordinate.dart';
 import '../../domain/characters/character.dart';
+import '../../domain/characters/vision_ability.dart';
 import '../../domain/characters/character_repository.dart';
 import '../../domain/characters/team.dart';
 import 'scenario_document.dart';
@@ -54,10 +57,24 @@ final class ScenarioCodec {
             },
             'speed': figure.speed,
             'range': figure.range,
+            'visionAbilities': [
+              for (final a
+                  in figure.abilities.toList()
+                    ..sort((a, b) => a.index.compareTo(b.index)))
+                a.name,
+            ],
+            'size': figure.size.name,
+            'movementAbilities': [
+              for (final a
+                  in figure.movementAbilities.toList()
+                    ..sort((a, b) => a.index.compareTo(b.index)))
+                a.name,
+            ],
           },
       ],
       'terrain': layers['terrain'],
       'walls': layers['walls'],
+      'transitions': layers['transitions'],
       'counters': {
         'nextCharacter': state.nextCharacter,
         'nextTeam': state.nextTeam,
@@ -134,6 +151,7 @@ final class ScenarioCodec {
 
   ScenarioDocument fromMap(Object? source) {
     try {
+      final version = source is Map ? source['schemaVersion'] : null;
       final root = object(source, {
         'schemaVersion',
         'metadata',
@@ -143,9 +161,10 @@ final class ScenarioCodec {
         'terrain',
         'walls',
         'counters',
+        if (version != 1) 'transitions',
       });
       if (root['schemaVersion'] is! int ||
-          root['schemaVersion'] != ScenarioDocument.schemaVersion) {
+          (version != 1 && version != 2 && version != 3)) {
         throw const FormatException(
           'Versión de escenario no compatible. El archivo se conserva sin modificar.',
         );
@@ -221,6 +240,8 @@ final class ScenarioCodec {
           'footprint',
           'speed',
           'range',
+          if (version != 1) ...['visionAbilities', 'size'],
+          if (version == 3) 'movementAbilities',
         });
         final id = text(data['id'], 32),
             match = RegExp(r'^figure-([1-9][0-9]{0,8})$').firstMatch(id);
@@ -234,6 +255,46 @@ final class ScenarioCodec {
           throw const FormatException('Etiqueta o equipo de figura inválido.');
         }
         final footprint = object(data['footprint'], {'width', 'height'});
+        final abilityData = version != 1
+            ? data['visionAbilities']
+            : const <Object?>[];
+        final size = version == 1
+            ? FigureSize.normal
+            : FigureSize.values
+                  .where((s) => s.name == data['size'])
+                  .firstOrNull;
+        if (abilityData is! List ||
+            size == null ||
+            abilityData.length > VisionAbility.values.length) {
+          throw const FormatException('Capacidades o tamaño inválidos.');
+        }
+        final abilities = <VisionAbility>{};
+        for (final value in abilityData) {
+          final ability = VisionAbility.values
+              .where((a) => a.name == value)
+              .firstOrNull;
+          if (ability == null || !abilities.add(ability)) {
+            throw const FormatException('Capacidad desconocida o duplicada.');
+          }
+        }
+        final movementData = version == 3
+            ? data['movementAbilities']
+            : const <Object?>[];
+        if (movementData is! List ||
+            movementData.length > MovementAbility.values.length) {
+          throw const FormatException('Capacidades de movimiento inválidas.');
+        }
+        final movementAbilities = <MovementAbility>{};
+        for (final value in movementData) {
+          final ability = MovementAbility.values
+              .where((a) => a.name == value)
+              .firstOrNull;
+          if (ability == null || !movementAbilities.add(ability)) {
+            throw const FormatException(
+              'Capacidad de movimiento desconocida o duplicada.',
+            );
+          }
+        }
         final figure = Character(
           id: id,
           label: data['label'] as String,
@@ -247,16 +308,20 @@ final class ScenarioCodec {
             ),
             speed: integer(data['speed'], 0, 99),
             range: integer(data['range'], 0, 99),
+            abilities: abilities,
+            size: size,
+            movementAbilities: movementAbilities,
           ),
         );
         characters = characters.add(figure, dimensions);
       }
       final layers = const LayerCodec().decode({
-        'layerSchemaVersion': 1,
+        'layerSchemaVersion': 2,
         'rows': dimensions.rows,
         'columns': dimensions.columns,
         'terrain': root['terrain'],
         'walls': root['walls'],
+        'transitions': version != 1 ? root['transitions'] : const <Object?>[],
       }, dimensions);
       final counters = object(root['counters'], {'nextCharacter', 'nextTeam'});
       final session = BoardSession.restore(

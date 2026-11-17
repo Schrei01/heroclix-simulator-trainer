@@ -81,37 +81,39 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
-  testWidgets('base 2×2 pide referencia explícita; cancelar no elige extremo', (
-    tester,
-  ) async {
-    final controller = await openEditor(tester);
-    controller.saveCharacter(figure('A1', footprint: Footprint.square2));
-    await tester.pumpAndSettle();
-    await press(tester, 'tool-vision');
-    await tester.tapAt(cellPosition(tester, controller, 'B2'));
-    await tester.pumpAndSettle();
-    expect(
-      find.textContaining('La evaluación completa de bases'),
-      findsOneWidget,
-    );
-    await tester.tap(find.text('Cancelar'));
-    await tester.pumpAndSettle();
-    expect(controller.sight.origin, isNull);
-    await tester.tapAt(cellPosition(tester, controller, 'B2'));
-    await tester.pumpAndSettle();
-    await press(tester, 'confirm-sight-reference');
-    expect(controller.sight.origin!.figureId, 'figure-1');
-    expect(controller.sight.origin!.resolve(controller.value), c('B2'));
-    await tester.tapAt(cellPosition(tester, controller, 'D4'));
-    await tester.pumpAndSettle();
-    expect(controller.sight.trace!.path.origin, c('B2'));
-    final before = controller.value.characters;
-    // Mantener pulsado en Visión no mueve una figura ni abre su ficha.
-    await tester.longPressAt(cellPosition(tester, controller, 'A1'));
-    await tester.pumpAndSettle();
-    expect(controller.value.characters, same(before));
-    expect(tester.takeException(), isNull);
-  });
+  testWidgets(
+    'base 2×2 en referencia manual pide casilla; cancelar no elige extremo',
+    (tester) async {
+      final controller = await openEditor(tester);
+      controller.saveCharacter(figure('A1', footprint: Footprint.square2));
+      controller.updateVision((v) => v.automaticReferences = false);
+      await tester.pumpAndSettle();
+      await press(tester, 'tool-vision');
+      await tester.tapAt(cellPosition(tester, controller, 'B2'));
+      await tester.pumpAndSettle();
+      expect(
+        find.textContaining('Inspección de una referencia concreta'),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Cancelar'));
+      await tester.pumpAndSettle();
+      expect(controller.sight.origin, isNull);
+      await tester.tapAt(cellPosition(tester, controller, 'B2'));
+      await tester.pumpAndSettle();
+      await press(tester, 'confirm-sight-reference');
+      expect(controller.sight.origin!.figureId, 'figure-1');
+      expect(controller.sight.origin!.resolve(controller.value), c('B2'));
+      await tester.tapAt(cellPosition(tester, controller, 'D4'));
+      await tester.pumpAndSettle();
+      expect(controller.sight.trace!.path.origin, c('B2'));
+      final before = controller.value.characters;
+      // Mantener pulsado en Visión no mueve una figura ni abre su ficha.
+      await tester.longPressAt(cellPosition(tester, controller, 'A1'));
+      await tester.pumpAndSettle();
+      expect(controller.value.characters, same(before));
+      expect(tester.takeException(), isNull);
+    },
+  );
   testWidgets('formulario permite figura y una de sus cuatro referencias', (
     tester,
   ) async {

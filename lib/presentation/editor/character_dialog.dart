@@ -1,7 +1,10 @@
+import '../../domain/characters/movement_ability.dart';
+
 import 'package:material_ui/material_ui.dart';
 
 import '../../domain/board/cell_coordinate.dart';
 import '../../domain/characters/character.dart';
+import '../../domain/characters/vision_ability.dart';
 import '../../domain/characters/team.dart';
 import 'editor_controller.dart';
 
@@ -87,6 +90,9 @@ class _CharacterDialogState extends State<CharacterDialog> {
   late final TextEditingController _name, _position, _speed, _range;
   late String _team;
   late Footprint _footprint;
+  late Set<VisionAbility> _abilities;
+  late FigureSize _size;
+  late Set<MovementAbility> _movementAbilities;
   bool _duplicate = false;
   bool _allowStudy = false;
   String? _error;
@@ -107,6 +113,9 @@ class _CharacterDialogState extends State<CharacterDialog> {
     _range = TextEditingController(text: '${figure?.range ?? 4}');
     _team = figure?.teamId ?? widget.controller.value.teams.first.id;
     _footprint = figure?.footprint ?? Footprint.single;
+    _abilities = {...?figure?.abilities};
+    _size = figure?.size ?? FigureSize.normal;
+    _movementAbilities = {...?figure?.movementAbilities};
   }
 
   @override
@@ -133,6 +142,9 @@ class _CharacterDialogState extends State<CharacterDialog> {
       footprint: _footprint,
       speed: int.parse(_speed.text.trim()),
       range: int.parse(_range.text.trim()),
+      abilities: _abilities,
+      size: _size,
+      movementAbilities: _movementAbilities,
     );
     final error = widget.controller.saveCharacter(
       data,
@@ -264,7 +276,10 @@ class _CharacterDialogState extends State<CharacterDialog> {
               initialValue: _footprint,
               decoration: const InputDecoration(labelText: 'Base'),
               items: [
-                for (final base in [Footprint.single, Footprint.square2])
+                for (final base in [
+                  ...Footprint.supported,
+                  if (!_footprint.isSupported) _footprint,
+                ])
                   DropdownMenuItem(value: base, child: Text(base.label)),
               ],
               onChanged: (value) => setState(() => _footprint = value!),
@@ -273,7 +288,7 @@ class _CharacterDialogState extends State<CharacterDialog> {
               const Padding(
                 padding: EdgeInsets.only(top: 8),
                 child: Text(
-                  'Representación de posición, no legalidad reglamentaria. La casilla indica la esquina superior izquierda.',
+                  'El anclaje indica la esquina superior izquierda. La huella no concede un tamaño ni habilidades.',
                 ),
               ),
             TextFormField(
@@ -317,6 +332,70 @@ class _CharacterDialogState extends State<CharacterDialog> {
               onChanged: (value) =>
                   setState(() => _allowStudy = value ?? false),
             ),
+            DropdownButtonFormField<FigureSize>(
+              key: const ValueKey('character-size'),
+              isExpanded: true,
+              initialValue: _size,
+              decoration: const InputDecoration(
+                labelText: 'Tamaño (independiente de la base)',
+              ),
+              items: [
+                for (final s in FigureSize.values)
+                  DropdownMenuItem(value: s, child: Text(s.label)),
+              ],
+              onChanged: (s) => setState(() => _size = s!),
+            ),
+            const Text(
+              'Solo Normal se evalúa como origen/destino. Tiny/Giant/Colossal quedan pendientes como extremos. La huella no concede un tamaño ni poderes.',
+            ),
+            const SizedBox(height: 8),
+            ExpansionTile(
+              key: const ValueKey('movement-abilities'),
+              title: const Text('Improved Movement · movimiento'),
+              children: [
+                const Text(
+                  'H no añade costo. Cada mejora ignora solo su componente; las opciones sin soporte dejan la ruta No evaluada.',
+                ),
+                for (final a in MovementAbility.values)
+                  CheckboxListTile(
+                    key: ValueKey('movement-ability-${a.name}'),
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(
+                      '${a.label}${a.supported ? '' : ' · sin soporte'}',
+                    ),
+                    value: _movementAbilities.contains(a),
+                    onChanged: (v) => setState(() {
+                      if (v == true) {
+                        _movementAbilities.add(a);
+                      } else {
+                        _movementAbilities.remove(a);
+                      }
+                    }),
+                  ),
+              ],
+            ),
+            const Text(
+              'Cada mejora actúa solo sobre su obstáculo. Las opciones sin soporte producen No evaluado; no se interpretan cartas.',
+            ),
+            const Text('Improved Targeting · capacidades declaradas'),
+            for (final ability in VisionAbility.values)
+              CheckboxListTile(
+                key: ValueKey('ability-${ability.name}'),
+                contentPadding: EdgeInsets.zero,
+                title: Text(
+                  ability.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                value: _abilities.contains(ability),
+                onChanged: (checked) => setState(() {
+                  if (checked!) {
+                    _abilities.add(ability);
+                  } else {
+                    _abilities.remove(ability);
+                  }
+                }),
+              ),
             if (widget.character != null && !_duplicate)
               Wrap(
                 children: [

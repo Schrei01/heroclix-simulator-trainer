@@ -12,6 +12,7 @@ import 'package:heroclix_simulator_trainer/presentation/scenarios/workspace_cont
 final class MemoryStore implements LocalDocumentStore {
   final documents = <String, String>{};
   bool failRead = false, failWrite = false, failDelete = false;
+  OSError? writeError;
   Completer<void>? gate;
   int writes = 0;
   @override
@@ -30,7 +31,9 @@ final class MemoryStore implements LocalDocumentStore {
   Future<void> write(String id, String document) async {
     final barrier = gate;
     if (barrier != null) await barrier.future;
-    if (failWrite) throw const FileSystemException('Escritura simulada');
+    if (failWrite) {
+      throw FileSystemException('Escritura simulada', '', writeError);
+    }
     documents[id] = document;
     writes++;
   }
@@ -80,9 +83,11 @@ final class FakeScenarioFiles implements ScenarioFiles {
 Future<EditorController> persistentController(
   MemoryStore store, {
   FakeScenarioFiles? files,
+  bool persistWorkingSession = true,
 }) async {
   final controller = EditorController();
   final workspace = WorkspaceController(
+    persistWorkingSession: persistWorkingSession,
     repository: ScenarioRepository(store),
     readSession: () => controller.value,
     loadSession: controller.loadScenario,

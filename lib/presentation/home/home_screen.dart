@@ -5,12 +5,20 @@ import '../../domain/app_mode.dart';
 import '../theme/app_theme.dart';
 import '../editor/editor_controller.dart';
 import '../editor/editor_screen.dart';
-import '../vision/vision_screen.dart';
+import '../training/training_controller.dart';
+import '../training/training_screen.dart';
+import '../help/info_screen.dart';
+import '../examples/examples_screen.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({required this.editorController, super.key});
+  const HomeScreen({
+    required this.editorController,
+    required this.trainingController,
+    super.key,
+  });
 
   final EditorController editorController;
+  final TrainingController trainingController;
 
   @override
   Widget build(BuildContext context) {
@@ -44,8 +52,8 @@ class HomeScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    'Construye tu escenario y consulta distancias, alcance y visión con '
-                    'explicaciones y referencias. Entrenador: próximamente.',
+                    'Construye tu escenario y ensaya movimiento, distancias, alcance y visión con '
+                    'explicaciones y referencias. Practica ejercicios y guarda tu progreso local.',
                   ),
                   const SizedBox(height: 32),
                   Semantics(
@@ -75,15 +83,14 @@ class HomeScreen extends StatelessWidget {
                                         Navigator.of(context).push(
                                           MaterialPageRoute<void>(
                                             builder: (_) =>
-                                                mode == AppMode.editor
-                                                ? EditorScreen(
+                                                mode == AppMode.trainer
+                                                ? TrainingScreen(
                                                     controller:
-                                                        editorController,
+                                                        trainingController,
                                                   )
-                                                : VisionScreen(
+                                                : EditorScreen(
                                                     controller:
                                                         editorController,
-                                                    mode: mode,
                                                   ),
                                           ),
                                         );
@@ -98,7 +105,48 @@ class HomeScreen extends StatelessWidget {
                   const SizedBox(height: 28),
                   const Text(
                     'Sin cuentas ni conexión a internet. '
-                    'Autoguardado local y biblioteca de escenarios en el editor.',
+                    'Escenario temporal mientras la app está abierta. Guarda en biblioteca para conservarlo.',
+                  ),
+                  const SizedBox(height: 16),
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 8,
+                    children: [
+                      OutlinedButton.icon(
+                        key: const ValueKey('open-examples'),
+                        onPressed: () => Navigator.push<void>(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                ExamplesScreen(editor: editorController),
+                          ),
+                        ),
+                        icon: const Icon(Icons.collections_bookmark_outlined),
+                        label: const Text('Ejemplos locales'),
+                      ),
+                      OutlinedButton.icon(
+                        key: const ValueKey('open-guide'),
+                        onPressed: () => Navigator.push<void>(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const QuickGuideScreen(),
+                          ),
+                        ),
+                        icon: const Icon(Icons.help_outline),
+                        label: const Text('Guía rápida'),
+                      ),
+                      OutlinedButton.icon(
+                        key: const ValueKey('open-about'),
+                        onPressed: () => Navigator.push<void>(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const AboutScreen(),
+                          ),
+                        ),
+                        icon: const Icon(Icons.info_outline),
+                        label: const Text('Acerca de'),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -156,30 +204,18 @@ class _ModeCard extends StatelessWidget {
     final (title, description, icon) = switch (mode) {
       AppMode.editor => (
         'Editor',
-        'Construye escenarios con figuras, terreno y muros.',
+        'Construye escenarios, consulta visión y alcance, ensaya rutas y compara posiciones.',
         Icons.edit_outlined,
-      ),
-      AppMode.simulator => (
-        'Simulador',
-        'Mide distancias y consulta alcance, objetivos y visión.',
-        Icons.route_outlined,
       ),
       AppMode.trainer => (
         'Entrenador',
         'Practica con ejercicios y explicaciones.',
         Icons.school_outlined,
       ),
-      AppMode.referee => (
-        'Árbitro',
-        'Consulta el motivo de cada evaluación.',
-        Icons.fact_check_outlined,
-      ),
     };
 
     final openLabel = switch (mode) {
       AppMode.editor => 'Abrir editor',
-      AppMode.simulator => 'Abrir simulador',
-      AppMode.referee => 'Abrir árbitro',
       AppMode.trainer => 'Abrir entrenador',
     };
     return Semantics(

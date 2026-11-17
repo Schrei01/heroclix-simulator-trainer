@@ -122,7 +122,7 @@ void main() {
       await tester.pump();
       final characters = controller.value.characters;
       await press(tester, 'tool-terrain');
-      await menu(tester, 'terrain-type', 'B /// · Bloqueado');
+      await press(tester, 'terrain-blocking');
       await tester.tapAt(cellPosition(tester, controller, 'B2'));
       await tester.pumpAndSettle();
       expect(find.text('Figuras sobre bloqueado'), findsOneWidget);
@@ -135,7 +135,7 @@ void main() {
       await press(tester, 'confirm-study-terrain');
       expect(controller.value.studyConflicts, {c('B2')});
       expect(controller.value.characters, same(characters));
-      await menu(tester, 'terrain-type', 'D · Despejado');
+      await press(tester, 'terrain-clear');
       await tester.tapAt(cellPosition(tester, controller, 'B2'));
       await tester.pumpAndSettle();
       expect(controller.value.studyConflicts, isEmpty);
@@ -318,14 +318,14 @@ void main() {
       await press(tester, 'tool-characters');
       await tester.tapAt(cellPosition(tester, controller, 'A1'));
       await tester.pumpAndSettle();
-      await press(tester, 'save-character');
-      expect(
-        find.textContaining('La base toca terreno bloqueado'),
-        findsOneWidget,
-      );
+      expect(find.text('Figura sobre bloqueado'), findsOneWidget);
       expect(controller.value.characters.isEmpty, isTrue);
-      await press(tester, 'allow-study-position');
-      await press(tester, 'save-character');
+      await tester.tap(find.text('Cancelar'));
+      await tester.pumpAndSettle();
+      expect(controller.value.characters.isEmpty, isTrue);
+      await tester.tapAt(cellPosition(tester, controller, 'A1'));
+      await tester.pumpAndSettle();
+      await press(tester, 'confirm-study-character');
       expect(controller.value.studyConflicts, {c('A1')});
       expect(tester.takeException(), isNull);
     },

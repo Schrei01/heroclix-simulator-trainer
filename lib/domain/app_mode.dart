@@ -1,9 +1,7 @@
 /// Identificadores estables, independientes del idioma y de Flutter.
 enum AppMode {
   editor('editor'),
-  simulator('simulator'),
-  trainer('trainer'),
-  referee('referee');
+  trainer('trainer');
 
   const AppMode(this.id);
 

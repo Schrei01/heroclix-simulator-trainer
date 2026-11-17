@@ -13,10 +13,14 @@ final class WorkspaceController extends ChangeNotifier {
     required this.repository,
     required this.readSession,
     required this.loadSession,
+    this.persistWorkingSession = false,
   }) : current = ScenarioDocument.fresh(session: readSession());
   final ScenarioRepository repository;
   final BoardSession Function() readSession;
   final void Function(BoardSession) loadSession;
+
+  /// Compatibilidad de recuperación antigua. La app usa sesión solo en memoria.
+  final bool persistWorkingSession;
   ScenarioDocument current;
   bool dirty = true,
       saved = false,
@@ -31,13 +35,20 @@ final class WorkspaceController extends ChangeNotifier {
   Future<void> _tail = Future.value();
   bool get recoveryBlocked => _recoveryBlocked;
   bool get autosaveCurrent =>
+      persistWorkingSession &&
       !_recoveryBlocked &&
       _autosavedRevision == _revision &&
       autosaveError == null;
   String get status => loading
-      ? 'Recuperando sesión…'
+      ? (persistWorkingSession
+            ? 'Recuperando sesión…'
+            : 'Preparando escenario…')
       : error != null || autosaveError != null
       ? 'No se pudo guardar o leer: ${autosaveError ?? error}'
+      : !persistWorkingSession
+      ? (dirty || !saved
+            ? 'Escenario temporal · guarda en biblioteca para conservarlo'
+            : 'Guardado en biblioteca')
       : _autosavedRevision < _revision
       ? 'Autoguardado pendiente…'
       : dirty || !saved
@@ -80,6 +91,11 @@ final class WorkspaceController extends ChangeNotifier {
     }
   });
   Future<void> initialize() => _queued(() async {
+    if (!persistWorkingSession) {
+      loading = false;
+      _changed();
+      return;
+    }
     loading = true;
     error = null;
     _changed();
@@ -123,7 +139,9 @@ final class WorkspaceController extends ChangeNotifier {
     dirty = true;
     _revision++;
     _changed();
-    if (_recoveryBlocked || _scheduled || _disposed) return;
+    if (!persistWorkingSession || _recoveryBlocked || _scheduled || _disposed) {
+      return;
+    }
     _scheduled = true;
     scheduleMicrotask(() {
       _scheduled = false;
@@ -132,6 +150,7 @@ final class WorkspaceController extends ChangeNotifier {
   }
 
   Future<void> _writeWorking() async {
+    if (!persistWorkingSession) return;
     final revision = _revision, document = current;
     await repository.saveWorking(WorkingScenario(document, dirty, saved));
     if (current.id == document.id) {
@@ -142,6 +161,7 @@ final class WorkspaceController extends ChangeNotifier {
   }
 
   Future<bool> flush() => _queued(() async {
+    if (!persistWorkingSession) return !_disposed && !loading;
     if (_disposed || loading || _recoveryBlocked) return false;
     if (_autosavedRevision == _revision && error == null) return true;
     try {
@@ -157,6 +177,7 @@ final class WorkspaceController extends ChangeNotifier {
     }
   });
   Future<bool> retry() async {
+    if (!persistWorkingSession) return save();
     // No se sustituye una sesión editada por una recuperación tardía.
     if (_recoveryBlocked && _revision == 0) {
       await initialize();
@@ -191,7 +212,9 @@ final class WorkspaceController extends ChangeNotifier {
     required bool isDirty,
   }) async {
     if (_recoveryBlocked) await repository.archiveWorking();
-    await repository.saveWorking(WorkingScenario(document, isDirty, isSaved));
+    if (persistWorkingSession) {
+      await repository.saveWorking(WorkingScenario(document, isDirty, isSaved));
+    }
     if (_disposed) return;
     current = document;
     saved = isSaved;

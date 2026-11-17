@@ -16,6 +16,7 @@ import '../../application/board/sight_probe.dart';
 import '../../application/board/vision_analysis.dart';
 import '../../domain/rules/line_of_sight.dart';
 import '../../application/board/tactical_analysis.dart';
+import '../../application/board/movement_analysis.dart';
 
 /// Adaptador de notificación: la sesión y las conversiones usan Dart puro.
 final class EditorController extends ValueNotifier<BoardSession> {
@@ -25,17 +26,26 @@ final class EditorController extends ValueNotifier<BoardSession> {
   final sight = SightProbe();
   final vision = VisionAnalysis();
   final tactical = TacticalAnalysis();
+  final movement = MovementAnalysis();
   String get rulesVersion =>
       workspace?.current.rulesVersion ?? VisionContext.supportedVersion;
   void _evaluateVision(BoardSession next) {
-    vision.evaluate(next, sight, rulesVersion);
     tactical.sync(
       next,
       sight,
       VisionContext(
         rulesVersion: rulesVersion,
         features: [if (vision.specialEffects) VisionFeature.powersOrSizes],
+        laboratoryAbilities: vision.laboratoryAbilities,
       ),
+    );
+    vision.evaluate(
+      next,
+      sight,
+      rulesVersion,
+      selectedTarget: next.tool == EditorTool.targets
+          ? tactical.selected?.vision
+          : null,
     );
   }
 
@@ -55,8 +65,30 @@ final class EditorController extends ValueNotifier<BoardSession> {
       return;
     }
     tactical.selectedTargetId = id;
-    sight.setEndpoint(ProbeEndpoint.figure(source), asOrigin: true);
-    sight.setEndpoint(ProbeEndpoint.figure(id), asOrigin: false);
+    final selected = tactical.report?.targets
+        .where((t) => t.target.id == id)
+        .firstOrNull;
+    final sourceFigure = value.characters.byId(source);
+    final targetFigure = value.characters.byId(id);
+    if (sourceFigure == null || targetFigure == null) return;
+    final from = selected?.vision.origin?.cell ?? sourceFigure.position;
+    final to = selected?.vision.destination?.cell ?? targetFigure.position;
+    sight.setEndpoint(
+      ProbeEndpoint.figure(
+        source,
+        columnOffset: from.column - sourceFigure.position.column,
+        rowOffset: from.row - sourceFigure.position.row,
+      ),
+      asOrigin: true,
+    );
+    sight.setEndpoint(
+      ProbeEndpoint.figure(
+        id,
+        columnOffset: to.column - targetFigure.position.column,
+        rowOffset: to.row - targetFigure.position.row,
+      ),
+      asOrigin: false,
+    );
     vision.enabled = true;
     sight.evaluate(value);
     _evaluateVision(value);
@@ -76,6 +108,7 @@ final class EditorController extends ValueNotifier<BoardSession> {
 
   @override
   set value(BoardSession next) {
+    movement.sync(next);
     sight.evaluate(next);
     _evaluateVision(next);
     super.value = next;
@@ -114,6 +147,7 @@ final class EditorController extends ValueNotifier<BoardSession> {
     sight.clear();
     vision.clear();
     tactical.clear();
+    movement.clear();
     history.clear();
     _lastEdit = null;
     value = session;
@@ -179,8 +213,54 @@ final class EditorController extends ValueNotifier<BoardSession> {
   void resetCamera() => value = value.resetCamera();
   void setTool(EditorTool tool) {
     cancelDraft();
+    if (tool != EditorTool.movement) movement.clear();
+    if (tool == EditorTool.vision) vision.enabled = true;
     if (tool == EditorTool.targets) enableTargets();
     value = value.setTool(tool);
+    if (tool == EditorTool.movement &&
+        movement.sourceId == null &&
+        value.selectedCharacterId != null) {
+      beginMovement(value.selectedCharacterId!);
+    }
+  }
+
+  void updateMovement(void Function(MovementAnalysis) change) {
+    change(movement);
+    notifyListeners();
+  }
+
+  void beginMovement(String id) {
+    movement.begin(value, id, rulesVersion);
+    notifyListeners();
+  }
+
+  void movementCell(CellCoordinate cell) {
+    if (movement.sourceId == null) {
+      final f = value.characters.at(cell);
+      if (f != null) beginMovement(f.id);
+    } else {
+      updateMovement((m) => m.append(cell));
+    }
+  }
+
+  String? confirmMovement() {
+    final m = movement, original = m.original, id = m.sourceId;
+    if (original == null ||
+        id == null ||
+        m.context.rulesVersion != rulesVersion ||
+        !BoardEdit.sameContent(original, value)) {
+      m.clear();
+      notifyListeners();
+      return 'El escenario cambió; inicia otro ensayo.';
+    }
+    final fresh = MovementAnalysis.rules.evaluate(
+      m.snapshot(value),
+      id,
+      m.route,
+      context: m.context,
+    );
+    if (!fresh.canConfirm) return fresh.reason;
+    return moveCharacter(id, fresh.route.last);
   }
 
   void setTargetSource(String id) {

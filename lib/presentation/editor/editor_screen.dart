@@ -10,11 +10,16 @@ import 'board_size_dialog.dart';
 import 'editor_controller.dart';
 import 'character_dialog.dart';
 import 'layer_toolbar.dart';
+import 'terrain_palette.dart';
 import 'layer_actions.dart';
 import '../scenarios/scenario_actions.dart';
 import 'sight_controls.dart';
 import '../vision/vision_controls.dart';
+import '../vision/vision_verdict_bar.dart';
 import '../vision/tactical_controls.dart';
+import 'elevation_controls.dart';
+import '../movement/movement_controls.dart';
+import '../tactics/tactical_screen.dart';
 
 enum _ViewAction {
   grid,
@@ -35,6 +40,7 @@ enum _ViewAction {
   details,
   sight,
   visionVerdict,
+  elevation,
 }
 
 class EditorScreen extends StatelessWidget {
@@ -216,6 +222,8 @@ class EditorScreen extends StatelessWidget {
                       showSightInspector(context, controller);
                     case _ViewAction.visionVerdict:
                       showVisionReport(context, controller);
+                    case _ViewAction.elevation:
+                      showElevationDialog(context, controller);
                   }
                 },
                 itemBuilder: (context) => [
@@ -226,6 +234,14 @@ class EditorScreen extends StatelessWidget {
                   const PopupMenuItem(
                     value: _ViewAction.sight,
                     child: Text('Inspeccionar geometría'),
+                  ),
+                  const PopupMenuItem(
+                    value: _ViewAction.elevation,
+                    child: Text(
+                      'Alturas y transiciones',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                   if (workspace != null) ...[
                     PopupMenuItem(
@@ -277,7 +293,7 @@ class EditorScreen extends StatelessWidget {
                     ),
                     const PopupMenuItem(
                       value: _ViewAction.details,
-                      child: Text('Escenario y autoguardado'),
+                      child: Text('Escenario actual'),
                     ),
                     const PopupMenuDivider(),
                   ],
@@ -328,6 +344,8 @@ class EditorScreen extends StatelessWidget {
             child: Column(
               children: [
                 if (session.editsLayers) LayerToolbar(controller: controller),
+                if (session.tool == EditorTool.movement)
+                  MovementToolbar(controller: controller),
                 if (session.tool == EditorTool.vision)
                   SightToolbar(controller: controller),
                 if (session.tool == EditorTool.distance ||
@@ -338,9 +356,20 @@ class EditorScreen extends StatelessWidget {
                     builder: (context, constraints) {
                       final horizontal =
                           MediaQuery.orientationOf(context) ==
-                          Orientation.landscape;
+                              Orientation.landscape ||
+                          constraints.maxHeight < 200;
                       final canvas = Expanded(
-                        child: BoardCanvas(controller: controller),
+                        child: Column(
+                          children: [
+                            if (session.tool == EditorTool.vision)
+                              VisionVerdictBar(controller: controller),
+                            Expanded(
+                              child: BoardCanvas(controller: controller),
+                            ),
+                            if (session.tool == EditorTool.terrain)
+                              TerrainPalette(controller: controller),
+                          ],
+                        ),
                       );
                       final tools = _ToolBar(
                         vertical: horizontal,
@@ -385,17 +414,20 @@ class _CameraBar extends StatelessWidget {
               : '${session.characters.length} figuras · toca una casilla')
         : 'Seleccionada: ${selected.label}';
     final probe = controller.sight;
-    final message = session.tool != EditorTool.vision
-        ? selectionMessage
-        : probe.error ??
-              (probe.trace == null
-                  ? 'Toca ${probe.chooseOrigin ? 'origen' : 'destino'} · casilla o figura. Solo geometría.'
-                  : '${probe.trace!.path.origin.label} a ${probe.trace!.path.destination.label} · ${probe.trace!.segments.length} tramos · ${controller.vision.enabled ? 'Visión básica' : 'Solo geometría'}');
-    final zoom = '${(session.camera.scale * 100).round()} %';
     final verdict =
         controller.vision.enabled && session.tool == EditorTool.vision
         ? controller.vision.result
         : null;
+    final trace = verdict == null ? probe.trace : verdict.trace;
+    final message = session.tool == EditorTool.movement
+        ? 'Ensayo de movimiento · la figura permanece en origen hasta confirmar'
+        : session.tool != EditorTool.vision
+        ? selectionMessage
+        : trace != null
+        ? '${trace.path.origin.label} a ${trace.path.destination.label} · ${trace.segments.length} tramos · ${controller.vision.enabled ? 'Visión' : 'Solo geometría'}'
+        : probe.error ??
+              'Toca ${probe.chooseOrigin ? 'origen' : 'destino'} · casilla o figura. ${controller.vision.enabled ? 'Visión' : 'Solo geometría'}.';
+    final zoom = '${(session.camera.scale * 100).round()} %';
     return ColoredBox(
       color: AppTheme.surface,
       child: Padding(
@@ -486,102 +518,126 @@ class _ToolBar extends StatelessWidget {
       ('vision', 'Línea de visión · Geometría', Icons.visibility_outlined),
       ('distance', 'Medir distancia', Icons.straighten_outlined),
       ('targets', 'Mostrar objetivos', Icons.radar_outlined),
+      ('elevation', 'Alturas y transiciones', Icons.layers_outlined),
       ('movement', 'Movimiento', Icons.route_outlined),
+      ('positionAnalysis', 'Analizar posición', Icons.analytics_outlined),
       ('erase', 'Borrar elemento', Icons.backspace_outlined),
     ];
-    final list = ListView(
+    final list = SingleChildScrollView(
       key: ValueKey(vertical ? 'tools-left' : 'tools-top'),
       scrollDirection: vertical ? Axis.vertical : Axis.horizontal,
       padding: const EdgeInsets.all(8),
-      children: [
-        if (controller.workspace case final workspace?)
+      child: Flex(
+        direction: vertical ? Axis.vertical : Axis.horizontal,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (controller.workspace case final workspace?)
+            SizedBox(
+              width: 48,
+              height: 48,
+              child: IconButton(
+                key: const ValueKey('autosave-status'),
+                tooltip: '${workspace.current.name} · ${workspace.status}',
+                onPressed: () => ScenarioActions(controller).details(context),
+                icon: workspace.loading || workspace.busy || controller.fileBusy
+                    ? const Icon(Icons.hourglass_empty)
+                    : Icon(
+                        (workspace.error != null ||
+                                workspace.autosaveError != null)
+                            ? Icons.error_outline
+                            : workspace.dirty || !workspace.saved
+                            ? Icons.info_outline
+                            : Icons.check_circle_outline,
+                      ),
+              ),
+            ),
           SizedBox(
             width: 48,
             height: 48,
             child: IconButton(
-              key: const ValueKey('autosave-status'),
-              tooltip: '${workspace.current.name} · ${workspace.status}',
-              onPressed: () => ScenarioActions(controller).details(context),
-              icon: workspace.loading || workspace.busy || controller.fileBusy
-                  ? const Icon(Icons.hourglass_empty)
-                  : Icon(
-                      (workspace.error != null ||
-                              workspace.autosaveError != null)
-                          ? Icons.error_outline
-                          : workspace.dirty || !workspace.saved
-                          ? Icons.info_outline
-                          : Icons.check_circle_outline,
-                    ),
+              key: const ValueKey('undo-edit'),
+              tooltip: 'Deshacer',
+              onPressed: controller.history.canUndo ? controller.undo : null,
+              icon: const Icon(Icons.undo),
             ),
           ),
-        SizedBox(
-          width: 48,
-          height: 48,
-          child: IconButton(
-            key: const ValueKey('undo-edit'),
-            tooltip: 'Deshacer',
-            onPressed: controller.history.canUndo ? controller.undo : null,
-            icon: const Icon(Icons.undo),
-          ),
-        ),
-        SizedBox(
-          width: 48,
-          height: 48,
-          child: IconButton(
-            key: const ValueKey('redo-edit'),
-            tooltip: 'Rehacer',
-            onPressed: controller.history.canRedo ? controller.redo : null,
-            icon: const Icon(Icons.redo),
-          ),
-        ),
-        for (final (id, title, icon) in tools)
           SizedBox(
             width: 48,
             height: 48,
-            child: Semantics(
-              selected: id == controller.value.tool.name,
-              child: IconButton(
-                key: ValueKey('tool-$id'),
-                tooltip: EditorTool.values.any((tool) => tool.name == id)
-                    ? title
-                    : '$title · Próximamente',
-                onPressed: EditorTool.values.any((tool) => tool.name == id)
-                    ? () {
-                        controller.setTool(
-                          EditorTool.values.firstWhere(
-                            (tool) => tool.name == id,
-                          ),
-                        );
-                        if (controller.value.editsLayers) return;
-                        if (id == 'targets') {
-                          showTargetList(context, controller);
-                          return;
-                        }
-                        if (id == 'vision' || id == 'distance') return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              id == 'characters'
-                                  ? 'Toca una casilla vacía para crear. Mantén pulsada una figura y arrastra para moverla.'
-                                  : 'Toca para seleccionar; mantén pulsada una figura y arrastra para moverla.',
-                            ),
-                          ),
-                        );
-                      }
-                    : null,
-                style: id == controller.value.tool.name
-                    ? IconButton.styleFrom(
-                        backgroundColor: AppTheme.accent.withValues(
-                          alpha: 0.18,
-                        ),
-                        foregroundColor: AppTheme.accent,
-                      )
-                    : null,
-                icon: Icon(icon),
-              ),
+            child: IconButton(
+              key: const ValueKey('redo-edit'),
+              tooltip: 'Rehacer',
+              onPressed: controller.history.canRedo ? controller.redo : null,
+              icon: const Icon(Icons.redo),
             ),
           ),
-      ],
+          for (final (id, title, icon) in tools)
+            SizedBox(
+              width: 48,
+              height: 48,
+              child: Semantics(
+                selected: id == controller.value.tool.name,
+                child: IconButton(
+                  key: ValueKey('tool-$id'),
+                  tooltip: EditorTool.values.any((tool) => tool.name == id)
+                      ? title
+                      : '$title · Próximamente',
+                  onPressed: EditorTool.values.any((tool) => tool.name == id)
+                      ? () {
+                          if (id == 'positionAnalysis') {
+                            Navigator.push<void>(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    TacticalScreen(editor: controller),
+                              ),
+                            );
+                            return;
+                          }
+                          controller.setTool(
+                            EditorTool.values.firstWhere(
+                              (tool) => tool.name == id,
+                            ),
+                          );
+                          if (controller.value.editsLayers) return;
+                          if (id == 'movement') {
+                            showMovementReport(context, controller);
+                            return;
+                          }
+                          if (id == 'elevation') {
+                            showElevationDialog(context, controller);
+                            return;
+                          }
+                          if (id == 'targets') {
+                            showTargetList(context, controller);
+                            return;
+                          }
+                          if (id == 'vision' || id == 'distance') return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                id == 'characters'
+                                    ? 'Toca una casilla vacía para crear. Mantén pulsada una figura y arrastra para moverla.'
+                                    : 'Editor: reposicionamiento libre. Toca para seleccionar; mantén pulsada una figura y arrastra para montar el escenario.',
+                              ),
+                            ),
+                          );
+                        }
+                      : null,
+                  style: id == controller.value.tool.name
+                      ? IconButton.styleFrom(
+                          backgroundColor: AppTheme.accent.withValues(
+                            alpha: 0.18,
+                          ),
+                          foregroundColor: AppTheme.accent,
+                        )
+                      : null,
+                  icon: Icon(icon),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
     return ColoredBox(
       color: AppTheme.surface,

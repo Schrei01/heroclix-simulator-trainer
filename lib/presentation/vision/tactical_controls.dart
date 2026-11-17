@@ -202,6 +202,9 @@ Future<void> _editRange(
       footprint: latest.footprint,
       speed: latest.speed,
       range: value,
+      abilities: latest.abilities,
+      size: latest.size,
+      movementAbilities: latest.movementAbilities,
     ),
     id: latest.id,
     allowStudy: latest.occupiedCells.any(
@@ -383,12 +386,17 @@ Future<void> showTargetReport(
               targetLabel(item.status),
               key: const ValueKey('target-result'),
             ),
-            Text(
-              '${item.source.label} ${item.source.position.label} → ${item.target.label} ${item.target.position.label}',
-            ),
+            Text('Origen ${item.source.label} · destino ${item.target.label}'),
             Text(
               'Distancia: ${item.distance.squares ?? 'No evaluada'} · alcance declarado: ${item.declaredRange}',
             ),
+            Text(
+              'Referencias elegidas: ${item.vision.origin?.cell.label ?? '?'} / ${item.vision.destination?.cell.label ?? '?'} · ${item.vision.references.length} pares consultados.',
+            ),
+            if (item.vision.context.laboratoryAbilities != null)
+              const Text(
+                'HIPÓTESIS de laboratorio; no modifica la ficha guardada.',
+              ),
             Text(rangeLabel(item.range)),
             Text('Visión: ${visionLabel(item.vision.status)}'),
             Text(item.vision.explanation),
@@ -400,6 +408,7 @@ Future<void> showTargetReport(
             const Text('Referencias:'),
             for (final rule in item.rules) Text(rule.citation),
             TextButton(
+              key: const ValueKey('target-vision-log'),
               onPressed: () => showVisionReport(context, controller),
               child: const Text('Ver registro de visión'),
             ),

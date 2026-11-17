@@ -123,33 +123,28 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
-  testWidgets(
-    'simulador permite medir y consultar objetivos sin editar piezas',
-    (tester) async {
-      final c = await openRules(tester, mode: 'simulator');
-      final original = c.value.characters;
-      await press(tester, 'analysis-mode');
-      await tester.tap(tk('mode-distance'));
-      await tester.pumpAndSettle();
-      expect(c.value.tool, EditorTool.distance);
-      await tester.tapAt(cellPosition(tester, c, 'A2'));
-      await tester.pumpAndSettle();
-      await tester.tapAt(cellPosition(tester, c, 'D4'));
-      await tester.pumpAndSettle();
-      expect(c.tactical.measurement!.squares, 3);
-      expect(c.value.characters, same(original));
-      c.selectCharacter('figure-1');
-      await press(tester, 'analysis-mode');
-      await tester.tap(tk('mode-targets'));
-      await tester.pumpAndSettle();
-      await tester.ensureVisible(tk('target-figure-2'));
-      await tester.tap(tk('target-figure-2'));
-      await tester.pumpAndSettle();
-      expect(c.tactical.selected!.target.id, 'figure-2');
-      expect(c.value.characters, same(original));
-      expect(tester.takeException(), isNull);
-    },
-  );
+  testWidgets('Editor permite medir y consultar objetivos sin editar piezas', (
+    tester,
+  ) async {
+    final c = await openRules(tester);
+    final original = c.value.characters;
+    await press(tester, 'tool-distance');
+    expect(c.value.tool, EditorTool.distance);
+    await tester.tapAt(cellPosition(tester, c, 'A2'));
+    await tester.pumpAndSettle();
+    await tester.tapAt(cellPosition(tester, c, 'D4'));
+    await tester.pumpAndSettle();
+    expect(c.tactical.measurement!.squares, 3);
+    expect(c.value.characters, same(original));
+    c.selectCharacter('figure-1');
+    await press(tester, 'tool-targets');
+    await tester.ensureVisible(tk('target-figure-2'));
+    await tester.tap(tk('target-figure-2'));
+    await tester.pumpAndSettle();
+    expect(c.tactical.selected!.target.id, 'figure-2');
+    expect(c.value.characters, same(original));
+    expect(tester.takeException(), isNull);
+  });
   for (final (size, scale) in [
     (const Size(320, 568), 1.0),
     (const Size(800, 360), 1.0),
@@ -164,7 +159,7 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-      final c = await openRules(tester, mode: 'referee');
+      final c = await openRules(tester);
       c.selectCharacter('figure-1');
       c.setTool(EditorTool.targets);
       showTargetList(tester.element(find.byType(Scaffold).last), c);

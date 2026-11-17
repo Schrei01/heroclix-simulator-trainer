@@ -6,7 +6,7 @@ import 'package:heroclix_simulator_trainer/app.dart';
 import 'package:material_ui/material_ui.dart';
 
 void main() {
-  testWidgets('arranca en español: editor, simulador y árbitro disponibles', (
+  testWidgets('arranca en español: solo Editor y Entrenador disponibles', (
     tester,
   ) async {
     final semantics = tester.ensureSemantics();
@@ -14,7 +14,7 @@ void main() {
       await tester.pumpWidget(const HeroClixApp());
 
       expect(find.text('HeroClix Simulator & Trainer'), findsOneWidget);
-      expect(find.text('Próximamente'), findsOneWidget);
+      expect(find.text('Próximamente'), findsNothing);
       expect(
         Localizations.localeOf(tester.element(find.byType(Scaffold))),
         const Locale('es'),
@@ -25,25 +25,16 @@ void main() {
       );
       expect(editor.flagsCollection.isEnabled, Tristate.isTrue);
       expect(editor.getSemanticsData().hasAction(SemanticsAction.tap), isTrue);
-      for (final id in ['simulator', 'referee']) {
+      for (final id in ['trainer']) {
         final card = find.byKey(ValueKey('mode-$id'));
         await tester.ensureVisible(card);
         final node = tester.getSemantics(card);
         expect(node.flagsCollection.isEnabled, Tristate.isTrue);
         expect(node.getSemanticsData().hasAction(SemanticsAction.tap), isTrue);
       }
-      for (final id in ['trainer']) {
-        final card = find.byKey(ValueKey('mode-$id'));
-        await tester.ensureVisible(card);
-        final node = tester.getSemantics(card);
-        expect(node.flagsCollection.isButton, isTrue);
-        expect(node.flagsCollection.isEnabled, Tristate.isFalse);
-        expect(node.getSemanticsData().hasAction(SemanticsAction.tap), isFalse);
-        await tester.tap(card);
-        await tester.pumpAndSettle();
-        expect(find.text('HeroClix Simulator & Trainer'), findsOneWidget);
-      }
       expect(tester.takeException(), isNull);
+      expect(find.byKey(const ValueKey('mode-simulator')), findsNothing);
+      expect(find.byKey(const ValueKey('mode-referee')), findsNothing);
     } finally {
       semantics.dispose();
     }
@@ -66,7 +57,7 @@ void main() {
         addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
 
         await tester.pumpWidget(const HeroClixApp());
-        for (final id in ['editor', 'simulator', 'trainer', 'referee']) {
+        for (final id in ['editor', 'trainer']) {
           final card = find.byKey(ValueKey('mode-$id'));
           await tester.ensureVisible(card);
           expect(tester.getRect(card).width, greaterThan(0));

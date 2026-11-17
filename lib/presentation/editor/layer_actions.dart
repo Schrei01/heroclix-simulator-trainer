@@ -134,7 +134,9 @@ Future<void> clearLayer(
   final confirmed = await confirmLayerAction(
     context,
     '¿Limpiar solo $layer?',
-    'Se eliminará el contenido de esta capa. Las otras capas se conservarán. No hay deshacer en esta versión.',
+    layer == 'terreno'
+        ? 'Se limpian los tipos de terreno. Alturas, transiciones, figuras y muros se conservan. Puedes recuperar los tipos con Deshacer.'
+        : 'Se elimina el contenido de esta capa y se conservan las otras. Puedes recuperarlo con Deshacer.',
     'Limpiar',
     'confirm-clear-layer',
   );
@@ -159,7 +161,8 @@ Future<void> showLayerLegend(BuildContext context) => showDialog<void>(
       'D · Despejado: terreno predeterminado.\nH ··· Obstaculizado: puntos verdes y letra H.\nB /// Bloqueado: rayas ámbar y letra B.\n|| Muro: línea doble sobre borde interno.\n! Posición incompatible para estudio: figura sobre bloqueado.\n\n'
       'Terreno, muros y figuras son capas independientes. Pintar despejado cambia solo el terreno; Borrar elemento elimina un muro o una figura según la capa elegida.\n\n'
       'En Terrenos, Muros y Borrar, un dedo edita; dos dedos amplían y desplazan. Seleccionar permite pan con un dedo. Cancelar un gesto o añadir otro dedo descarta la edición en curso.\n\n'
-      'Los muros externos no se admiten. No se evalúan visión, movimiento ni elevación.',
+      'Elevación: borde rojo y E2/E3… en casillas elevadas sin transición. Transición: triángulo blanco con su nivel en cada casilla conectada, formando un par sobre el borde.\n\n'
+      'Los muros externos no se admiten. Consulta Visión o Movimiento para obtener un dictamen del perfil implementado.',
     ),
     actions: [
       TextButton(

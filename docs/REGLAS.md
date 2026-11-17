@@ -76,5 +76,77 @@ de ataque que exceden esta consulta), páginas 26–28. Se conserva la edición.
 MATRIZ_DISTANCIAS_OBJETIVOS.md documenta fórmula derivada, límites por dimensión,
 prioridad de categorías y contratos D01–D02/T01–T11. Rango declarado no equivale
 a cálculo completo del valor modificado; aliados consultables no se declaran
-objetivos de ataque universalmente legales. Bases y excepciones siguen pendientes
-de 08. El motor de visión y la corrección oblicua de 0.7.1 se reutilizan sin cambios.
+objetivos de ataque universalmente legales. En 07, bases y excepciones quedaron
+pendientes de 08. Se reutilizó la corrección oblicua de 0.7.1.
+
+## Validación para 08 — 2026-11-16
+
+Se revisan nuevamente las fuentes oficiales, manteniendo 2026-07-01: elevación
+§16.5c–g (p. 42), transiciones §16.7 (p. 43), tamaños intermedios §21.2b (p. 60),
+bases §24.2/a/e (pp. 69–70), y mejoras §27.6a/b/c/e (p. 87). La PAC enlazada por
+WizKids es de 2023; solo se usan las definiciones que coinciden con el texto 2026.
+
+La matriz MATRIZ_CAPACIDADES_VISION.md distingue soporte y fronteras pendientes,
+orden de composición, pares de referencias y expectativas sintéticas derivadas
+del texto. No son diagramas oficiales copiados ni se interpreta texto de cartas.
+
+## Validación para 09 — 2026-11-16
+
+La página oficial continúa enlazando Comprehensive Rulebook 2026-07-01. Se revisan
+§10 (pp. 24–25), ocupación §13.2 (p. 35), movimiento por terreno y muros
+§16.2a/16.3a/16.4a (pp. 39–40), altura y transición §16.5a/16.7b (pp. 41/43),
+esquinas/adyacencia §16.8a/c (p. 44), bases §24.2b/d (pp. 69–70) y mejoras
+§27.5a/b/e/f (p. 86). Se usa la regla actual de H sin costo adicional. La separación
+con dado, IM exterior/destrucción, tamaños y otros efectos no resueltos no se dan
+por aprobados. MATRIZ_MOVIMIENTO.md vincula M01–M27 y casos sintéticos derivados
+con estos apartados; no los presenta como diagramas oficiales publicados.
+
+## Validación para 10 — 2026-11-16
+
+Se confirma en la página oficial el enlace a la edición 2026-07-01. El Entrenador
+reutiliza los servicios y límites registrados en las matrices de 06–09; no adopta
+reglas distintas según dificultad ni interpreta cartas. ENTRENADOR.md vincula los
+24 IDs con sus conceptos/secciones. Las soluciones son literales de regresión y
+se comparan con los motores en Dart puro y tests. Una divergencia o No evaluado
+inhabilita autocorrección. Los casos son sintéticos originales derivados del
+reglamento; no se copian ejemplos gráficos oficiales. Feedback en palabras propias
+con referencias cortas. Texto personal libre se identifica como revisión manual.
+
+## Composición para 11 — 2026-11-16
+
+No se implementan nuevas reglas: el analizador compone los motores verificados de
+06–09 bajo 2026-07-01. Definiciones de métricas y referencias en ANALISIS_TACTICO.md.
+Visible incluye H y no exige alcance. Amenaza conocida exige visión y alcance
+desde un par coherente (§11.5), sin validar ataque, acción, daño ni dados.
+Capacidades actúan solo en su dirección y componente; retirar mejoras soportadas
+no elimina tamaño/otros efectos sin soporte. Esos casos conservan No evaluado.
+Los contratos A01–A14 incluyen bases que tienen una referencia visible y otra en
+alcance sin una referencia común: no se cuenta una amenaza falsa. No se copia
+texto oficial ni se redistribuye el PDF. Fuente y hash conservados en matrices.
+
+## Consolidación para 12 — 2026-11-17
+
+Se consulta de nuevo la [fuente oficial](https://wizkids.com/heroclix/gameplay/rules-format/):
+sigue enlazando Comprehensive Rulebook 2026-07-01. No se implementan nuevas reglas.
+Los cinco ejemplos locales reutilizan escenarios y soluciones verificadas del
+banco de 10, con referencias, sin arte ni diagramas oficiales. El caso diagonal
+conserva A1–D6/B4 y §16.8b. Ayuda y Acerca de distinguen cobertura parcial y edición,
+y advierten que la herramienta no decide oficialmente un torneo. Sin consulta de
+reglas por red en runtime ni afirmación de validación nativa. Matriz de aceptación
+y evidencia actual en MATRIZ_ACEPTACION.md y ESTADO.md.
+
+## Representación de transiciones — rc.4, 2026-11-17
+
+Se contrasta §16.7, página impresa 43 (página 60 del PDF), en la copia oficial
+2026-07-01 ya verificada. El símbolo usa un triángulo blanco con borde rojo y nivel
+por casilla, emparejados sobre el borde compartido. Es geometría propia del painter;
+no se incluyen imágenes ni el PDF en la app. Las elevaciones normales muestran E#.
+
+[Fuente oficial 2026-07-01](https://wizkids.com/wp-content/uploads/2026/07/HeroClix%20Comprehensive%20Rules%2007.01.26.pdf).
+SHA-256 de la copia consultada:
+164C2CE0463DD04777BFEA39EF7E5F66C1DE582FC2288686346E7E6F349BDFF2.
+
+Solo cambia la representación: se mantienen las transiciones existentes entre
+vecinos ortogonales de distinto nivel y sin muro compartido. No se incorpora
+soporte para pasajes del mismo nivel ni nuevas excepciones. Retirar Simulador y
+Árbitro no cambia los servicios ni amplía las reglas soportadas.

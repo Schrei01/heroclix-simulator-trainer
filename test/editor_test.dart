@@ -187,44 +187,38 @@ void main() {
     },
   );
 
-  testWidgets('opciones independientes y herramientas futuras deshabilitadas', (
-    tester,
-  ) async {
-    final controller = await openEditor(tester);
-    for (final id in ['distance', 'targets']) {
-      final button = tester.widget<IconButton>(
-        find.byKey(ValueKey('tool-$id')),
-      );
-      expect(button.onPressed, isNotNull);
-      expect(button.tooltip, isNot(contains('Próximamente')));
-    }
-    for (final id in ['movement']) {
-      final button = tester.widget<IconButton>(
-        find.byKey(ValueKey('tool-$id')),
-      );
-      expect(button.onPressed, isNull);
-      expect(button.tooltip, contains('Próximamente'));
-    }
-    await tester.tapAt(cellPosition(tester, controller, 'A2'));
-    await tester.pump();
-    await tester.tap(find.byKey(const ValueKey('board-view-options')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('grid-option')));
-    await tester.pumpAndSettle();
-    expect(controller.value.showGrid, isFalse);
-    expect(controller.value.showCoordinates, isTrue);
-    await tester.tap(find.byKey(const ValueKey('board-view-options')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('coordinates-option')));
-    await tester.pumpAndSettle();
-    expect(controller.value.showCoordinates, isFalse);
-    expect(controller.value.selectedCell, CellCoordinate.parse('A2'));
-    await tester.tap(find.byKey(const ValueKey('board-view-options')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('clear-selection-option')));
-    await tester.pumpAndSettle();
-    expect(controller.value.selectedCell, isNull);
-  });
+  testWidgets(
+    'opciones independientes y herramientas de análisis habilitadas',
+    (tester) async {
+      final controller = await openEditor(tester);
+      for (final id in ['distance', 'targets', 'movement']) {
+        final button = tester.widget<IconButton>(
+          find.byKey(ValueKey('tool-$id')),
+        );
+        expect(button.onPressed, isNotNull);
+        expect(button.tooltip, isNot(contains('Próximamente')));
+      }
+      await tester.tapAt(cellPosition(tester, controller, 'A2'));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('board-view-options')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('grid-option')));
+      await tester.pumpAndSettle();
+      expect(controller.value.showGrid, isFalse);
+      expect(controller.value.showCoordinates, isTrue);
+      await tester.tap(find.byKey(const ValueKey('board-view-options')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('coordinates-option')));
+      await tester.pumpAndSettle();
+      expect(controller.value.showCoordinates, isFalse);
+      expect(controller.value.selectedCell, CellCoordinate.parse('A2'));
+      await tester.tap(find.byKey(const ValueKey('board-view-options')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('clear-selection-option')));
+      await tester.pumpAndSettle();
+      expect(controller.value.selectedCell, isNull);
+    },
+  );
 
   testWidgets(
     'la sesión se conserva al volver al inicio y al girar con mapa 40×40',
