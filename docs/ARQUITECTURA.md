@@ -434,3 +434,15 @@ cancela al desmontar. Desde rc.7 se muestra sin rotación, en una columna de tex
 derecho con ajuste de líneas y bloques. IgnorePointer lo ubica al borde derecho
 sin cambiar geometría ni interceptar gestos. El alto limita las líneas visibles y
 la semántica conserva el texto completo. No se persiste ni se exporta al PNG.
+
+## Identidad TeamFight: GridLab — rc.8
+
+AppInfo.name e iconAsset centralizan la marca Flutter. MaterialApp, HomeScreen,
+AboutScreen y licencias los reutilizan. El recurso PNG está declarado en pubspec;
+Home/Acerca de lo muestran como imagen decorativa junto al nombre accesible.
+
+AndroidManifest usa app_name y mipmap/ic_launcher + ic_launcher_round. Los PNG por
+densidad y XML anydpi-v26 componen la identidad normal/adaptable/monocromática.
+El ID/namespace/canales no cambian, manteniendo la instalación y almacenamiento.
+Detalles de origen y recursos en IDENTIDAD.md. Recursos de tienda separados del
+bundle Flutter en distribution/google-play/; .kotlin generado excluido de Git.

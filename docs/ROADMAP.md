@@ -57,7 +57,12 @@ cuatro segundos; Elevado por trazo mixto y Borrar todo por trazo. Deshacer/Rehac
 y cancelación/pinza conservados. Rc.5 archivada en ENTREGA_RC5.md. Sin nuevas reglas
 ni formatos; aceptación Android pendiente.
 
-Actualización actual: **1.0.0-rc.7+20**, rama `codex/upright-tool-hints`.
+Actualización rc.7: **1.0.0-rc.7+20**, rama `codex/upright-tool-hints`.
 Aviso lateral con texto derecho, en columna de arriba hacia abajo, conservando
 cuatro segundos y paso de gestos. Corrección de presentación; rc.6 archivada en
 ENTREGA_RC6.md. Aceptación Android pendiente.
+
+Actualización actual: **TeamFight: GridLab 1.0.0-rc.8+21**, rama
+`codex/teamfight-gridlab-brand`. Nombre e iconos aportados integrados en Android e
+interfaz, con recursos de Google Play preparados. Firma, ID y datos conservados.
+Rc.7 archivada en ENTREGA_RC7.md. Aceptación Android pendiente.

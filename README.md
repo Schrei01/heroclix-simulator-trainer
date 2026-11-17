@@ -1,13 +1,17 @@
-# HeroClix Simulator & Trainer
+# TeamFight: GridLab
 
-Aplicación Android Flutter/Dart, offline y en español. Versión **1.0.0-rc.7+20**.
-La actualización del Editor está en la rama `codex/upright-tool-hints` del repositorio privado
+Aplicación Android Flutter/Dart, offline y en español. Versión **1.0.0-rc.8+21**.
+La versión actual está en la rama `codex/teamfight-gridlab-brand` del repositorio privado
 [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer).
+
+Desde rc.8 la marca visible es **TeamFight: GridLab**, con los iconos Android y el
+símbolo aportados por el usuario. Conserva el identificador y los datos de la app.
+Recursos y procedencia en [IDENTIDAD](docs/IDENTIDAD.md).
 
 ```powershell
 git clone https://github.com/Schrei01/heroclix-simulator-trainer.git
 cd heroclix-simulator-trainer
-git switch codex/upright-tool-hints
+git switch codex/teamfight-gridlab-brand
 ```
 
 ## Qué existe
@@ -344,7 +348,7 @@ flutter --no-version-check build apk --debug
 
 `--no-version-check` evita una consulta de actualización del SDK; no cambia su
 versión ni omite análisis o pruebas. Los renders se escriben en
-`build/previews/upright-hints/`; son capturas Flutter, no de un dispositivo.
+`build/previews/teamfight-brand/`; son capturas Flutter, no de un dispositivo.
 
 Preparación Android y firma release en [ANDROID.md](docs/ANDROID.md).
 El APK debug y sus resultados/hash se registran en [ESTADO.md](docs/ESTADO.md).

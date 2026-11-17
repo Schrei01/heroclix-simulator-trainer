@@ -3,7 +3,7 @@
 Fecha: 2026-11-17. La ejecución automatizada es Flutter/Dart en Windows y archivos
 locales reales o fallos inyectados explícitos. No equivale a un recorrido en Android.
 Resultados completos y APK: ESTADO.md. No se declaran aprobados pasos nativos sin ejecutar.
-La candidata actual es 1.0.0-rc.7+20; la entrega 12 original se conserva en
+La candidata actual es 1.0.0-rc.8+21; la entrega 12 original se conserva en
 ENTREGA_12.md. Los pendientes Android se mantienen sin cambio de estado.
 
 | ID | Recorrido / condición | Evidencia automatizada | Android |
@@ -40,6 +40,7 @@ ENTREGA_12.md. Los pendientes Android se mantienen sin cambio de estado.
 | AC30 | Aviso lateral legible de arriba abajo | editor_brush_teams: texto derecho sin rotación, varias líneas, cuatro segundos, renovación, sin SnackBar ni interceptar gestos, cámara intacta y tamaños/escala | Pendiente |
 | AC31 | Elevación por trazo mixto | editor_brush_teams: interpolación, regreso sin doble incremento, nivel original por casilla, vista previa, base completa/E40 atómicos, cancelar/pinza y Deshacer | Pendiente |
 | AC32 | Borrado total por trazo | editor_brush_teams: todas las capas, figura completa, otros elementos/contadores conservados, vacío sin historial, cancelar/pinza y recuperación completa | Pendiente |
+| AC33 | Nombre e iconografía TeamFight: GridLab | widget/final_acceptance: nombre, símbolo, navegación, Acerca de/licencias y escalas; recursos originales contrastados y label/icon/roundIcon/capas adaptables comprobados en APK | Launcher, máscara, tema y actualización pendientes |
 
 El test E2E es `test/final_acceptance_test.dart`, caso «aceptación: crear, guardar,
 reabrir, visión, alcance, mover, ejercicio, resolver, JSON y PNG». Invoca creación

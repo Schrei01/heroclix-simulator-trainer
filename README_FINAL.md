@@ -1,17 +1,21 @@
-# HeroClix Simulator & Trainer — 1.0.0-rc.7+20
+# TeamFight: GridLab — 1.0.0-rc.8+21
 
 Aplicación Android offline, en español, para construir escenarios, consultar reglas
 implementadas y practicar. **Versión candidata, APK debug**: faltan las comprobaciones
 nativas de aceptación y rendimiento descritas abajo. No se congela 1.0.0 estable.
 Repositorio privado: [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer),
-rama `codex/upright-tool-hints`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
+rama `codex/teamfight-gridlab-brand`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
+
+Nombre e iconos de Android, Inicio y Acerca de actualizados a TeamFight: GridLab.
+La identidad técnica y firma se conservan para actualizar la instalación anterior.
+Archivos de Google Play preparados en distribution/google-play/; [detalles de identidad](docs/IDENTIDAD.md).
 
 ## Instalar y actualizar
 
 El archivo generado se conserva en:
 
 ```text
-build/releases/heroclix-1.0.0-rc.7-debug.apk
+build/releases/teamfight-gridlab-1.0.0-rc.8-debug.apk
 ```
 
 1. Android 7.0/API 24 o superior. Copiar el APK al teléfono, abrirlo en Archivos
@@ -23,7 +27,7 @@ build/releases/heroclix-1.0.0-rc.7-debug.apk
 
 ```powershell
 adb devices -l
-adb -s ID install -r build/releases/heroclix-1.0.0-rc.7-debug.apk
+adb -s ID install -r build/releases/teamfight-gridlab-1.0.0-rc.8-debug.apk
 adb -s ID shell am start -n com.valinor.heroclixtrainer/com.valinor.heroclix_simulator_trainer.MainActivity
 ```
 
@@ -106,7 +110,7 @@ usa etiquetas genéricas. Exportar la escena completa sí conserva sus nombres.
 | Instalación, nueva sesión tras cierre y selectores nativos | Pendiente de Android; equivalentes de archivos/controladores sí verificados |
 | Offline con radios desactivadas y rendimiento Android/FPS | Pendiente de dispositivo/emulador funcional |
 | APK release con firma del propietario | Preparado; sin claves suministradas, no generado |
-| Congelar 1.0.0 estable | Pendiente de cerrar aceptación nativa; esta entrega es 1.0.0-rc.7 |
+| Congelar 1.0.0 estable | Pendiente de cerrar aceptación nativa; esta entrega es 1.0.0-rc.8 |
 | Partida completa, dados, diales, daño y victoria | Fuera del alcance del proyecto |
 
 ## Dependencias y recompilación
@@ -117,7 +121,7 @@ No se añaden dependencias para 12. Las licencias empaquetadas se consultan sin
 conexión en Acerca de → Licencias de dependencias.
 
 ```powershell
-git switch codex/upright-tool-hints
+git switch codex/teamfight-gridlab-brand
 $env:Path = "$env:USERPROFILE\develop\flutter\bin;$env:Path"
 flutter --no-version-check pub get
 dart format --output=none --set-exit-if-changed lib test tool

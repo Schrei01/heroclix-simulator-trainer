@@ -1,6 +1,6 @@
 # Preparar, compilar e instalar en Android
 
-Candidata actual: **1.0.0-rc.7+20**. Inicio contiene Editor y Entrenador; las consultas
+Candidata actual: **TeamFight: GridLab 1.0.0-rc.8+21**. Inicio contiene Editor y Entrenador; las consultas
 y ensayos están en las herramientas del Editor. El recorrido vigente del Editor
 está al final de este documento. Los apartados identificados por etapa describen
 sus versiones históricas. Resultados efectivamente ejecutados: [ESTADO](ESTADO.md).
@@ -362,7 +362,7 @@ No ejecutado en Android: continúa la decisión de trabajar sin teléfono. Los t
 capturas Flutter y metadatos del APK no sustituyen instalación, gestos nativos,
 TalkBack, radios apagadas, selectores, ciclo de proceso ni rendimiento.
 
-## Aviso derecho — candidata actual 1.0.0-rc.7+20
+## Aviso derecho — candidata rc.7
 
 APK: build/releases/heroclix-1.0.0-rc.7-debug.apk, instalar encima sin desinstalar.
 Al elegir una herramienta, comprobar que el aviso lateral tiene letras derechas
@@ -370,3 +370,14 @@ y se lee por líneas de arriba hacia abajo. Debe durar cuatro segundos, renovars
 al cambiar herramienta y dejar pasar los gestos sin alterar cámara. Probar vertical,
 horizontal y texto ampliado. Verificación Android pendiente; pruebas y capturas
 Flutter/Windows en ESTADO.md. Se mantiene la decisión de continuar sin teléfono.
+
+## TeamFight: GridLab — candidata actual 1.0.0-rc.8+21
+
+APK: build/releases/teamfight-gridlab-1.0.0-rc.8-debug.apk. Conserva paquete y firma;
+instalar encima sin desinstalar para mantener biblioteca/progreso.
+
+Verificar en dispositivo: nombre e icono de launcher/Ajustes, máscara normal/redonda,
+tema monocromático si el launcher lo ofrece, arranque/recientes, Inicio/Acerca de y
+licencias. Revisar giro/texto y datos anteriores. Recursos compilados y originales
+contrastados; documentación de identidad en IDENTIDAD.md. El recorrido real sigue
+pendiente, manteniendo la decisión del usuario de continuar sin teléfono.

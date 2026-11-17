@@ -559,3 +559,20 @@ verificado ni implementado ninguna regla del juego.
   Limitar líneas al alto disponible, conservando el mensaje completo en semántica.
 - Corrección de presentación: 1.0.0-rc.7+20, misma firma debug y formatos. Pruebas
   afectadas y renders completos; aceptación nativa pendiente como antes.
+## 2026-11-17 — TeamFight: GridLab rc.8
+
+- Petición del usuario: aplicar los iconos del ZIP y renombrar la app a TeamFight:
+  GridLab. AppInfo centraliza nombre/asset; Android usa app_name. Inicio, Acerca de,
+  título y licencias actualizados. Se usan los PNG originales, con hashes contrastados.
+- 25 PNG en cinco densidades y dos XML adaptables incluidos tal como se aportan;
+  foreground/background/monochrome según el formato oficial de Android. Manifest
+  con icon/roundIcon y vector genérico retirado. Asset Flutter 512×512; los dos
+  archivos de Google Play preparados aparte en distribution/google-play/.
+- Conservar applicationId, namespace, canales nativos, directorios privados y firma
+  para permitir actualizar la instalación existente. El paquete Dart conserva su
+  nombre técnico. Reglas, formatos, permisos y dependencias no cambian.
+- LEEME del ZIP es referencia de recursos; la solicitud es implementar identidad.
+  Se valida compilación incremental, conservando APK anteriores. Recursos y etiquetas
+  compilados comprobados con aapt; firma/hash y PNG empaquetado verificados.
+- 1.0.0-rc.8+21, candidata debug. Máscaras, tema, launcher/splash y actualización
+  reales continúan pendientes según decisión previa de continuar sin teléfono.
