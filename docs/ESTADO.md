@@ -1,96 +1,89 @@
-# Estado actual — incrementos del Editor
+# Estado actual — equipos, avisos y trazos
 
-2026-11-17 (America/Bogota). **1.0.0-rc.5+18**, candidata debug.
-Rama `codex/editor-terrain-gestures`, sobre `53dc6df` (rc.4). Código: f17ccf2.
-Informe anterior: [ENTREGA_RC4.md](ENTREGA_RC4.md).
+2026-11-17 (America/Bogota). **1.0.0-rc.6+19**, candidata debug.
+Rama `codex/editor-brush-teams`, sobre `7d8f95b` (rc.5). Código: 0382420.
+Informe anterior: [ENTREGA_RC5.md](ENTREGA_RC5.md).
 
-## Cambios operativos
+## Cambios
 
-- Cada escenario nuevo empieza 10×10. Biblioteca/importación mantienen el tamaño
-  guardado. Continúa la sesión temporal, con figuras nuevas desde A al reiniciar.
-- Terrenos integra cinco opciones en el mismo lugar bajo el mapa: Bloqueado,
-  Obstaculizado, Elevado, Transición, Despejado. Caben juntas en los tamaños probados;
-  con poco espacio se muestran iconos con tooltip y etiquetas accesibles.
-- Elevado: tocar suelo crea E2; cada toque siguiente sube un nivel, hasta E40.
-  Despejado conserva elevación y transiciones. Coordenadas permite edición avanzada.
-- Transición: tocar dos vecinos ortogonales de distinto nivel y sin muro compartido.
-  Solo tras validar se dibujan los triángulos. Casilla repetida, diagonal, salto,
-  igual nivel o muro muestran error sin edición parcial. Cambiar pincel limpia el
-  primer extremo pendiente. Sin nuevas reglas ni ampliación de cobertura.
-- Seleccionar: volver a tocar la misma casilla pregunta si quieres borrar; prioridad
-  personaje, tipo de terreno, elevación. Las transiciones restantes también pueden
-  borrarse. Cancelar conserva datos; confirmar modifica una capa y permite Deshacer.
-- Borrar permite figura, terreno, elevación, transición y muro. Quitar terreno
-  conserva alturas; quitar altura vuelve a suelo y retira transiciones que dejan
-  de unir niveles distintos. Quitar transición conserva terreno y alturas.
-- Ficha sin checkbox de estudio; se retira allowStudy de los comandos. Crear,
-  duplicar, mover o editar hacia bloqueado y pintarlo bajo figuras se rechazan.
-  Los documentos antiguos incompatibles se leen sin pérdida, con aviso para corregirlos.
-- Improved Targeting se despliega como Movement. Se oculta Otra excepción en ambas
-  listas, conservando sus IDs/datos heredados y el resultado No evaluado.
-- Dictamen solo arriba del mapa; abajo quedan instrucciones y referencias. Elegir
-  mismo origen/destino en Visión limpia extremos, selección, marcas y resultado.
-  Distancia conserva la medición cero; el motor geométrico no cambia.
-- La cámara conserva el ajuste automático al cambiar el espacio del mapa por las
-  herramientas. Un zoom/pan manual conserva su centro/escala. Corrige A1 recortada
-  al abrir Terrenos con el nuevo tablero 10×10.
+- Personajes: cada par de toques sobre una figura existente pasa al equipo siguiente
+  de la lista disponible; después del último vuelve al primero. La colocación sigue
+  usando el primer equipo y no cuenta como un toque de cambio. Se conservan ID,
+  etiqueta, nombre, posición, base, tamaño, atributos y capacidades. Un solo equipo
+  no produce cambios; cada cambio real permite Deshacer/Rehacer.
+- Ayuda de herramienta en una franja vertical a la derecha del mapa durante cuatro
+  segundos, con renovación al seleccionar otra herramienta/pincel. RotatedBox e
+  IgnorePointer: no desplaza cámara/viewport ni intercepta los gestos. El temporizador
+  se cancela al desmontar. Los errores de validación siguen usando sus avisos.
+- Elevado comparte el trazo interpolado de terreno. Cada casilla única sube un nivel
+  desde el valor previo al trazo (1→2, 2→3…), aunque se regrese sobre ella sin soltar.
+  Se muestra el nivel de destino en la vista previa, sin el badge antiguo debajo.
+  Tipo de terreno y figuras se conservan. Las bases completas se validan al final;
+  una región parcial que las dejaría entre niveles o E40 rechazan todo el trazo.
+- Borrar entra siempre en Borrar todo: trazar devuelve las casillas recorridas a
+  suelo despejado y retira muros/transiciones incidentes y figuras completas cuya
+  base toca. Otras casillas, equipos y contadores se conservan. No pide confirmación
+  para el trazo total; un Deshacer lo recupera completo. Siguen las variantes de
+  borrado de una capa elegidas explícitamente en el menú.
+- En ambos trazos, cancelar o añadir un segundo dedo descarta la vista previa sin
+  cambios parciales. Cada trazo se confirma en una operación al soltar. Borrar vacío
+  no crea historial. Selección con confirmación de borrado y demás herramientas conservadas.
 
-## Verificación ejecutada
+## Verificación real
 
-Flutter 3.50.0, Dart 3.14.0, material_ui 1.11.0, Windows. Sin dependencias, permisos
-ni esquemas nuevos. No se presenta como aceptación en Android real.
+Flutter 3.50.0, Dart 3.14.0, material_ui 1.11.0, Windows. Sin nuevas dependencias,
+permisos ni esquemas. Los avisos y pinceles son transitorios y no se exportan.
 
 | Comando | Resultado |
 | --- | --- |
-| `dart format --output=none --set-exit-if-changed lib test tool` | 153 archivos, 0 cambios |
-| `flutter --no-version-check analyze --no-pub` | No issues found, 3,9 s |
-| `flutter --no-version-check test --no-pub --reporter expanded` | **473 aprobadas**, 226 s |
-| `flutter --no-version-check test tool/preview_test.dart --no-pub --reporter expanded` | **94 renders aprobados**, 56 s |
-| `flutter --no-version-check build apk --debug --no-pub` | Correcto; Gradle 55,2 s |
-| `aapt dump badging` / `dump permissions` | 1.0.0-rc.5/código 18, SDK 24/36; sin INTERNET ni almacenamiento amplio |
-| `apksigner verify --verbose --print-certs` | Verifies; firma v2 válida y mismo certificado |
+| `dart format --output=none --set-exit-if-changed lib test tool` | 155 archivos, 0 cambios |
+| `flutter --no-version-check analyze --no-pub` | No issues found, 3,8 s |
+| `flutter --no-version-check test --no-pub --reporter expanded` | **485 aprobadas**, 230 s |
+| `flutter --no-version-check test tool/preview_test.dart --no-pub --reporter expanded` | **101 renders aprobados**, 55 s |
+| `flutter --no-version-check build apk --debug --no-pub` | Correcto; Gradle 49,3 s |
+| `aapt dump badging` / `dump permissions` | 1.0.0-rc.6/código 19, SDK 24/36; sin INTERNET ni almacenamiento amplio |
+| `apksigner verify --verbose --print-certs` | Verifies; firma v2 válida, mismo certificado |
 
-Nuevo editor_increments_test: 14 casos con gestos reales de widgets, confirmación/
-cancelación, prioridad y conservación de capas, E2/E3, cinco pares inválidos,
-transiciones válidas/Deshacer, ficha, visión limpia y tres tamaños/escala al 300 %.
-Las regresiones anteriores se conservan, actualizando los contratos de estudio y
-visión iguales a los nuevos requisitos. Los casos geométricos/de límites 4×4 se
-hacen explícitos en sus fixtures; el Editor y los nuevos casos usan 10×10 real.
-Los tests de PNG/JSON siguen comprobando documentos antiguos, incluidos datos
-incompatibles heredados; no se habilita crear esos datos desde la UI.
+Nuevo editor_brush_teams_test: 12 casos. Ciclos de dos/tres equipos y uno solo,
+base múltiple y ficha completa, identidad/contador, Undo/Redo; niveles mixtos con
+regreso y vista previa, validación final de base/E40; borrado con todas las capas,
+base completa y elementos ajenos conservados, contador/no-op e historial único;
+cancelación/segundo dedo en ambos pinceles; cuatro segundos exactos/renovación del
+aviso, posición, ausencia de SnackBar y no interceptar gestos, tres tamaños/escala.
+La prueba anterior Borrar figura elige ahora explícitamente esa variante; no se
+retiran sus aserciones de conservación. Las regresiones anteriores se mantienen.
 
-Renders en build/previews/editor-increments/: se mantienen los 87 anteriores y
-se añaden siete (paleta vertical/horizontal/compacta, transición válida/errónea,
-confirmación de borrado y Targeting expandido). Revisados visualmente; el caso
-compacto es 320×320 con texto al 300 %. La navegación de previews apunta al botón
-real visible, con advertencias de hit test fatales. No se ocultan fallos de render.
-En altura extrema el mapa necesita zoom/pan para inspeccionar casillas; los cinco
-terrenos y las herramientas siguen accesibles. Son capturas Flutter, no Android.
+Previews: se conservan los 94 anteriores y se añaden siete: ayuda vertical en
+400×900, 1000×700 y 320×320 con texto al 300 %, altura durante/después de un trazo
+con regreso, resultado de borrado total y figura cambiada a T2. Revisión visual de
+los nuevos casos; advertencias de hit test fatales. Con altura extrema/texto grande
+la ayuda puede abreviarse visualmente, pero semántica conserva el texto completo;
+mapa y herramientas permiten zoom/pan. Capturas Flutter, no Android real.
+Logs en build/; renders en build/previews/brush-teams/; metadatos del APK en
+build/verification/brush-teams/, excluidos de Git.
 
-## APK
+## APK entregable
 
-- `build/releases/heroclix-1.0.0-rc.5-debug.apk`, 158514269 bytes.
-- SHA-256: `A08B647BC228BFA71BD3CE204A7CCAC54923BE32B4540E637A592E9642D5A3C5`.
-- Copia archivada y salida estándar con el mismo hash; anteriores conservadas.
-- Paquete `com.valinor.heroclixtrainer`, 1.0.0-rc.5/código 18, SDK mínimo 24/objetivo 36.
+- `build/releases/heroclix-1.0.0-rc.6-debug.apk`, 158529325 bytes.
+- SHA-256: `A3DEF9F8B32B0B1F0CCA19F8B0F117AA4BAA71E3A101A9CEA3D7A4DBF328169B`.
+- Archivo archivado y salida estándar con el mismo hash; APK anteriores conservados.
+- Paquete `com.valinor.heroclixtrainer`, versión 1.0.0-rc.6/código 19, SDK 24/36.
 - Certificado SHA-256: `57081ee91137c216eff437a7c75ac5bb6f552bc29167e63370d85628fc82ac54`.
-- Firma debug conservada. Instalar encima, sin desinstalar, para mantener biblioteca
-  y progreso. Licencias NOTICES.Z comprobadas; binarios y claves fuera de Git.
+- Firma debug conservada. Instalar encima, sin desinstalar, para conservar biblioteca
+  y progreso. NOTICES.Z comprobado; binarios y claves fuera de Git.
 
 ## Pendientes y límites
 
-Recorrido nativo actualizado en ANDROID.md: instalación, gestos, giro/texto, mismas
-capas en PNG/JSON, biblioteca/progreso y nueva sesión tras cierre. Instalación,
-selectores, TalkBack, radios apagadas, cierre real y rendimiento siguen pendientes.
-Se mantiene la decisión del usuario de continuar sin teléfono. Sin claves release,
-no se genera release ni se declara estable.
+Recorrido manual actualizado en ANDROID.md. Sigue pendiente la comprobación real
+en Android de instalación, gestos, giro/texto, TalkBack, archivos, radios apagadas,
+cierre/pausa de proceso y rendimiento. Se mantiene la decisión de continuar sin
+teléfono. No se repite el emulador fallido ni se declara aceptación nativa a partir
+de Windows. Sin claves release, no se genera release ni se promueve a estable.
 
-Las transiciones admitidas siguen siendo de altura, con los límites documentados;
-no se añaden pasajes del mismo nivel ni reglas de marcadores durante set-up. Las
-bases no pueden quedar repartidas entre alturas. Un borrado o incremento que lo
-provocaría se rechaza y explica; puede editarse la región completa con Coordenadas.
-No evaluado conserva incertidumbre y el dictamen no autoriza ataques completos.
+No se cambian reglas de visión, movimiento, transiciones ni los formatos 1/2/3.
+Las bases siguen requiriendo un único nivel; no se permite colocar sobre bloqueado.
+Borrar una figura no reinicia identidades durante la sesión. El nuevo arranque
+sigue vacío, 10×10 y figuras desde A; biblioteca y progreso persistentes.
 
-README/README_FINAL, Guía/leyenda, arquitectura, decisiones, reglas, Android, hoja
-de ruta y matriz de aceptación actualizados. AC21/23 adaptados; AC25–28 añadidos.
-Rc.4 archivada en ENTREGA_RC4.md. Logs y capturas en build/, excluidos de Git.
+README/README_FINAL, Guía/leyenda, arquitectura, decisiones, Android, hoja de ruta y
+matriz de aceptación actualizados. AC29–32 añadidos. Rc.5 en ENTREGA_RC5.md.

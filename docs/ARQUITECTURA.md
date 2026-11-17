@@ -409,3 +409,26 @@ las listas de la ficha. Targeting usa el mismo patrón de expansión que Movemen
 SetSightEndpoint limpia extremos/selección cuando coinciden en la herramienta
 Visión. No cambia la geometría pura ni el conteo cero de Distancia. La barra de
 cámara deja de repetir el dictamen: conserva referencias e instrucciones.
+## Equipos y trazos — rc.6
+
+CharacterDraft.withTeam conserva todos sus campos. BoardSession.cycleCharacterTeam
+usa el orden de teams y el comando de edición existente. BoardCanvas cuenta pares
+de toques solo en Personajes y sobre figuras existentes; arrastre, pinza y creación
+limpian ese extremo transitorio. Un único equipo no modifica contenido ni historial.
+
+LayerDraft incluye TerrainBrush. Elevado usa cellsAlong y un conjunto de casillas;
+TerrainLayer.raiseElevations calcula cada destino desde la capa original y filtra
+transiciones solo al finalizar. BoardSession comprueba entonces las bases completas.
+BoardPainter presenta los niveles de destino sin mantener el badge antiguo debajo.
+No hay mutaciones parciales durante los movimientos del puntero.
+
+EraseLayer.all es el valor inicial y se restablece al activar Borrar. EraseCells
+elimina las capas de las casillas tocadas, muros/transiciones incidentes y figuras
+completas que tocan alguna. Conserva lo demás y devuelve la sesión original si no
+hay contenido que quitar. El mismo historial agrupa cada trazo; las variantes de
+borrado por capa siguen disponibles explícitamente.
+
+ToolHint recibe un registro transitorio con identidad y texto del controlador.
+Su widget posee un Timer de cuatro segundos, se renueva con identidad nueva y se
+cancela al desmontar. RotatedBox/IgnorePointer lo ubican vertical al borde derecho
+sin cambiar geometría ni interceptar gestos. No se persiste ni se exporta al PNG.

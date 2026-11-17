@@ -1,17 +1,17 @@
-# HeroClix Simulator & Trainer — 1.0.0-rc.5+18
+# HeroClix Simulator & Trainer — 1.0.0-rc.6+19
 
 Aplicación Android offline, en español, para construir escenarios, consultar reglas
 implementadas y practicar. **Versión candidata, APK debug**: faltan las comprobaciones
 nativas de aceptación y rendimiento descritas abajo. No se congela 1.0.0 estable.
 Repositorio privado: [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer),
-rama `codex/editor-terrain-gestures`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
+rama `codex/editor-brush-teams`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
 
 ## Instalar y actualizar
 
 El archivo generado se conserva en:
 
 ```text
-build/releases/heroclix-1.0.0-rc.5-debug.apk
+build/releases/heroclix-1.0.0-rc.6-debug.apk
 ```
 
 1. Android 7.0/API 24 o superior. Copiar el APK al teléfono, abrirlo en Archivos
@@ -23,7 +23,7 @@ build/releases/heroclix-1.0.0-rc.5-debug.apk
 
 ```powershell
 adb devices -l
-adb -s ID install -r build/releases/heroclix-1.0.0-rc.5-debug.apk
+adb -s ID install -r build/releases/heroclix-1.0.0-rc.6-debug.apk
 adb -s ID shell am start -n com.valinor.heroclixtrainer/com.valinor.heroclix_simulator_trainer.MainActivity
 ```
 
@@ -47,8 +47,9 @@ tocar. En horizontal las herramientas se desplazan para conservar el tablero.
 En Editor, Personajes coloca al tocar una casilla vacía con valores predeterminados
 (Figura, primer equipo, base 1×1, velocidad 6/alcance 4); seleccionar y pulsar el
 lápiz permite editarlos después. Terrenos muestra cinco iconos centrados bajo el
-mapa: Bloqueado, Obstaculizado, Elevado, Transición y Despejado. Elevado coloca E2
-al tocar suelo y sube un nivel con cada toque siguiente. Despejado conserva altura.
+mapa: Bloqueado, Obstaculizado, Elevado, Transición y Despejado. Elevado permite
+trazar: suelo pasa a E2 y E2 a E3; cada casilla sube una vez por trazo desde su
+altura inicial. Despejado conserva altura.
 Transición espera dos vecinos ortogonales de niveles distintos y sin muro; anuncia
 los errores. El suelo es nivel 1; Borrar permite retirar elevaciones y transiciones.
 El Editor permite montar escenas con arrastre libre y validar rutas con Movimiento.
@@ -65,6 +66,12 @@ borrar personaje, terreno o elevación, en ese orden. La ficha ya no permite pos
 sobre bloqueado, y también se rechaza pintarlo bajo figuras. Improved Targeting se
 despliega como Movement; se retira la opción Otra excepción de ambas listas.
 El dictamen aparece solo arriba del mapa. Origen y destino iguales limpian la visión.
+
+Desde rc.6, dos toques sobre una figura con Personajes pasan al siguiente equipo
+disponible y vuelven al primero al completar el ciclo. Los avisos de herramienta
+aparecen verticalmente a la derecha del mapa durante cuatro segundos.
+Borrar empieza en Borrar todo: un trazo limpia todas las capas de las casillas
+recorridas y retira las figuras completas que toca. Deshacer recupera todo el trazo.
 
 H permite visión obstaculizada; B/muros pueden bloquear. «No evaluado» indica una
 condición sin soporte o datos insuficientes, nunca permiso ni error automático.
@@ -98,7 +105,7 @@ usa etiquetas genéricas. Exportar la escena completa sí conserva sus nombres.
 | Instalación, nueva sesión tras cierre y selectores nativos | Pendiente de Android; equivalentes de archivos/controladores sí verificados |
 | Offline con radios desactivadas y rendimiento Android/FPS | Pendiente de dispositivo/emulador funcional |
 | APK release con firma del propietario | Preparado; sin claves suministradas, no generado |
-| Congelar 1.0.0 estable | Pendiente de cerrar aceptación nativa; esta entrega es 1.0.0-rc.5 |
+| Congelar 1.0.0 estable | Pendiente de cerrar aceptación nativa; esta entrega es 1.0.0-rc.6 |
 | Partida completa, dados, diales, daño y victoria | Fuera del alcance del proyecto |
 
 ## Dependencias y recompilación
@@ -109,7 +116,7 @@ No se añaden dependencias para 12. Las licencias empaquetadas se consultan sin
 conexión en Acerca de → Licencias de dependencias.
 
 ```powershell
-git switch codex/editor-terrain-gestures
+git switch codex/editor-brush-teams
 $env:Path = "$env:USERPROFILE\develop\flutter\bin;$env:Path"
 flutter --no-version-check pub get
 dart format --output=none --set-exit-if-changed lib test tool

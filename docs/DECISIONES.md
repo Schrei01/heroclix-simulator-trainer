@@ -527,3 +527,26 @@ verificado ni implementado ninguna regla del juego.
   un zoom/pan manual conserva su centro y escala. Evita recortar A1 en 10×10.
 - 1.0.0-rc.5+18, misma firma debug, sin dependencias/permisos/esquemas nuevos.
   Pruebas Flutter/Windows; aceptación Android sigue pendiente por decisión previa.
+## 2026-11-17 — Equipos, avisos y trazos rc.6
+
+- En Personajes, cada par de toques sobre una figura existente pasa al siguiente
+  equipo de la lista disponible, volviendo al primero. Crear sigue usando el primer
+  equipo; la colocación no cuenta como primer toque del cambio. Se conservan ID,
+  etiqueta, posición, base, atributos y capacidades. Un cambio es una operación reversible.
+- Sustituir la ayuda SnackBar de herramientas por una franja vertical a la derecha
+  del mapa durante cuatro segundos. Es una superposición IgnorePointer, sin alterar
+  el viewport/cámara. Un nuevo aviso reinicia la duración; el temporizador pertenece
+  al widget y se cancela al destruirlo. Los errores de validación conservan sus avisos.
+- Elevado comparte el trazo interpolado de terreno. LayerDraft conserva el pincel;
+  las casillas únicas se elevan una vez desde su nivel al comenzar. Se previsualiza
+  el nivel de destino; se confirma una sola operación al soltar. Validación de bases
+  al final del conjunto, sin rechazar estados intermedios de una base completa.
+  E40 o una base que quedaría entre niveles rechazan todo el trazo sin cambios parciales.
+- Borrar entra siempre en Borrar todo. El trazo limpia tipos/alturas y bordes de
+  muro/transición incidentes; retira figuras completas cuya base toca. El resto de
+  las casillas, equipos y contadores se conserva. Sin diálogo para el trazo total;
+  Deshacer lo recupera completo. Se mantienen las opciones explícitas de una capa.
+- Trazo vacío sin operación en historial. Cancelar o añadir segundo dedo descarta
+  la vista previa en elevación y borrado, con la misma política de pintura existente.
+- 1.0.0-rc.6+19, sin nuevas reglas, esquemas, dependencias ni permisos. Firma debug
+  conservada; aceptación nativa pendiente según decisión de continuar sin teléfono.

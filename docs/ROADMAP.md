@@ -44,9 +44,15 @@ sus consultas y ensayos en Editor. Transiciones con dos triángulos numerados,
 uno por casilla conectada; elevadas normales E2/E3. Sin nuevas reglas ni formatos.
 Entrega rc.3 archivada en ENTREGA_RC3.md; aceptación Android pendiente.
 
-Actualización actual: **1.0.0-rc.5+18**, rama `codex/editor-terrain-gestures`.
+Actualización rc.5: **1.0.0-rc.5+18**, rama `codex/editor-terrain-gestures`.
 Inicio 10×10, Terrenos con cinco pinceles, E2/E3 por toque, transición por par,
 borrado de alturas/transiciones y confirmación por segundo toque. Ficha con Targeting
 plegable, sin permiso sobre bloqueado ni Other; visión igual limpia y dictamen solo
 arriba. Ajuste automático del mapa mientras no haya cámara manual. Rc.4 archivada
 en ENTREGA_RC4.md. Sin nuevas reglas/esquemas; aceptación Android pendiente.
+
+Actualización actual: **1.0.0-rc.6+19**, rama `codex/editor-brush-teams`.
+Personajes cambia de equipo por pares de toques; avisos verticales laterales de
+cuatro segundos; Elevado por trazo mixto y Borrar todo por trazo. Deshacer/Rehacer
+y cancelación/pinza conservados. Rc.5 archivada en ENTREGA_RC5.md. Sin nuevas reglas
+ni formatos; aceptación Android pendiente.

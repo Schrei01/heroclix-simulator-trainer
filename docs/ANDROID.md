@@ -1,7 +1,7 @@
 # Preparar, compilar e instalar en Android
 
-Candidata actual: **1.0.0-rc.5+18**. Inicio contiene Editor y Entrenador; las consultas
-y ensayos están en las herramientas del Editor. El recorrido vigente de transiciones
+Candidata actual: **1.0.0-rc.6+19**. Inicio contiene Editor y Entrenador; las consultas
+y ensayos están en las herramientas del Editor. El recorrido vigente del Editor
 está al final de este documento. Los apartados identificados por etapa describen
 sus versiones históricas. Resultados efectivamente ejecutados: [ESTADO](ESTADO.md).
 
@@ -307,7 +307,7 @@ Pruebas Flutter/Windows y metadatos del APK en ESTADO.md. Instalación, interacc
 Android, TalkBack y rendimiento siguen pendientes; se mantiene la decisión del
 usuario de continuar sin teléfono. No se afirma aceptación nativa ni versión estable.
 
-## Incrementos del Editor — candidata actual 1.0.0-rc.5+18
+## Incrementos del Editor — candidata rc.5
 
 APK: build/releases/heroclix-1.0.0-rc.5-debug.apk. Instalar encima, sin desinstalar.
 Recorrido pendiente en dispositivo:
@@ -334,3 +334,30 @@ Recorrido pendiente en dispositivo:
 No ejecutado en Android: se mantiene la instrucción de continuar sin teléfono.
 Capturas y tests Flutter/Windows no sustituyen instalación, TalkBack, selectores,
 proceso real ni rendimiento. La entrega continúa candidata debug.
+
+## Equipos y trazos — candidata actual 1.0.0-rc.6+19
+
+APK: build/releases/heroclix-1.0.0-rc.6-debug.apk. Instalar encima sin desinstalar.
+Recorrido todavía pendiente en dispositivo:
+
+1. Personajes: colocar A (T1), tocar dos veces la figura existente y comprobar T2;
+   otro par vuelve a T1. Crear un tercer equipo en la ficha y probar T1/T2/T3/T1.
+   Verificar nombre, base, atributos, capacidades, ID/etiqueta y Deshacer/Rehacer.
+2. Activar herramientas: ayuda vertical al lado derecho durante cuatro segundos.
+   Probar giro/texto y cambiar de herramienta antes de que expire; debe renovarse.
+   Tocar/arrastrar sobre el mapa sigue funcionando y la cámara no cambia por el aviso.
+3. Elevar: montar una fila de niveles 1/2/3, trazar de un extremo al otro y volver
+   sin levantar el dedo. La vista previa debe anunciar 2/3/4; al soltar se aplican
+   una sola vez. Otro trazo vuelve a subir. H/B se conservan; probar Deshacer/Rehacer.
+4. Probar una base múltiple: recorrer su región completa permite elevarla sin un
+   estado intermedio inválido. Una región parcial o E40 debe rechazar atómicamente.
+5. Borrar: al activarlo debe decir Borrar todo. Trazar sobre figuras, H/B, altura,
+   muros y transiciones debe dejar esas casillas en suelo despejado. Una base tocada
+   se elimina completa. Comprobar otras casillas intactas y recuperación con Deshacer.
+6. Cancelar un trazo y añadir un segundo dedo no deben aplicar elevación ni borrado.
+   Probar zoom/pan, trazos rápidos y un trazo vacío. El contador de figuras no se recicla.
+7. Verificar biblioteca/JSON/PNG/progreso y cierre/nuevo arranque como en rc.5.
+
+No ejecutado en Android: continúa la decisión de trabajar sin teléfono. Los tests,
+capturas Flutter y metadatos del APK no sustituyen instalación, gestos nativos,
+TalkBack, radios apagadas, selectores, ciclo de proceso ni rendimiento.
