@@ -1,13 +1,13 @@
 # HeroClix Simulator & Trainer
 
-Aplicación Android Flutter/Dart, offline y en español. Versión **0.10.0+11**.
-La entrega 09 está en la rama `codex/prompt-09` del repositorio privado
+Aplicación Android Flutter/Dart, offline y en español. Versión **0.11.0+12**.
+La entrega 10 está en la rama `codex/prompt-10` del repositorio privado
 [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer).
 
 ```powershell
 git clone https://github.com/Schrei01/heroclix-simulator-trainer.git
 cd heroclix-simulator-trainer
-git switch codex/prompt-09
+git switch codex/prompt-10
 ```
 
 ## Qué existe
@@ -29,8 +29,31 @@ exacta. La etapa 06 incorpora visión reglamentaria básica en Editor, Simulador
 Árbitro, compartiendo escenario y motor. La etapa 07 añade distancias, comparación
 con alcance declarado y consulta de objetivos. La etapa 08 incorpora alturas,
 transiciones y cuatro mejoras de visión tipadas. La etapa 09 añade rutas de
-movimiento verificadas, alternativas y comparación de posiciones. Entrenador y
-ataques completos siguen pendientes.
+movimiento verificadas, alternativas y comparación de posiciones. La etapa 10
+añade Entrenador, ejercicios personales y progreso local. Ataques completos y
+métricas tácticas generales siguen pendientes.
+
+## Practicar con el Entrenador
+
+1. Inicio → **Entrenador**. Hay **24 ejercicios** en seis categorías y tres
+   dificultades. Filtra y pulsa **Iniciar ejercicio**.
+2. Responde por opciones, tocando una figura/casilla o trazando una ruta con
+   casillas sucesivas. **Comprobar respuesta** muestra acierto/error, explicación
+   del motor y referencias. Las pistas aparecen solo cuando las solicitas.
+3. **Repetir ejercicio** prepara otra respuesta sin sumar un intento hasta
+   comprobarla. **Revisar último intento** no recalifica ni altera estadísticas.
+   **Practicar errores** filtra el último fallo elegible en esta edición.
+4. **Progreso por categoría** muestra intentos, aciertos, porcentaje, completados y
+   último intento. Las revisiones manuales no entran en el porcentaje automático.
+   Reiniciar estadísticas pide confirmación y conserva ejercicios personales.
+5. Guarda un escenario en la biblioteca del Editor. En Entrenador pulsa **+**,
+   elige el escenario y define pregunta, opciones/pista y solución. Se copia el
+   escenario; el original sigue igual. El motor verifica soluciones automáticas.
+   Texto libre se identifica como **evaluación manual** y requiere guía del autor.
+
+El tablero de práctica es independiente del Editor. Una edición diferente, una
+solución que difiere del motor o un caso No evaluado inhabilita la autocorrección.
+Detalles del banco, estadísticas, persistencia y límites: [ENTRENADOR](docs/ENTRENADOR.md).
 
 ## Ensayar movimiento
 
@@ -241,6 +264,7 @@ dart run tool/verify_vision.dart
 dart run tool/verify_targets.dart
 dart run tool/verify_advanced_vision.dart
 dart run tool/verify_movement.dart
+dart run tool/verify_training.dart
 dart run tool/benchmark_targets.dart --mixed
 dart run tool/benchmark_movement.dart
 dart format --output=none --set-exit-if-changed lib test tool
@@ -252,7 +276,7 @@ flutter --no-version-check build apk --debug
 
 `--no-version-check` evita una consulta de actualización del SDK; no cambia su
 versión ni omite análisis o pruebas. Los renders se escriben en
-`build/previews/prompt-09/`; son capturas Flutter, no de un dispositivo.
+`build/previews/prompt-10/`; son capturas Flutter, no de un dispositivo.
 
 Preparación Android y firma release en [ANDROID.md](docs/ANDROID.md).
 El APK debug y sus resultados/hash se registran en [ESTADO.md](docs/ESTADO.md).
@@ -266,12 +290,15 @@ No se incluyen binarios, credenciales ni claves en Git.
 - `lib/domain/geometry`: fracciones exactas, segmentos y eventos de intersección.
 - `lib/domain/rules`: perfil versionado de visión, observaciones y referencias.
 - `lib/domain/movement`: validación de pasos, rutas, paradas y búsqueda verificada.
+- `lib/domain/training`: ejercicios, correctores compartidos, banco y progreso.
 - `lib/application/board`: sesión inmutable, comandos reversibles e historial acotado.
 - `lib/application/scenarios`: documento, codec y repositorio de escenarios.
+- `lib/application/training`: formato versionado y persistencia del Entrenador.
 - `lib/infrastructure/local`: archivos privados y puente nativo Android.
 - `lib/presentation/scenarios`: biblioteca, autoguardado, acciones y render PNG.
 - `lib/presentation/editor`: formularios, herramientas, vista previa y canvas por capas.
 - `lib/presentation/vision`: informe y vistas de Simulador/Árbitro.
+- `lib/presentation/training`: banco, pregunta, respuesta y autor de ejercicios.
 - `test`: contratos de dominio, gestos, confirmaciones, accesibilidad y regresiones.
 
 `ScenarioCodec` define el documento completo con `schemaVersion: 3` y utiliza
@@ -289,6 +316,6 @@ de herramientas y compilación durante el desarrollo sí puede necesitar interne
 Informes anteriores: [00](docs/ENTREGA_00.md), [01](docs/ENTREGA_01.md),
 [02](docs/ENTREGA_02.md), [03](docs/ENTREGA_03.md), [04](docs/ENTREGA_04.md),
 [05](docs/ENTREGA_05.md), [06 inicial](docs/ENTREGA_06.md),
-[06 corregida](docs/ENTREGA_06_FIX.md), [07](docs/ENTREGA_07.md), [08](docs/ENTREGA_08.md).
+[06 corregida](docs/ENTREGA_06_FIX.md), [07](docs/ENTREGA_07.md), [08](docs/ENTREGA_08.md), [09](docs/ENTREGA_09.md).
 
-**No se inició Prompt 10.** Requiere una nueva orden tras revisar esta entrega.
+**No se inició Prompt 11.** Requiere una nueva orden tras revisar esta entrega.

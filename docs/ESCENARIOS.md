@@ -118,3 +118,11 @@ Referencias primarias de la integración:
 [Android SAF](https://developer.android.com/training/data-storage/shared/documents-files),
 [FileProvider](https://developer.android.com/reference/androidx/core/content/FileProvider),
 [Dart File.rename](https://api.dart.dev/dart-io/File/rename.html).
+
+## Copias para Entrenador (10)
+
+Convertir desde la biblioteca copia el snapshot a almacenamiento separado; no
+modifica el documento del Editor. Entrenamiento tiene formato propio versionado,
+descrito en ENTRENADOR.md, e incluye escenarios mediante el mismo ScenarioCodec.
+Esquema de escenario continúa 3. Progreso, pistas y respuestas no se insertan en
+el JSON de escenarios ni aparecen como archivos de biblioteca.

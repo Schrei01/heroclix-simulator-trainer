@@ -99,3 +99,14 @@ esquinas/adyacencia §16.8a/c (p. 44), bases §24.2b/d (pp. 69–70) y mejoras
 con dado, IM exterior/destrucción, tamaños y otros efectos no resueltos no se dan
 por aprobados. MATRIZ_MOVIMIENTO.md vincula M01–M27 y casos sintéticos derivados
 con estos apartados; no los presenta como diagramas oficiales publicados.
+
+## Validación para 10 — 2026-11-16
+
+Se confirma en la página oficial el enlace a la edición 2026-07-01. El Entrenador
+reutiliza los servicios y límites registrados en las matrices de 06–09; no adopta
+reglas distintas según dificultad ni interpreta cartas. ENTRENADOR.md vincula los
+24 IDs con sus conceptos/secciones. Las soluciones son literales de regresión y
+se comparan con los motores en Dart puro y tests. Una divergencia o No evaluado
+inhabilita autocorrección. Los casos son sintéticos originales derivados del
+reglamento; no se copian ejemplos gráficos oficiales. Feedback en palabras propias
+con referencias cortas. Texto personal libre se identifica como revisión manual.

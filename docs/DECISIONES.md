@@ -369,3 +369,31 @@ verificado ni implementado ninguna regla del juego.
 - UI desplazable a texto ampliado, sin silenciar hit tests. Se acotó el encabezado
   del registro para poder abrirlo al 300 % en 320×320. No se crean dependencias,
   permisos ni solicitudes de red en runtime. Versión 0.10.0+11. No se inicia 10.
+
+## 2026-11-16 — Prompt 10
+
+- Se conserva edición 2026-07-01. No se añaden reglas de juego: todos los correctores
+  delegan en servicios de 06–09 y validan la solución literal guardada antes de
+  permitir autocorrección. No evaluado o edición distinta no cuentan como fallo.
+- Banco curado v1 de 24 ejercicios, cuatro por categoría, tres dificultades y cinco
+  tipos automáticos. Escenarios sintéticos originales, deterministas y testeables.
+  No se presentan como mapas o ejemplos publicados por WizKids.
+- ID estable más revisión y edición para progreso. Abrir una revisión muestra su
+  feedback guardado, sin usar otro motor para recalificar respuestas antiguas.
+  Las actualizaciones compatibles del banco conservan IDs y contadores.
+- Intentos se registran solo al comprobar. Repetir, revisar y pedir pista no suman.
+  Pistas no penalizan porcentaje; se conserva uso en último intento. Practicar
+  errores usa último fallo elegible de la revisión/edición actual, no todo fallo
+  histórico. Completado exige un acierto automático; manual se cuenta aparte.
+- Respuesta textual manual requiere guía y no se puntúa automáticamente. Autor
+  ofrece visión, distancia, alcance/visión, ruta o manual; valida soluciones antes
+  de guardar. Tipos tocar objetivo/casilla se incluyen en el banco curado.
+- Ensayo de aprendizaje con tablero y controlador separados: no cambia Editor,
+  historial ni archivos de escenarios. Personal copia snapshot de biblioteca.
+  La comparación sencilla no evalúa valor estratégico ni inicia 11.
+- Persistencia privada separada bajo scenarios_v1/training_v1. Esquema entrenador
+  2 lee 1/2, conserva copia exacta de 1 antes de escribir y protege futuro/corrupto.
+  Compatibilidad 1 probada con datos sintéticos; no existía Entrenador publicado
+  en 09. Escenarios siguen esquema 3. Sin dependencias ni permisos nuevos.
+- 0.11.0+12. La revisión visual conserva la respuesta manual legible y el feedback
+  entra automáticamente en vista al comprobar. No se inicia Prompt 11.

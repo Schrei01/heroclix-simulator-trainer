@@ -253,3 +253,33 @@ ScenarioCodec exporta documento 3 y lee 1/2/3. Añade movementAbilities, preserv
 al mover, duplicar y editar alcance. ScenarioRepository respalda exactamente 1/2
 antes del primer reemplazo; FileDocumentStore admite IDs schema1/schema2 validados.
 LayerCodec mantiene esquema 2. No hay persistencia de rutas ni posiciones de ensayo.
+
+## Entrenador en 10
+
+Exercise, Answer, Evaluation, Feedback, SkillCategory, RuleSetVersion y progreso
+son Dart puro. El banco curado versión 1 guarda 24 escenarios y soluciones
+literales de regresión. ExerciseEvaluator delega en servicios de visión,
+distancia, objetivos y movimiento, sin copiar reglas en widgets. Si la edición o
+la solución no coinciden, o un servicio devuelve No evaluado, no autocorrige.
+
+TrainingCodec/TrainingRepository almacenan snapshots personales y contadores en
+un directorio privado separado. Documento de entrenamiento 2, lectura 1/2, copia
+exacta del legado antes de reemplazar. Snapshots reutilizan ScenarioCodec 1/2/3.
+No cambia el formato 3 del Editor. IDs/revisión/edición separan progreso y revisiones
+antiguas; los resultados guardados no se recalifican al consultarlos.
+
+TrainingController coordina lectura, comprobación y escritura serializada. Solo
+confirmar una respuesta registra un intento; revisar, pista y repetir no escriben.
+Un token impide duplicados de confirmación. Publica estado tras guardar; fallos
+conservan el anterior. App espera escrituras en curso al pasar a segundo plano.
+
+TrainingScreen filtra banco y progreso; ExerciseScreen controla respuestas y un
+EditorController independiente sin workspace. BoardCanvas recibe un callback de
+casilla y TrainingPainter neutro, sin reutilizar la escena abierta ni los diálogos
+de visión. Tras comprobar, desplaza la vista al feedback y cierra el teclado.
+PersonalExerciseDialog copia un escenario de biblioteca, recoge pregunta/opciones
+pista/solución y verifica antes de guardar. Texto libre se declara manual.
+
+La única comparación de posiciones de 10 es un predicado de ejercicio: un paso
+legal con alcance y visión despejada. No se introducen métricas ni recomendaciones
+tácticas de 11. Límites, banco y almacenamiento: ENTRENADOR.md.

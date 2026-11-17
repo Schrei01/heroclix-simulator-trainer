@@ -190,3 +190,25 @@ Aplicar altura 2 a B1/C1: A1/B1 puede terminar; A1/B1/C1 no puede continuar salv
 transición A1/B1 o IM Elevación. H en B1 no cambia el costo. En el informe abrir
 Pasos y reglas y Visión/alcance antes/después. Girar y ampliar texto al 300 %;
 comprobar acceso a botones desplazando el informe. Las rutas no se guardan en JSON.
+
+## Entrenador en dispositivo (10)
+
+Instalar `build/releases/heroclix-prompt-10-debug.apk` (0.11.0+12) sobre la versión
+anterior, conservando datos. Consultar ESTADO.md para verificaciones efectivamente
+realizadas: estas instrucciones por sí solas no equivalen a pruebas nativas.
+
+Inicio → Entrenador → iniciar un ejercicio de H. Elegir respuesta: antes de
+Comprobar no debe aparecer solución ni cambiar progreso. Pedir pista es opcional.
+Comprobar muestra acierto/error, solución, referencias y explicación del motor;
+la vista entra al resultado. Repetir limpia la respuesta sin sumar otro intento.
+Revisar el último intento desde el banco tampoco suma ni recalifica.
+
+Probar tocar objetivo/casilla, ruta de velocidad exacta y rodeo entre muros.
+Comprobar contadores por categoría, porcentaje y Practicar errores. Cerrar/reabrir
+la app conserva progreso. El Editor debe conservar la escena inicial y su historial.
+
+Guardar una escena en biblioteca. Entrenador → + → crear visión/distancia/alcance
+ruta o texto manual. Solución automática errada debe impedir guardar; la manual
+requiere guía y no genera un acierto automático. Reiniciar estadísticas exige
+confirmación, borra intentos y conserva ejercicios personales. Probar orientaciones,
+texto al 300 %, teclado y desplazamiento en formularios/resultados.
