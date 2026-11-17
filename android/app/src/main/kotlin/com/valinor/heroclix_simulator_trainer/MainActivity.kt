@@ -48,9 +48,10 @@ class MainActivity : FlutterActivity() {
                             val bytes = call.argument<ByteArray>("bytes") ?: error("Faltan datos.")
                             val name = call.argument<String>("name") ?: error("Falta nombre.")
                             val mime = call.argument<String>("mime") ?: error("Falta tipo.")
-                            require(name.matches(Regex("[A-Za-z0-9_-]{1,100}\\.(json|png)"))) { "Nombre de archivo inválido." }
-                            require(mime == "application/json" || mime == "image/png") { "Tipo de archivo inválido." }
-                            val max = if (mime == "application/json") 2 * 1024 * 1024 else 16 * 1024 * 1024
+                            val extension = mapOf("application/json" to "json", "image/png" to "png", "text/plain" to "txt")[mime]
+                                ?: error("Tipo de archivo inválido.")
+                            require(name.matches(Regex("[A-Za-z0-9_-]{1,100}\\.$extension"))) { "Nombre de archivo inválido para este tipo." }
+                            val max = if (mime == "image/png") 16 * 1024 * 1024 else 2 * 1024 * 1024
                             require(bytes.isNotEmpty() && bytes.size <= max) { "El archivo supera el límite permitido." }
                             if (call.method == "saveFile") {
                                 pending = result; pendingBytes = bytes; pendingCode = saveCode

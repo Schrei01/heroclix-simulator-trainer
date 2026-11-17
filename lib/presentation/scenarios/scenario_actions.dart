@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../application/scenarios/scenario_codec.dart';
+import '../../application/scenarios/scenario_document.dart';
 import '../editor/editor_controller.dart';
 import 'workspace_controller.dart';
 import 'scenario_dialogs.dart';
@@ -85,6 +86,16 @@ final class ScenarioActions {
     if (!await workspace.save() && context.mounted) await _failure(context);
   }
 
+  Future<bool> openExample(
+    BuildContext context,
+    ScenarioDocument document,
+  ) async {
+    if (!await _mayLeave(context) || !context.mounted) return false;
+    final opened = await workspace.importDocument(document);
+    if (!opened && context.mounted) await _failure(context);
+    return opened;
+  }
+
   Future<void> saveAs(BuildContext context) async {
     final result = await askScenarioName(
       context,
@@ -122,7 +133,9 @@ final class ScenarioActions {
         children: [
           Text(doc.name),
           Text('ID: ${doc.id}'),
-          Text('Esquema JSON: 1 · referencia: ${doc.rulesVersion}'),
+          Text(
+            'Esquema JSON: ${ScenarioDocument.schemaVersion} · referencia: ${doc.rulesVersion}',
+          ),
           Text('Creado (UTC): ${doc.createdAt.toIso8601String()}'),
           Text('Modificado (UTC): ${doc.modifiedAt.toIso8601String()}'),
           const SizedBox(height: 12),

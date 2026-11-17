@@ -82,6 +82,13 @@ void main() {
   });
 
   for (final (name, size, dimensions) in [
+    ('final_home', const Size(1000, 720), null),
+    ('final_about', const Size(400, 900), null),
+    ('final_about_compact', const Size(320, 568), null),
+    ('final_guide', const Size(400, 900), null),
+    ('final_examples', const Size(1000, 720), null),
+    ('final_example', const Size(400, 900), null),
+    ('final_licenses', const Size(400, 900), null),
     ('tactics_overview', const Size(400, 900), null),
     ('tactics_map', const Size(1000, 720), null),
     ('tactics_comparison', const Size(400, 900), null),
@@ -234,6 +241,10 @@ void main() {
       tester.view.physicalSize = size;
       addTearDown(tester.view.resetDevicePixelRatio);
       addTearDown(tester.view.resetPhysicalSize);
+      if (name == 'final_about_compact') {
+        tester.platformDispatcher.textScaleFactorTestValue = 2;
+        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      }
       final key = GlobalKey();
       final store = MemoryStore();
       // Cada render posee su propio almacenamiento, sin canal de plataforma.
@@ -271,6 +282,16 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      if (name.startsWith('final_') && name != 'final_home') {
+        final button = name == 'final_guide'
+            ? 'open-guide'
+            : name == 'final_examples' || name == 'final_example'
+            ? 'open-examples'
+            : 'open-about';
+        await press(tester, button);
+        if (name == 'final_example') await press(tester, 'example-diagonal');
+        if (name == 'final_licenses') await press(tester, 'open-licenses');
+      }
       if (dimensions != null) {
         await tester.ensureVisible(find.text('Abrir editor'));
         await tester.tap(find.text('Abrir editor'));
@@ -739,10 +760,10 @@ void main() {
               session: visionSession(world),
             );
             const codec = ScenarioCodec();
-            final file = File('build/verification/prompt-11/$name.json');
+            final file = File('build/verification/prompt-12/$name.json');
             await file.parent.create(recursive: true);
             await file.writeAsString(codec.encode(doc));
-            await File('build/verification/prompt-11/$name-working.json')
+            await File('build/verification/prompt-12/$name-working.json')
                 .writeAsString(
                   jsonEncode({
                     'workspaceSchemaVersion': 1,
@@ -915,7 +936,7 @@ void main() {
                 analysis.chosen,
                 analysis.priority,
               );
-              final file = File('build/verification/prompt-11/diagnostico.png');
+              final file = File('build/verification/prompt-12/diagnostico.png');
               await file.parent.create(recursive: true);
               await file.writeAsBytes(bytes);
             });
@@ -930,7 +951,7 @@ void main() {
         final image = await boundary.toImage();
         try {
           final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-          final output = File('build/previews/prompt-11/$name.png');
+          final output = File('build/previews/prompt-12/$name.png');
           await output.parent.create(recursive: true);
           await output.writeAsBytes(bytes!.buffer.asUint8List());
         } finally {

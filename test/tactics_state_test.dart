@@ -65,6 +65,8 @@ void main() {
       await c.analyze(only: vc('B2'));
       expect(c.cacheHits, 1);
       expect(c.current, same(current));
+      expect(c.selected, vc('B2'));
+      expect(c.chosen!.status, CandidateStatus.legal);
     },
   );
   test('muro, capacidades y efecto general invalidan resultados', () async {

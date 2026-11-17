@@ -184,6 +184,7 @@ final class PositionAnalysisController extends ChangeNotifier {
       current = cached.current;
       alternateCurrent = cached.alternate;
       candidates = cached.candidates;
+      selected = only;
       _changed();
       return;
     }

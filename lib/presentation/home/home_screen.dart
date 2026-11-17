@@ -8,6 +8,8 @@ import '../editor/editor_screen.dart';
 import '../vision/vision_screen.dart';
 import '../training/training_controller.dart';
 import '../training/training_screen.dart';
+import '../help/info_screen.dart';
+import '../examples/examples_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({
@@ -111,6 +113,47 @@ class HomeScreen extends StatelessWidget {
                   const Text(
                     'Sin cuentas ni conexión a internet. '
                     'Autoguardado local y biblioteca de escenarios en el editor.',
+                  ),
+                  const SizedBox(height: 16),
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 8,
+                    children: [
+                      OutlinedButton.icon(
+                        key: const ValueKey('open-examples'),
+                        onPressed: () => Navigator.push<void>(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                ExamplesScreen(editor: editorController),
+                          ),
+                        ),
+                        icon: const Icon(Icons.collections_bookmark_outlined),
+                        label: const Text('Ejemplos locales'),
+                      ),
+                      OutlinedButton.icon(
+                        key: const ValueKey('open-guide'),
+                        onPressed: () => Navigator.push<void>(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const QuickGuideScreen(),
+                          ),
+                        ),
+                        icon: const Icon(Icons.help_outline),
+                        label: const Text('Guía rápida'),
+                      ),
+                      OutlinedButton.icon(
+                        key: const ValueKey('open-about'),
+                        onPressed: () => Navigator.push<void>(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const AboutScreen(),
+                          ),
+                        ),
+                        icon: const Icon(Icons.info_outline),
+                        label: const Text('Acerca de'),
+                      ),
+                    ],
                   ),
                 ],
               ),
