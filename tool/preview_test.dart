@@ -1104,10 +1104,10 @@ void main() {
               session: visionSession(world),
             );
             const codec = ScenarioCodec();
-            final file = File('build/verification/brush-teams/$name.json');
+            final file = File('build/verification/upright-hints/$name.json');
             await file.parent.create(recursive: true);
             await file.writeAsString(codec.encode(doc));
-            await File('build/verification/brush-teams/$name-working.json')
+            await File('build/verification/upright-hints/$name-working.json')
                 .writeAsString(
                   jsonEncode({
                     'workspaceSchemaVersion': 1,
@@ -1281,7 +1281,7 @@ void main() {
                 analysis.priority,
               );
               final file = File(
-                'build/verification/brush-teams/diagnostico.png',
+                'build/verification/upright-hints/diagnostico.png',
               );
               await file.parent.create(recursive: true);
               await file.writeAsBytes(bytes);
@@ -1297,7 +1297,7 @@ void main() {
         final image = await boundary.toImage();
         try {
           final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-          final output = File('build/previews/brush-teams/$name.png');
+          final output = File('build/previews/upright-hints/$name.png');
           await output.parent.create(recursive: true);
           await output.writeAsBytes(bytes!.buffer.asUint8List());
         } finally {

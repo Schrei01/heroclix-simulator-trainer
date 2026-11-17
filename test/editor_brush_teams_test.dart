@@ -281,7 +281,20 @@ void main() {
       final key = find.byKey(const ValueKey('tool-hint-vertical'));
       expect(key, findsOneWidget);
       expect(find.byType(SnackBar), findsNothing);
-      expect(t.widget<RotatedBox>(key).quarterTurns, 3);
+      expect(
+        find.descendant(of: key, matching: find.byType(RotatedBox)),
+        findsNothing,
+      );
+      expect(
+        find.ancestor(of: key, matching: find.byType(RotatedBox)),
+        findsNothing,
+      );
+      final text = t.widget<Text>(
+        find.descendant(of: key, matching: find.byType(Text)),
+      );
+      expect(text.softWrap, isTrue);
+      expect(text.maxLines, greaterThan(1));
+      expect(text.data, startsWith('Vacío: crear\n\nDos toques:'));
       final map = t.getRect(find.byKey(const ValueKey('board-viewport'))),
           hint = t.getRect(key);
       expect(hint.right, closeTo(map.right - 8, 1));

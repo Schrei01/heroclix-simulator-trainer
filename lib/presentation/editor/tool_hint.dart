@@ -44,41 +44,57 @@ class _TimedHintState extends State<_TimedHint> {
     super.dispose();
   }
 
+  Widget _card(BuildContext context, BoxConstraints constraints) {
+    final lineHeight = MediaQuery.textScalerOf(context).scale(14) * 1.4;
+    final lines = ((constraints.maxHeight - 16) / lineHeight).floor().clamp(
+      1,
+      100,
+    );
+    return Material(
+      key: const ValueKey('tool-hint-vertical'),
+      color: AppTheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+        side: const BorderSide(color: AppTheme.accent),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Text(
+          widget.text.replaceAll(' · ', '\n\n'),
+          softWrap: true,
+          maxLines: lines,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            color: AppTheme.accent,
+            fontSize: 14,
+            height: 1.4,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
-  Widget build(BuildContext context) => !visible
-      ? const SizedBox.shrink()
-      : IgnorePointer(
-          child: Semantics(
-            liveRegion: true,
-            label: widget.text,
-            child: ExcludeSemantics(
-              child: RotatedBox(
-                key: const ValueKey('tool-hint-vertical'),
-                quarterTurns: 3,
-                child: Material(
-                  color: AppTheme.surface,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    side: const BorderSide(color: AppTheme.accent),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    child: Text(
-                      widget.text,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppTheme.accent,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
-                ),
+  Widget build(BuildContext context) {
+    if (!visible) return const SizedBox.shrink();
+    return IgnorePointer(
+      child: Semantics(
+        liveRegion: true,
+        label: widget.text,
+        child: ExcludeSemantics(
+          child: Align(
+            alignment: Alignment.topRight,
+            widthFactor: 1,
+            child: SizedBox(
+              width: (MediaQuery.sizeOf(context).width * .32).clamp(
+                96.0,
+                144.0,
               ),
+              child: LayoutBuilder(builder: _card),
             ),
           ),
-        );
+        ),
+      ),
+    );
+  }
 }
