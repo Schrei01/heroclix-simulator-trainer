@@ -13,7 +13,13 @@ void main() {
     try {
       await tester.pumpWidget(const HeroClixApp());
 
-      expect(find.text('HeroClix Simulator & Trainer'), findsOneWidget);
+      expect(find.text('TeamFight: GridLab'), findsOneWidget);
+      expect(
+        tester.widget<MaterialApp>(find.byType(MaterialApp)).title,
+        'TeamFight: GridLab',
+      );
+      expect(find.byKey(const ValueKey('app-brand-icon')), findsOneWidget);
+      expect(find.text('HeroClix Simulator & Trainer'), findsNothing);
       expect(find.text('Próximamente'), findsNothing);
       expect(
         Localizations.localeOf(tester.element(find.byType(Scaffold))),

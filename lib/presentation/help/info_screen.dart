@@ -105,8 +105,14 @@ class AboutScreen extends StatelessWidget {
   Widget build(BuildContext context) => InformationScreen(
     title: 'Acerca de',
     children: [
+      Align(
+        alignment: Alignment.centerLeft,
+        child: ExcludeSemantics(
+          child: Image.asset(AppInfo.iconAsset, width: 64, height: 64),
+        ),
+      ),
       const Text(
-        'HeroClix Simulator & Trainer',
+        AppInfo.name,
         style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
       ),
       const Text('Versión ${AppInfo.version} · compilación ${AppInfo.build}'),
@@ -134,7 +140,7 @@ class AboutScreen extends StatelessWidget {
         key: const ValueKey('open-licenses'),
         onPressed: () => showLicensePage(
           context: context,
-          applicationName: 'HeroClix Simulator & Trainer',
+          applicationName: AppInfo.name,
           applicationVersion: '${AppInfo.version}+${AppInfo.build}',
         ),
         icon: const Icon(Icons.description_outlined),

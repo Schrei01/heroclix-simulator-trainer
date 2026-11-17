@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import 'presentation/home/home_screen.dart';
+import 'domain/app_info.dart';
 import 'presentation/editor/editor_controller.dart';
 import 'presentation/theme/app_theme.dart';
 import 'presentation/training/training_controller.dart';
@@ -54,7 +55,7 @@ class _HeroClixAppState extends State<HeroClixApp> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'HeroClix Simulator & Trainer',
+      title: AppInfo.name,
       debugShowCheckedModeBanner: false,
       locale: const Locale('es'),
       supportedLocales: const [Locale('es')],

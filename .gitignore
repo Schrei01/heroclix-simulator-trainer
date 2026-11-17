@@ -13,6 +13,7 @@
 
 # Android: datos de equipo, builds y secretos
 /android/.gradle/
+/android/.kotlin/
 /android/local.properties
 /android/captures/
 /android/app/debug/

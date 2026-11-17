@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../application/home_catalog.dart';
 import '../../domain/app_mode.dart';
+import '../../domain/app_info.dart';
 import '../theme/app_theme.dart';
 import '../editor/editor_controller.dart';
 import '../editor/editor_screen.dart';
@@ -34,10 +35,19 @@ class HomeScreen extends StatelessWidget {
                 children: [
                   const _OfflineBadge(),
                   const SizedBox(height: 28),
+                  ExcludeSemantics(
+                    child: Image.asset(
+                      AppInfo.iconAsset,
+                      key: const ValueKey('app-brand-icon'),
+                      width: 64,
+                      height: 64,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                   Semantics(
                     header: true,
                     child: Text(
-                      'HeroClix Simulator & Trainer',
+                      AppInfo.name,
                       style: Theme.of(context).textTheme.headlineLarge,
                     ),
                   ),
