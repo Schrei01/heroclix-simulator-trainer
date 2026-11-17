@@ -26,7 +26,7 @@ movement y training conservan documentación de alcance para etapas futuras.
 
 ## Estado y persistencia
 
-El inicio usa un catálogo inmutable; Editor, Simulador y Árbitro están disponibles. `BoardSession`
+El inicio usa un catálogo inmutable con Editor y Entrenador. `BoardSession`
 es la única fuente de verdad del tablero: dimensiones, selección, cámara,
 viewport, opciones de visualización, figuras, equipos, terreno y muros. Es inmutable y no importa Flutter.
 
@@ -70,8 +70,8 @@ se almacenan como si fueran terreno ni figuras.
 ## Motor compartido
 
 Geometría ya emite intersecciones exactas y la UI representa sus resultados.
-LineOfSightService interpreta el perfil básico de 06. Editor, Simulador y Árbitro
-usan el mismo servicio; Entrenador lo reutilizará más adelante. Las condiciones
+LineOfSightService interpreta el perfil básico de 06. Editor y Entrenador
+usan el mismo servicio. Las condiciones
 fuera de cobertura devuelven «No evaluado». No se decide la legalidad de un ataque.
 
 ## Plataforma y red
@@ -164,10 +164,9 @@ Cámara, selección y resaltados no recomputan las reglas. El cambio de versión
 metadatos también invalida aunque las capas sean idénticas. Cargar otra escena
 limpia referencias, resultado y declaración de efectos; no cambia el esquema JSON.
 
-Editor, Simulador y Árbitro usan la misma instancia de EditorController y la misma
-entrada evaluate. VisionScreen es una vista de selección/navegación con acceso
-explícito a Editor. Una vista de lectura cubierta no modifica el viewport compartido:
-se evita que dos rutas alternen tamaños y provoquen cuadros de render continuos.
+El Editor concentra edición y análisis en una instancia de EditorController y la
+misma entrada evaluate. Simulador, Árbitro y su VisionScreen se retiraron en rc.4;
+VisionControls y los motores siguen disponibles dentro del Editor.
 
 VisionControls muestra dictamen y registro; SightPainter solo proyecta el resultado,
 colorea la línea y resalta causas. No decide reglas en widgets. La inspección
@@ -223,7 +222,7 @@ los obstáculos no cambian. No se calcula en los widgets ni en el painter.
 ScenarioCodec/LayerCodec exportan esquema 2 y leen 1/2. La lectura no modifica el
 archivo. ScenarioRepository conserva bytes anteriores antes de reemplazar un
 esquema 1; FileDocumentStore acepta solo IDs de respaldo validados y los excluye
-de biblioteca. No se cambia el directorio privado existente. Modo árbitro usa el
+de biblioteca. No se cambia el directorio privado existente. El Editor usa el
 informe compartido con pares, reglas, eventos y modificaciones.
 
 ## Movimiento en 09
@@ -245,8 +244,8 @@ cambio de contenido y revalida al confirmar; aplica moveCharacter mediante el
 historial existente. Cancelar/reset no hacen operaciones de contenido.
 
 MovementToolbar/MovementDialog muestran estado, presupuesto, motivos, capacidades
-y comparación. BoardCanvas añade casillas al ensayo incluso en Simulador de
-lectura; MovementPainter solo proyecta ruta numerada y las huellas original/final.
+y comparación. BoardCanvas añade casillas al ensayo desde la herramienta Movimiento
+del Editor; MovementPainter solo proyecta ruta numerada y las huellas original/final.
 El arrastre libre del Editor es independiente de la validez reglamentaria.
 
 ScenarioCodec exporta documento 3 y lee 1/2/3. Añade movementAbilities, preservadas
@@ -371,6 +370,20 @@ ni modificar biblioteca. Reintentar guardado vuelve a ejecutar Guardar.
 Activar la herramienta Visión habilita su evaluación. VisionVerdictBar presenta
 el VisionEvaluation existente al completar extremos, con icono/color/texto y
 semántica liveRegion; tocar abre el informe compartido. Se reserva una franja sobre
-el mapa en Editor/Simulador/Árbitro. No duplica reglas ni publica el resultado
+el mapa en Editor. No duplica reglas ni publica el resultado
 anterior tras limpiar o invalidar extremos. Referencias automáticas son el valor
 predeterminado; la inspección manual sigue disponible al desactivarlas.
+
+## Editor y transiciones — rc.4
+
+AppMode y HomeCatalog contienen solo editor/trainer. HomeScreen abre EditorScreen
+o TrainingScreen; VisionScreen se elimina. Los servicios y controles de análisis
+se reutilizan en EditorScreen. No hay datos persistidos de modos que migrar.
+
+BoardPainter diferencia elevaciones normales (E2/E3) de transiciones (dos triángulos
+blancos con borde rojo y sus niveles, uno dentro de cada casilla conectada).
+BoardPngExporter reutiliza el painter; no cambia TerrainMap ni ScenarioCodec.
+Los marcadores se derivan de los bordes de transición existentes. Las pruebas de
+exportación decodifican píxeles de ambas orientaciones y verifican retirada y JSON.
+El Editor coloca herramientas lateralmente cuando el área disponible es baja,
+para conservar el mapa y evitar desbordamientos también en Distancia/Objetivos.

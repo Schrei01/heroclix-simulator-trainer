@@ -23,7 +23,7 @@ pista y edición, sin recalificar ni añadir intentos.
 Los escenarios son sintéticos derivados de reglas ya verificadas, no ejemplos
 oficiales publicados. Cada solución literal se guarda junto al escenario en
 `lib/domain/training/curated_exercises.dart` y se contrasta con los mismos motores
-del Simulador. La coincidencia se verifica en tests y con
+del Editor. La coincidencia se verifica en tests y con
 `dart run tool/verify_training.dart`.
 
 | IDs | Categoría | Casos y referencias |

@@ -1,13 +1,13 @@
 # HeroClix Simulator & Trainer
 
-Aplicación Android Flutter/Dart, offline y en español. Versión **1.0.0-rc.3+16**.
-La actualización de sesión y visión está en la rama `codex/temporary-scenario-vision` del repositorio privado
+Aplicación Android Flutter/Dart, offline y en español. Versión **1.0.0-rc.4+17**.
+La actualización del Editor está en la rama `codex/editor-transitions` del repositorio privado
 [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer).
 
 ```powershell
 git clone https://github.com/Schrei01/heroclix-simulator-trainer.git
 cd heroclix-simulator-trainer
-git switch codex/temporary-scenario-vision
+git switch codex/editor-transitions
 ```
 
 ## Qué existe
@@ -43,10 +43,13 @@ se conserva mientras siga abierta la app; **Guardar** en biblioteca permite cons
 para abrirla manualmente después. El progreso del Entrenador sigue siendo persistente.
 Al trazar entre dos figuras, el dictamen aparece directamente arriba del mapa.
 
+Desde rc.4 se retiran los módulos Simulador y Árbitro. Inicio ofrece **Editor** y
+**Entrenador**; las consultas, informes y ensayos están en las herramientas del Editor.
+Las transiciones se distinguen por triángulos blancos numerados con borde rojo.
+
 ## Analizar y comparar posiciones
 
-1. En **Simulador → Elegir análisis → Analizar posición**, elige la figura activa
-   y pulsa Analizar. También está disponible en las herramientas del Editor.
+1. En **Editor → Analizar posición**, elige la figura activa y pulsa Analizar.
 2. Consulta visibles, enemigos que la ven, alcance, líneas H/bloqueadas y amenazas
    conocidas. Cada métrica muestra definición, referencias y No evaluados.
 3. Elige una casilla candidata del mapa o la lista: muestra ruta, costo y cambios
@@ -87,8 +90,7 @@ Detalles del banco, estadísticas, persistencia y límites: [ENTRENADOR](docs/EN
 
 ## Ensayar movimiento
 
-1. En **Simulador → Elegir análisis → Movimiento reglamentario**, elige la figura
-   desde el informe o toca su casilla. También está disponible en Editor.
+1. En **Editor → Movimiento**, elige la figura desde el informe o toca su casilla.
 2. Cierra el informe con **Volver al tablero** y toca casillas vecinas sucesivas.
    No se rellenan saltos. El camino numera pasos y superpone origen/destino de
    ensayo; la figura sigue en su posición inicial.
@@ -117,7 +119,8 @@ libre del Editor sirve para montar escenarios y no valida una ruta reglamentaria
 1. En Editor abre **Alturas y transiciones** desde las herramientas o las opciones.
    Indica una casilla o región y un nivel de 1 a 40. Sobre suelo el formulario
    propone nivel 2; al editar una elevación conserva su nivel actual. El suelo es nivel 1; las
-   alturas muestran E2, E3… y bordes. Añade transiciones entre dos vecinos de
+   alturas muestran E2, E3… y bordes rojos. Las transiciones usan un triángulo blanco
+   con borde rojo y nivel dentro de cada casilla conectada. Añádelas entre dos vecinos de
    distinta altura sin muro compartido. Pintar altura conserva H/B; limpiar tipos
    de terreno conserva altura y transiciones. Hay Deshacer/Rehacer.
 2. Selecciona una figura, pulsa el lápiz de la barra inferior y declara sus mejoras
@@ -130,7 +133,7 @@ libre del Editor sirve para montar escenarios y no valida una ruta reglamentaria
 4. **Laboratorio de capacidades** sustituye temporalmente las capacidades del origen
    para comparar resultados. La etiqueta HIPÓTESIS lo identifica; no cambia la
    ficha guardada y se limpia al abrir otra escena.
-5. El **Modo árbitro** muestra alturas, capacidades, excepciones aplicadas y el
+5. El **informe de visión del Editor** muestra alturas, capacidades, excepciones aplicadas y el
    registro por eventos. Otras capacidades/tamaños o formas sin soporte quedan
    pendientes. Revisa [SOPORTADAS / NO SOPORTADAS](docs/MATRIZ_CAPACIDADES_VISION.md).
 
@@ -150,9 +153,8 @@ lo sobrescribe. Los campos y capas anteriores se conservan.
    modifica el dato de la figura, actualiza todos los resultados y permite deshacer.
 4. Elegir un objetivo resalta su casilla, traza la línea y anota distancia/alcance.
    Pulsa el resumen para ver comparación, visión, explicación y reglas pendientes.
-5. En Simulador y Árbitro usa **Elegir análisis** (controles de la barra superior)
-   para alternar Visión, Medir distancia y Mostrar objetivos. No mueven figuras
-   al tocar el tablero; para cambiar posiciones entra en Editar escenario.
+5. Usa las herramientas del Editor para alternar Visión, Medir distancia y Mostrar
+   objetivos. Para mover figuras libremente vuelve a Seleccionar.
 
 Estados: en alcance con visión despejada, en alcance con visión obstaculizada,
 visión bloqueada, fuera de alcance y no evaluado. Distancia, alcance y visión
@@ -168,9 +170,8 @@ editado sí pertenece al escenario, junto con capacidades, altura y transiciones
 1. Crea o abre un escenario con figuras en el Editor. En Línea de visión toca
    origen y destino: el dictamen aparece automáticamente en una franja sobre el mapa.
    Tócala para ver explicación y referencias; el informe también está en Opciones.
-2. Desde Inicio, **Simulador** y **Árbitro** muestran el mismo escenario con un
-   tablero que solo selecciona extremos y navega. **Editar escenario** abre el
-   Editor y al volver conserva las referencias válidas.
+2. Todo el análisis está disponible en el Editor: visión, distancia, objetivos,
+   movimiento y comparación de posiciones. Inicio conserva Editor y Entrenador.
 3. El estado se muestra con texto, icono y color: verde/despejada,
    ámbar/obstaculizada, rojo/bloqueada y gris/no evaluada. Obstaculizada permite
    trazar visión; eso no declara que un ataque sea legal.
@@ -315,7 +316,7 @@ flutter --no-version-check build apk --debug
 
 `--no-version-check` evita una consulta de actualización del SDK; no cambia su
 versión ni omite análisis o pruebas. Los renders se escriben en
-`build/previews/session-vision/`; son capturas Flutter, no de un dispositivo.
+`build/previews/editor-transitions/`; son capturas Flutter, no de un dispositivo.
 
 Preparación Android y firma release en [ANDROID.md](docs/ANDROID.md).
 El APK debug y sus resultados/hash se registran en [ESTADO.md](docs/ESTADO.md).
@@ -339,7 +340,7 @@ No se incluyen binarios, credenciales ni claves en Git.
 - `lib/infrastructure/local`: archivos privados y puente nativo Android.
 - `lib/presentation/scenarios`: biblioteca, sesión temporal, acciones y render PNG.
 - `lib/presentation/editor`: formularios, herramientas, vista previa y canvas por capas.
-- `lib/presentation/vision`: informe y vistas de Simulador/Árbitro.
+- `lib/presentation/vision`: controles e informes de análisis usados por el Editor.
 - `lib/presentation/training`: banco, pregunta, respuesta y autor de ejercicios.
 - `lib/application/examples` y `lib/presentation/examples`: catálogo local y copias protegidas.
 - `lib/presentation/help`: guía, identidad de versión, cobertura y licencias locales.

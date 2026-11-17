@@ -1,6 +1,6 @@
 # Análisis de posiciones — etapa 11
 
-Seleccionar una figura en Editor o Simulador → Analizar posición. El mapa de
+Seleccionar una figura en Editor → Analizar posición. El mapa de
 análisis tiene cámara independiente y no reposiciona piezas al tocar. El motor
 reutiliza visión, distancia y movimiento de 06–09 con edición 2026-07-01; no añade
 permisos de ataque ni interpreta cartas. Las etiquetas V/T/C indican visibles,

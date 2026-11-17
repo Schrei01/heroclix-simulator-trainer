@@ -20,7 +20,7 @@ y una nueva orden antes de iniciar la siguiente. Estado al 2026-11-17.
 | 12 | Integración, accesibilidad, verificación y APK final | Implementada como 1.0.0-rc.1+14; APK debug y evidencia en ESTADO.md; aceptación nativa pendiente, sin congelar estable |
 
 Editor se habilita en 01. El informe histórico de 00 se conserva en ENTREGA_00.md.
-Simulador y Árbitro tienen visión básica desde 06 y comparten escenario con Editor.
+Simulador y Árbitro se incorporaron en 06 y se retiraron en rc.4; el Editor conserva el análisis.
 Alcance declarado y objetivos se incorporan en 07. Entrenador está disponible
 desde 10. Movimiento tiene un perfil verificado desde 09; maniobras y excepciones
 fuera de las matrices de capacidades permanecen pendientes.
@@ -33,7 +33,13 @@ Actualización posterior a 12: ajustes de edición solicitados por el usuario,
 y colocación rápida de figuras; modos aún separados. Evidencia actual en ESTADO.md;
 entrega 12 original archivada en ENTREGA_12.md. Aceptación nativa sigue pendiente.
 
-Actualización actual: 1.0.0-rc.3+16, rama `codex/temporary-scenario-vision`.
+Actualización rc.3: 1.0.0-rc.3+16, rama `codex/temporary-scenario-vision`.
 Nueva apertura vacía/figuras desde A, biblioteca y progreso persistentes, y dictamen
 inmediato sobre el mapa. Entrega rc.2 archivada en ENTREGA_RC2.md. Modos aún separados;
 candidata con aceptación Android pendiente.
+
+Actualización actual: **1.0.0-rc.4+17**, rama `codex/editor-transitions`.
+Inicio conserva Editor y Entrenador. Se retiran Simulador/Árbitro y se mantienen
+sus consultas y ensayos en Editor. Transiciones con dos triángulos numerados,
+uno por casilla conectada; elevadas normales E2/E3. Sin nuevas reglas ni formatos.
+Entrega rc.3 archivada en ENTREGA_RC3.md; aceptación Android pendiente.

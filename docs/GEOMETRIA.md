@@ -3,7 +3,7 @@
 Motor puro Dart, sin reglas de HeroClix. Un contacto con un muro o una figura es
 un dato geométrico; no demuestra que la línea esté permitida o impedida. No se
 calcula alcance, movimiento ni legalidad de ataque. El Editor es la entrada
-operativa; la tarjeta Simulador permanece futura.
+operativa; los servicios reglamentarios del Editor interpretan estos datos por separado.
 
 ## Sistema de coordenadas y precisión
 

@@ -1,17 +1,17 @@
-# HeroClix Simulator & Trainer — 1.0.0-rc.3+16
+# HeroClix Simulator & Trainer — 1.0.0-rc.4+17
 
 Aplicación Android offline, en español, para construir escenarios, consultar reglas
 implementadas y practicar. **Versión candidata, APK debug**: faltan las comprobaciones
 nativas de aceptación y rendimiento descritas abajo. No se congela 1.0.0 estable.
 Repositorio privado: [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer),
-rama `codex/temporary-scenario-vision`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
+rama `codex/editor-transitions`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
 
 ## Instalar y actualizar
 
 El archivo generado se conserva en:
 
 ```text
-build/releases/heroclix-1.0.0-rc.3-debug.apk
+build/releases/heroclix-1.0.0-rc.4-debug.apk
 ```
 
 1. Android 7.0/API 24 o superior. Copiar el APK al teléfono, abrirlo en Archivos
@@ -23,7 +23,7 @@ build/releases/heroclix-1.0.0-rc.3-debug.apk
 
 ```powershell
 adb devices -l
-adb -s ID install -r build/releases/heroclix-1.0.0-rc.3-debug.apk
+adb -s ID install -r build/releases/heroclix-1.0.0-rc.4-debug.apk
 adb -s ID shell am start -n com.valinor.heroclixtrainer/com.valinor.heroclix_simulator_trainer.MainActivity
 ```
 
@@ -37,9 +37,7 @@ no está implementada. PNG sirve para compartir una imagen, no para recuperar da
 | Entrada | Para qué sirve |
 | --- | --- |
 | Editor | Crear tablero 2–40 filas/columnas, figuras genéricas, equipos, terreno, muros y alturas; biblioteca y Deshacer |
-| Simulador | Medir, consultar visión/objetivos, ensayar rutas y comparar posiciones de la misma escena |
 | Entrenador | 24 ejercicios curados más personales; responder, comprobar, recibir explicación y conservar progreso |
-| Árbitro | Consultar el dictamen y sus motivos/referencias; no reemplaza una decisión oficial |
 | Ejemplos locales | Visión H, diagonal/vértice, muro, elevación y movimiento; previsualizar y abrir copia independiente |
 | Guía rápida / Acerca de | Ayuda breve, versión, cobertura, fuente y licencias locales |
 
@@ -51,8 +49,13 @@ En Editor, Personajes coloca al tocar una casilla vacía con valores predetermin
 lápiz permite editarlos después. Terrenos muestra tres iconos centrados bajo el
 mapa, sin desplegable de tipo. La altura sobre suelo propone nivel 2 y conserva
 el nivel existente al editar una elevación. El suelo continúa siendo nivel 1.
-El Editor monta escenas con arrastre libre; el Simulador valida el movimiento.
+El Editor permite montar escenas con arrastre libre y validar rutas con Movimiento.
 Ensayar no cambia posiciones hasta confirmar una ruta verificada.
+
+Desde rc.4 Inicio contiene Editor y Entrenador. Visión, distancia, objetivos,
+movimiento y comparación de posiciones se consultan desde las herramientas del
+Editor. Las casillas de transición usan triángulos blancos con borde rojo y número
+de nivel, uno a cada lado del borde compartido; las elevadas normales conservan E2/E3.
 
 H permite visión obstaculizada; B/muros pueden bloquear. «No evaluado» indica una
 condición sin soporte o datos insuficientes, nunca permiso ni error automático.
@@ -78,7 +81,7 @@ usa etiquetas genéricas. Exportar la escena completa sí conserva sus nombres.
 
 | Función | Estado |
 | --- | --- |
-| Cuatro modos, biblioteca, JSON/PNG y sesión temporal | Implementado; nuevo arranque vacío, biblioteca/progreso persistentes |
+| Editor y Entrenador, biblioteca, JSON/PNG y sesión temporal | Implementado; nuevo arranque vacío, biblioteca/progreso persistentes |
 | Geometría, visión, alcance, alturas, mejoras tipadas y movimiento | Perfil parcial implementado, con reglas y No evaluados explícitos |
 | Análisis de posiciones, hipótesis, ejercicios y diagnóstico TXT/PNG | Implementado; puente Android TXT corregido y compilado |
 | Catálogo de cinco ejemplos, guía y Acerca de/licencias | Implementado y probado; recursos locales |
@@ -86,7 +89,7 @@ usa etiquetas genéricas. Exportar la escena completa sí conserva sus nombres.
 | Instalación, nueva sesión tras cierre y selectores nativos | Pendiente de Android; equivalentes de archivos/controladores sí verificados |
 | Offline con radios desactivadas y rendimiento Android/FPS | Pendiente de dispositivo/emulador funcional |
 | APK release con firma del propietario | Preparado; sin claves suministradas, no generado |
-| Congelar 1.0.0 estable | Pendiente de cerrar aceptación nativa; esta entrega es 1.0.0-rc.3 |
+| Congelar 1.0.0 estable | Pendiente de cerrar aceptación nativa; esta entrega es 1.0.0-rc.4 |
 | Partida completa, dados, diales, daño y victoria | Fuera del alcance del proyecto |
 
 ## Dependencias y recompilación
@@ -97,7 +100,7 @@ No se añaden dependencias para 12. Las licencias empaquetadas se consultan sin
 conexión en Acerca de → Licencias de dependencias.
 
 ```powershell
-git switch codex/temporary-scenario-vision
+git switch codex/editor-transitions
 $env:Path = "$env:USERPROFILE\develop\flutter\bin;$env:Path"
 flutter --no-version-check pub get
 dart format --output=none --set-exit-if-changed lib test tool

@@ -134,3 +134,19 @@ conserva A1–D6/B4 y §16.8b. Ayuda y Acerca de distinguen cobertura parcial y 
 y advierten que la herramienta no decide oficialmente un torneo. Sin consulta de
 reglas por red en runtime ni afirmación de validación nativa. Matriz de aceptación
 y evidencia actual en MATRIZ_ACEPTACION.md y ESTADO.md.
+
+## Representación de transiciones — rc.4, 2026-11-17
+
+Se contrasta §16.7, página impresa 43 (página 60 del PDF), en la copia oficial
+2026-07-01 ya verificada. El símbolo usa un triángulo blanco con borde rojo y nivel
+por casilla, emparejados sobre el borde compartido. Es geometría propia del painter;
+no se incluyen imágenes ni el PDF en la app. Las elevaciones normales muestran E#.
+
+[Fuente oficial 2026-07-01](https://wizkids.com/wp-content/uploads/2026/07/HeroClix%20Comprehensive%20Rules%2007.01.26.pdf).
+SHA-256 de la copia consultada:
+164C2CE0463DD04777BFEA39EF7E5F66C1DE582FC2288686346E7E6F349BDFF2.
+
+Solo cambia la representación: se mantienen las transiciones existentes entre
+vecinos ortogonales de distinto nivel y sin muro compartido. No se incorpora
+soporte para pasajes del mismo nivel ni nuevas excepciones. Retirar Simulador y
+Árbitro no cambia los servicios ni amplía las reglas soportadas.

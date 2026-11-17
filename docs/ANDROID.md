@@ -1,5 +1,10 @@
 # Preparar, compilar e instalar en Android
 
+Candidata actual: **1.0.0-rc.4+17**. Inicio contiene Editor y Entrenador; las consultas
+y ensayos están en las herramientas del Editor. El recorrido vigente de transiciones
+está al final de este documento. Los apartados identificados por etapa describen
+sus versiones históricas. Resultados efectivamente ejecutados: [ESTADO](ESTADO.md).
+
 ## Herramientas
 
 Flutter estable está en `%USERPROFILE%\develop\flutter`. Para usarlo en una
@@ -53,8 +58,8 @@ ESTADO.md para saber qué se ejecutó realmente.
 2. Ejecutar `flutter devices` y anotar ID, modelo y versión Android.
 3. Instalar con `adb -s ID install -r build/app/outputs/flutter-apk/app-debug.apk`
    y abrir la app desde el launcher.
-4. Comprobar nombre, español y los cuatro modos operativos. Abrir Editor y editar
-   un escenario; consultar visión en Simulador/Árbitro y practicar en Entrenador.
+4. Comprobar nombre, español y las entradas Editor/Entrenador. Abrir Editor y editar
+   un escenario; consultar visión en sus herramientas y practicar en Entrenador.
 5. Girar vertical/horizontal y recorrer la pantalla. Repetir con texto ampliado
    en accesibilidad de Android y TalkBack; todas las entradas de modo deben abrir.
 6. Deshabilitar Wi-Fi y datos. Guardar una escena en biblioteca y forzar cierre.
@@ -264,7 +269,7 @@ nativo continúa pendiente. Resultados y hash actuales en ESTADO.md.
 
 ## Sesión temporal y visión inmediata — 1.0.0-rc.3+16
 
-APK actual: `build/releases/heroclix-1.0.0-rc.3-debug.apk`, misma firma/paquete para
+APK de rc.3: `build/releases/heroclix-1.0.0-rc.3-debug.apk`, misma firma/paquete para
 instalar encima sin desinstalar. La sesión de Editor ya no se recupera al abrir:
 guarda en biblioteca lo que quieras conservar. Las figuras nuevas empiezan desde A
 en cada apertura. Cambiar de sección y volver desde segundo plano conserva la
@@ -280,3 +285,24 @@ sobre el mapa; tocarlo abre referencias. Probar despejada/H/B/No evaluada, borra
 extremo, limpiar línea, giro y texto ampliado. Regresiones/archivos/controladores
 verificados en Windows; cierre real, pausa Android, TalkBack y rendimiento siguen
 pendientes de dispositivo.
+
+## Editor y transiciones — candidata actual 1.0.0-rc.4+17
+
+APK: build/releases/heroclix-1.0.0-rc.4-debug.apk. Instalar encima con la misma
+firma; no desinstalar para conservar biblioteca y progreso. Los apartados por
+etapa anteriores describen aquellas versiones; la navegación vigente es esta:
+
+1. Inicio contiene Editor y Entrenador; no debe ofrecer Simulador ni Árbitro.
+2. Editor: crear dos figuras y consultar Visión, Distancia, Objetivos, Movimiento
+   y Analizar posición desde sus herramientas. El dictamen aparece sobre el mapa.
+3. En Alturas y transiciones, elevar B1 a 2 y añadir transición A1/B1. Comprobar
+   triángulo de nivel 1 dentro de A1 y de nivel 2 dentro de B1. Repetir A2/A3 para
+   la orientación horizontal y niveles 2/3. Una elevación sin transición conserva E2.
+4. Probar Deshacer/Rehacer, retirar transición, Guardar/abrir y exportar JSON/PNG.
+   Los símbolos deben coincidir en mapa y PNG y los niveles no deben cambiar.
+5. Probar giro, texto al 300 %, mapa pequeño/grande y transición bajo una figura.
+   Biblioteca, ejercicios/progreso y nueva sesión vacía deben conservar su comportamiento.
+
+Pruebas Flutter/Windows y metadatos del APK en ESTADO.md. Instalación, interacción
+Android, TalkBack y rendimiento siguen pendientes; se mantiene la decisión del
+usuario de continuar sin teléfono. No se afirma aceptación nativa ni versión estable.

@@ -114,7 +114,7 @@ y cuatro mejoras corresponden a soporte real, delimitado en la matriz de capacid
 
 - LineOfSightService.evaluate es la única entrada reglamentaria; consume snapshot
   inmutable, extremos y VisionContext versionado. Usa SightGeometry sin replicarlo.
-- Editor, Simulador y Árbitro comparten VisionAnalysis y el mismo escenario.
+- Editor usa VisionAnalysis sobre el escenario; sus herramientas concentran las consultas desde rc.4.
 - El registro incluye contexto, extremos resueltos, geometría, reglas, observaciones
   por evento y elementos decisivos. No incluye fecha aleatoria: es determinista.
 - Cambios de dimensiones, figuras, terreno, muros, extremos o contexto invalidan

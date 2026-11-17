@@ -63,7 +63,7 @@ permite seguir añadiendo pasos en el tablero. Confirmar exige ruta válida no v
 vuelve a validar el escenario vigente y aplica un comando de posición reversible.
 Una edición, carga, cambio de contenido o salida de herramienta limpia el ensayo.
 Cámara y selección no lo alteran. Editor mantiene el reposicionamiento libre para
-montar escenarios; Simulador ofrece explícitamente movimiento reglamentario.
+montar escenarios; su herramienta Movimiento ofrece explícitamente rutas reglamentarias.
 
 ## Persistencia y pruebas
 

@@ -69,7 +69,7 @@ acciones, número de objetivos, daño ni un juez oficial de torneo. No se inicia
    incertidumbre relevante antes de negar un resultado. No combina la distancia
    de un par bloqueado con la visión de otro que queda fuera de alcance.
 
-El Modo árbitro muestra par elegido, alturas, capacidades, hipótesis, resultados
+El informe de visión del Editor muestra par elegido, alturas, capacidades, hipótesis, resultados
 de pares y registro por evento con referencias. Puede alternarse a referencia
 manual en Visión; Objetivos siempre usa un par coherente para alcance y visión.
 

@@ -483,3 +483,21 @@ verificado ni implementado ninguna regla del juego.
   el caso de fallo es ahora de guardado explícito, no autoguardado.
 - 1.0.0-rc.3+16, misma firma debug; formatos/perfiles sin cambios. Sin unificar modos,
   sin partida completa ni promoción a estable mientras falte aceptación nativa.
+
+## 2026-11-17 — Editor como espacio de análisis y transiciones
+
+- Petición del usuario: retirar Simulador y Árbitro. Inicio y AppMode conservan
+  Editor y Entrenador. Se elimina VisionScreen; informes y motores de visión,
+  distancia, objetivos, movimiento y posiciones siguen en las herramientas del Editor.
+  Esta decisión sustituye la separación de módulos registrada en entregas anteriores.
+- Triángulo blanco con borde rojo y número de nivel dentro de cada casilla de
+  transición; dos triángulos comparten base sobre el borde. Referencia gráfica:
+  Comprehensive Rules 2026-07-01 §16.7, página impresa 43. Geometría dibujada por la
+  app, sin copiar imágenes oficiales. Elevadas normales conservan E2/E3 y borde rojo.
+- El PNG usa el mismo BoardPainter y añade explicación en su leyenda. Sin cambio
+  de esquema, alturas, validación de transiciones ni reglas de movimiento/visión.
+- Se migran las pruebas de las vistas retiradas a las herramientas del Editor,
+  conservando consultas, informes, caché, movimiento y accesibilidad. Se corrige
+  el desbordamiento con texto al 300 % usando herramientas laterales cuando falta altura.
+- 1.0.0-rc.4+17, misma firma debug. Android real continúa pendiente por la decisión
+  previa de continuar sin teléfono. Biblioteca y progreso conservados.

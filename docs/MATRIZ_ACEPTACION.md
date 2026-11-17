@@ -3,12 +3,12 @@
 Fecha: 2026-11-17. La ejecución automatizada es Flutter/Dart en Windows y archivos
 locales reales o fallos inyectados explícitos. No equivale a un recorrido en Android.
 Resultados completos y APK: ESTADO.md. No se declaran aprobados pasos nativos sin ejecutar.
-La candidata actual es 1.0.0-rc.3+16; la entrega 12 original se conserva en
+La candidata actual es 1.0.0-rc.4+17; la entrega 12 original se conserva en
 ENTREGA_12.md. Los pendientes Android se mantienen sin cambio de estado.
 
 | ID | Recorrido / condición | Evidencia automatizada | Android |
 | --- | --- | --- | --- |
-| AC01 | Inicio → Editor, Simulador, Árbitro y Entrenador; regresar conserva escena | final_acceptance_test: abre los cuatro modos con botón Atrás real | Pendiente |
+| AC01 | Inicio → Editor y Entrenador; regresar conserva escena | final_acceptance_test: abre ambas entradas con botón Atrás real; comprueba ausencia de Simulador/Árbitro | Pendiente |
 | AC02 | Crear tablero, poner figuras y H, guardar y reabrir biblioteca | E2E crea 6×6 con A/B; FileDocumentStore real, nueva instancia y mismo ID | Pendiente |
 | AC03 | Dictamen de visión con estado, motivo y referencias | E2E confirma H A1–D1; contratos de visión/capacidades y versiones sin soporte | Pendiente |
 | AC04 | Medir y comparar alcance | E2E distancia 3, alcance declarado 4 y visión H desde par coherente | Pendiente |
@@ -30,7 +30,8 @@ ENTREGA_12.md. Los pendientes Android se mantienen sin cambio de estado.
 | AC20 | APK verificable | Build debug, versión/código, permisos, firma y hash en ESTADO | Instalación pendiente |
 | AC21 | Editor con colocación rápida y paleta de terreno | editor_quick_tools: tipos sin desplegable/pintura accidental, colocación sin formulario, ficha/Deshacer/Rehacer, altura 2 y nivel existente, tamaños/escala | Pendiente |
 | AC22 | AA→A sin recuperar escenario temporal | session_vision: recuperación antigua ignorada sin escribir, estado compartido/segundo plano, disco real y biblioteca/progreso persistentes | Pendiente |
-| AC23 | Dictamen inmediato sobre mapa | session_vision: Editor/Simulador/Árbitro, cuatro estados, recálculo/limpieza, bases automáticas, vértice A1–D6/B4 y texto ampliado | Pendiente |
+| AC23 | Dictamen inmediato sobre mapa | session_vision: Editor, cuatro estados, recálculo/limpieza, bases automáticas, vértice A1–D6/B4 y texto ampliado | Pendiente |
+| AC24 | Transiciones distintas de elevaciones normales | transition_symbol: triángulo en cada casilla, vertical/horizontal, PNG real, JSON y retirada; renders con E2, niveles 1/2/3 y tres tamaños | Pendiente |
 
 El test E2E es `test/final_acceptance_test.dart`, caso «aceptación: crear, guardar,
 reabrir, visión, alcance, mover, ejercicio, resolver, JSON y PNG». Invoca creación
