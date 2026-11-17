@@ -49,6 +49,7 @@ Exercise personalExercise({
     ExerciseMetric.distance => ['11.3a'],
     ExerciseMetric.range => ['11.3b', '11.5'],
     ExerciseMetric.movement => ['10', '13.2', '16'],
+    ExerciseMetric.visibilityFromPositions => ['10', '11.4', '24.2e'],
     _ => const [],
   },
   teams: scenario.session.teams,

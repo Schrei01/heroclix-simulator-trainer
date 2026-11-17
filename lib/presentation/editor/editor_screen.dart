@@ -17,6 +17,7 @@ import '../vision/vision_controls.dart';
 import '../vision/tactical_controls.dart';
 import 'elevation_controls.dart';
 import '../movement/movement_controls.dart';
+import '../tactics/tactical_screen.dart';
 
 enum _ViewAction {
   grid,
@@ -506,6 +507,7 @@ class _ToolBar extends StatelessWidget {
       ('targets', 'Mostrar objetivos', Icons.radar_outlined),
       ('elevation', 'Alturas y transiciones', Icons.layers_outlined),
       ('movement', 'Movimiento', Icons.route_outlined),
+      ('positionAnalysis', 'Analizar posición', Icons.analytics_outlined),
       ('erase', 'Borrar elemento', Icons.backspace_outlined),
     ];
     final list = SingleChildScrollView(
@@ -569,6 +571,16 @@ class _ToolBar extends StatelessWidget {
                       : '$title · Próximamente',
                   onPressed: EditorTool.values.any((tool) => tool.name == id)
                       ? () {
+                          if (id == 'positionAnalysis') {
+                            Navigator.push<void>(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    TacticalScreen(editor: controller),
+                              ),
+                            );
+                            return;
+                          }
                           controller.setTool(
                             EditorTool.values.firstWhere(
                               (tool) => tool.name == id,

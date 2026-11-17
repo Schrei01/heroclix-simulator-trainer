@@ -13,6 +13,7 @@ import '../scenarios/scenario_actions.dart';
 import 'vision_controls.dart';
 import 'tactical_controls.dart';
 import '../movement/movement_controls.dart';
+import '../tactics/tactical_screen.dart';
 
 /// Vista del mismo escenario y motor. El tablero aquí solo elige extremos/navega.
 class VisionScreen extends StatefulWidget {
@@ -88,6 +89,16 @@ class _VisionScreenState extends State<VisionScreen> {
                 tooltip: 'Elegir análisis',
                 icon: const Icon(Icons.tune_outlined),
                 onSelected: (tool) {
+                  if (tool == EditorTool.positionAnalysis) {
+                    Navigator.push<void>(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            TacticalScreen(editor: widget.controller),
+                      ),
+                    );
+                    return;
+                  }
                   if (tool == EditorTool.vision) {
                     _activate();
                     return;
@@ -101,6 +112,11 @@ class _VisionScreenState extends State<VisionScreen> {
                   }
                 },
                 itemBuilder: (_) => const [
+                  PopupMenuItem(
+                    key: ValueKey('mode-position'),
+                    value: EditorTool.positionAnalysis,
+                    child: Text('Analizar posición'),
+                  ),
                   PopupMenuItem(
                     key: ValueKey('mode-movement'),
                     value: EditorTool.movement,

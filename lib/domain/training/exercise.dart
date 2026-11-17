@@ -43,6 +43,7 @@ enum ExerciseMetric {
   movement,
   position,
   manual,
+  visibilityFromPositions,
 }
 
 final class RuleSetVersion {
@@ -78,6 +79,7 @@ final class Exercise {
     Iterable<String> expected = const [],
     Iterable<CellCoordinate> candidates = const [],
     Iterable<CellCoordinate> solutionRoute = const [],
+    Map<CellCoordinate, List<CellCoordinate>> candidateRoutes = const {},
     Iterable<String> hints = const [],
     Iterable<String> references = const [],
     Iterable<Team> teams = const [Team.blue, Team.red],
@@ -88,6 +90,11 @@ final class Exercise {
        expected = Set.unmodifiable(expected),
        candidates = List.unmodifiable(candidates),
        solutionRoute = List.unmodifiable(solutionRoute),
+       candidateRoutes = Map.unmodifiable(
+         candidateRoutes.map(
+           (k, v) => MapEntry(k, List<CellCoordinate>.unmodifiable(v)),
+         ),
+       ),
        hints = List.unmodifiable(hints),
        references = List.unmodifiable(references),
        teams = List.unmodifiable(teams),
@@ -135,6 +142,7 @@ final class Exercise {
               ExerciseMetric.vision,
               ExerciseMetric.distance,
               ExerciseMetric.range,
+              ExerciseMetric.visibilityFromPositions,
             ].contains(metric)) ||
         (type == QuestionType.manual && manualGuide.trim().isEmpty) ||
         (type != QuestionType.manual && this.expected.isEmpty) ||
@@ -166,6 +174,7 @@ final class Exercise {
   final List<ExerciseOption> options;
   final Set<String> expected;
   final List<CellCoordinate> candidates, solutionRoute;
+  final Map<CellCoordinate, List<CellCoordinate>> candidateRoutes;
   final List<String> hints, references;
   final DateTime createdAt;
   String get progressKey => '$id@$revision@${rules.value}';

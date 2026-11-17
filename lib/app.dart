@@ -5,6 +5,7 @@ import 'presentation/editor/editor_controller.dart';
 import 'presentation/theme/app_theme.dart';
 import 'presentation/training/training_controller.dart';
 import 'application/training/training_repository.dart';
+import 'presentation/training/training_scope.dart';
 
 import 'dart:async';
 
@@ -59,6 +60,10 @@ class _HeroClixAppState extends State<HeroClixApp> with WidgetsBindingObserver {
       supportedLocales: const [Locale('es')],
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
       theme: AppTheme.dark,
+      builder: (context, child) => TrainingScope(
+        controller: _trainingController,
+        child: child ?? const SizedBox.shrink(),
+      ),
       home: HomeScreen(
         editorController: _editorController,
         trainingController: _trainingController,

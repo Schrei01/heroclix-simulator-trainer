@@ -51,6 +51,13 @@ import '../test/support/training_fixtures.dart';
 import '../test/character_editor_test.dart' show press;
 import '../test/editor_test.dart' show cellPosition;
 
+import 'package:heroclix_simulator_trainer/presentation/tactics/tactical_screen.dart';
+import 'package:heroclix_simulator_trainer/presentation/tactics/position_analysis_controller.dart';
+import 'package:heroclix_simulator_trainer/presentation/tactics/diagnostic_png.dart';
+import 'package:heroclix_simulator_trainer/application/training/analysis_exercises.dart';
+
+import '../test/support/tactics_contract.dart' show tacticalWorld, tacticCaps;
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -75,6 +82,14 @@ void main() {
   });
 
   for (final (name, size, dimensions) in [
+    ('tactics_overview', const Size(400, 900), null),
+    ('tactics_map', const Size(1000, 720), null),
+    ('tactics_comparison', const Size(400, 900), null),
+    ('tactics_hypothesis', const Size(1000, 720), null),
+    ('tactics_uncertainty', const Size(400, 900), null),
+    ('tactics_evidence', const Size(1000, 720), null),
+    ('tactics_exercise', const Size(400, 900), null),
+    ('tactics_export', const Size(1000, 720), null),
     ('training_bank', const Size(400, 900), null),
     ('training_question', const Size(400, 900), null),
     ('training_feedback', const Size(400, 900), null),
@@ -724,10 +739,10 @@ void main() {
               session: visionSession(world),
             );
             const codec = ScenarioCodec();
-            final file = File('build/verification/prompt-10/$name.json');
+            final file = File('build/verification/prompt-11/$name.json');
             await file.parent.create(recursive: true);
             await file.writeAsString(codec.encode(doc));
-            await File('build/verification/prompt-10/$name-working.json')
+            await File('build/verification/prompt-11/$name-working.json')
                 .writeAsString(
                   jsonEncode({
                     'workspaceSchemaVersion': 1,
@@ -822,6 +837,91 @@ void main() {
           }
         }
       }
+      if (name.startsWith('tactics_')) {
+        final world = name == 'tactics_hypothesis'
+            ? tacticCaps(tacticalWorld(), it: [VisionAbility.blocking])
+            : name == 'tactics_uncertainty'
+            ? tacticCaps(tacticalWorld(), it: [VisionAbility.other])
+            : tacticalWorld();
+        persistent.loadScenario(visionSession(world));
+        persistent.selectCharacter('figure-1');
+        final analysis = PositionAnalysisController(persistent);
+        if (name == 'tactics_hypothesis') analysis.setComparison(true);
+        await tester.runAsync(() => analysis.analyze());
+        analysis.select(
+          CellCoordinate.parse(name == 'tactics_hypothesis' ? 'B1' : 'B2'),
+        );
+        if (name == 'tactics_exercise') {
+          final e = await tester.runAsync(
+            () => buildAnalysisExercise(
+              AnalysisExerciseRequest(
+                analysis.original,
+                'figure-1',
+                analysis.context.rulesVersion,
+                analysis.chosen!,
+                analysis.current!,
+                analysis.candidates,
+                'figure-2',
+                false,
+              ),
+            ),
+          );
+          await training.repository.add(e!);
+          training.generatedExerciseAdded();
+          analysis.dispose();
+          await tester.ensureVisible(find.text('Abrir entrenador'));
+          await tester.tap(find.text('Abrir entrenador'));
+          await tester.pumpAndSettle();
+          await press(tester, 'training-start-${e.id}');
+        } else {
+          Navigator.of(tester.element(find.byType(Scaffold))).push<void>(
+            MaterialPageRoute(
+              builder: (_) =>
+                  TacticalScreen(editor: persistent, analysis: analysis),
+            ),
+          );
+          await tester.pumpAndSettle();
+          if (name == 'tactics_comparison') {
+            await tester.ensureVisible(
+              find.byKey(const ValueKey('position-comparison')),
+            );
+          }
+          if (name == 'tactics_map' || name == 'tactics_export') {
+            await tester.ensureVisible(
+              find.byKey(const ValueKey('board-viewport')),
+            );
+          }
+          if (name == 'tactics_uncertainty') {
+            await tester.ensureVisible(
+              find.byKey(const ValueKey('position-current')),
+            );
+          }
+          if (name == 'tactics_hypothesis') {
+            await tester.ensureVisible(
+              find.text('HIPÓTESIS sin mejoras soportadas'),
+            );
+          }
+          if (name == 'tactics_evidence') {
+            await press(tester, 'position-enemy-evidence');
+            await tester.ensureVisible(find.text('Enemigo B'));
+          }
+          await tester.pumpAndSettle();
+          if (name == 'tactics_export') {
+            await tester.runAsync(() async {
+              final bytes = await diagnosticPng(
+                analysis.original,
+                analysis.current!,
+                analysis.candidates,
+                analysis.chosen,
+                analysis.priority,
+              );
+              final file = File('build/verification/prompt-11/diagnostico.png');
+              await file.parent.create(recursive: true);
+              await file.writeAsBytes(bytes);
+            });
+          }
+        }
+      }
       expect(tester.takeException(), isNull);
 
       final boundary =
@@ -830,7 +930,7 @@ void main() {
         final image = await boundary.toImage();
         try {
           final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-          final output = File('build/previews/prompt-10/$name.png');
+          final output = File('build/previews/prompt-11/$name.png');
           await output.parent.create(recursive: true);
           await output.writeAsBytes(bytes!.buffer.asUint8List());
         } finally {

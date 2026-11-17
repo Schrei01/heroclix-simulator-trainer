@@ -67,7 +67,7 @@ void main() {
       expect(migrated.data.personal.single.id, e.id);
       expect(
         jsonDecode(store.documents['working']!)['trainingSchemaVersion'],
-        2,
+        3,
       );
     },
   );

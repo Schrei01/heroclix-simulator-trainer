@@ -13,6 +13,7 @@ final class TrainingRepository {
   TrainingData data = TrainingData();
   bool _loaded = false;
   String? _legacy;
+  int? _legacyVersion;
   Future<void> _tail = Future.value();
   Future<void> get settled => _tail;
   Future<T> _queue<T>(Future<T> Function() operation) {
@@ -25,18 +26,19 @@ final class TrainingRepository {
     _loaded = false;
     final raw = await store.read('working');
     final next = raw == null ? TrainingData() : codec.decode(raw);
-    _legacy =
-        raw != null && (jsonDecode(raw) as Map)['trainingSchemaVersion'] == 1
-        ? raw
-        : null;
+    _legacyVersion = raw == null
+        ? null
+        : (jsonDecode(raw) as Map)['trainingSchemaVersion'] as int;
+    _legacy = (_legacyVersion == 1 || _legacyVersion == 2) ? raw : null;
     data = next;
     _loaded = true;
   });
   Future<void> _write(TrainingData next) async {
     if (!_loaded) throw StateError('Abre el progreso antes de guardarlo.');
     final raw = codec.encode(next);
-    if (_legacy != null && await store.read('schema1-working') == null) {
-      await store.write('schema1-working', _legacy!);
+    if (_legacy != null &&
+        await store.read('schema$_legacyVersion-working') == null) {
+      await store.write('schema$_legacyVersion-working', _legacy!);
     }
     await store.write('working', raw);
     data = next;

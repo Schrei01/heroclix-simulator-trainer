@@ -173,7 +173,7 @@ class _ModeCard extends StatelessWidget {
       ),
       AppMode.simulator => (
         'Simulador',
-        'Ensaya rutas y consulta distancias, alcance, objetivos y visión.',
+        'Compara posiciones, ensaya rutas y consulta alcance, objetivos y visión.',
         Icons.route_outlined,
       ),
       AppMode.trainer => (

@@ -22,7 +22,7 @@ final class TrainingData {
 
 final class TrainingCodec {
   const TrainingCodec();
-  static const schemaVersion = 2, maxBytes = 2 * 1024 * 1024;
+  static const schemaVersion = 3, maxBytes = 2 * 1024 * 1024;
   static BoardSession session(Exercise e) {
     var figures = const CharacterRepository.empty();
     var next = 1;
@@ -68,6 +68,13 @@ final class TrainingCodec {
     'expected': e.expected.toList()..sort(),
     'candidates': e.candidates.map((c) => c.label).toList(),
     'solutionRoute': e.solutionRoute.map((c) => c.label).toList(),
+    'candidateRoutes': [
+      for (final entry in e.candidateRoutes.entries)
+        {
+          'cell': entry.key.label,
+          'route': entry.value.map((c) => c.label).toList(),
+        },
+    ],
     'explanation': e.explanation,
     'hints': e.hints,
     'references': e.references,
@@ -108,6 +115,8 @@ final class TrainingCodec {
       'references',
       'manualGuide',
       'scenario',
+      if (source is Map && source.containsKey('candidateRoutes'))
+        'candidateRoutes',
     });
     final scenario = const ScenarioCodec().fromMap(m['scenario']);
     final version = _str(m['rulesVersion'], 40, false);
@@ -124,6 +133,19 @@ final class TrainingCodec {
       );
     }).toList();
     final id = _str(m['id'], 80, false);
+    final routes = <CellCoordinate, List<CellCoordinate>>{};
+    for (final value in _list(m['candidateRoutes'] ?? const [], 12)) {
+      final r = ScenarioCodec.object(value, {'cell', 'route'}),
+          cell = CellCoordinate.parse(_str(r['cell'], 12, false));
+      if (routes.containsKey(cell)) {
+        throw const FormatException('Ruta de posición duplicada.');
+      }
+      routes[cell] = _strings(
+        r['route'],
+        101,
+        12,
+      ).map(CellCoordinate.parse).toList();
+    }
     if (!id.startsWith('personal-')) {
       throw const FormatException(
         'El banco curado no puede sobrescribirse desde progreso.',
@@ -153,6 +175,7 @@ final class TrainingCodec {
         101,
         12,
       ).map(CellCoordinate.parse),
+      candidateRoutes: routes,
       explanation: _str(m['explanation'], 3000),
       hints: _strings(m['hints'], 5, 1000),
       references: _strings(m['references'], 20, 160),
@@ -257,7 +280,7 @@ final class TrainingCodec {
       );
       final version = root['trainingSchemaVersion'];
       if (version is! int ||
-          (version != 1 && version != 2) ||
+          (version != 1 && version != 2 && version != 3) ||
           root['bankVersion'] is! int ||
           (root['bankVersion'] as int) < 1 ||
           (root['bankVersion'] as int) > curatedBankVersion) {
@@ -285,12 +308,12 @@ final class TrainingCodec {
           'lastAttemptId',
           'answer',
           'evaluation',
-          if (version == 2) ...['revision', 'usedHint'],
+          if (version != 1) ...['revision', 'usedHint'],
         });
         final attempts = ScenarioCodec.integer(m['attempts'], 1, 1000000000),
             manual = ScenarioCodec.integer(m['manualReviews'], 0, attempts),
             correct = ScenarioCodec.integer(m['correct'], 0, attempts - manual);
-        if (version == 2 && m['usedHint'] is! bool) {
+        if (version != 1 && m['usedHint'] is! bool) {
           throw const FormatException('Pista inválida.');
         }
         final id = _str(m['exerciseId'], 80, false);
@@ -313,7 +336,7 @@ final class TrainingCodec {
             lastAttemptId: _str(m['lastAttemptId'], 80, false),
             lastAnswer: answerFrom(m['answer']),
             lastEvaluation: evaluationFrom(m['evaluation']),
-            usedHint: version == 2 ? m['usedHint'] as bool : false,
+            usedHint: version != 1 ? m['usedHint'] as bool : false,
           ),
         );
       }

@@ -141,6 +141,11 @@ final class TrainingController extends ChangeNotifier {
   }
 
   Future<void> flush() => repository.settled;
+  void generatedExerciseAdded() {
+    _checks.clear();
+    _changed();
+  }
+
   @override
   void dispose() {
     _closed = true;

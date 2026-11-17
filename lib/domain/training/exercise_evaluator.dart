@@ -190,6 +190,50 @@ final class ExerciseEvaluator {
             '${c.label}: distancia ${t.distance.squares}, alcance ${source.range}; ${_visionLabel(t.vision.status)}.',
           );
         }
+      case ExerciseMetric.visibilityFromPositions:
+        if (source == null || dest == null || e.candidates.length < 2) {
+          return no('Faltan figura, objetivo o posiciones para comparar.');
+        }
+        for (final c in e.candidates) {
+          final path = e.candidateRoutes[c];
+          if (path == null || path.isEmpty || path.last != c) {
+            return no('Falta ruta de verificación a ${c.label}.');
+          }
+          final route = movement.evaluate(
+            e.world,
+            source.id,
+            path,
+            context: MovementContext(rulesVersion: e.rules.value),
+          );
+          if (route.status != MovementStatus.valid) {
+            return no(
+              'No se pudo verificar la ruta a ${c.label}: ${route.reason}',
+            );
+          }
+          final next = source.revised(source.data.at(c));
+          final future = VisionSnapshot(
+            dimensions: e.world.dimensions,
+            terrain: e.world.terrain,
+            walls: e.world.walls,
+            characters: e.world.characters.map(
+              (f) => f.id == source.id ? next : f,
+            ),
+          );
+          final v = targets
+              .evaluateTarget(
+                future,
+                next,
+                dest,
+                VisionContext(rulesVersion: e.rules.value),
+                visionOnly: true,
+              )
+              .vision;
+          if (v.canSee == null) return no(v.explanation);
+          if (v.canSee == true) actual.add(c.label);
+          evidence.add(
+            '${c.label}: ruta verificada de ${route.cost} pasos; ${_visionLabel(v.status)}. ${v.explanation}',
+          );
+        }
       case ExerciseMetric.manual:
         return no('Corrector manual incompatible.');
     }
