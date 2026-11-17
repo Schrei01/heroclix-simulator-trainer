@@ -10,6 +10,8 @@ import 'infrastructure/local/android_scenario_files.dart';
 import 'infrastructure/local/file_document_store.dart';
 import 'presentation/editor/editor_controller.dart';
 import 'presentation/scenarios/workspace_controller.dart';
+import 'presentation/training/training_controller.dart';
+import 'application/training/training_repository.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,5 +27,13 @@ void main() {
   controller.files = files;
   controller.attachWorkspace(workspace);
   unawaited(workspace.initialize());
-  runApp(HeroClixApp(controller: controller));
+  final training = TrainingController(
+    TrainingRepository(
+      FileDocumentStore(
+        () async => Directory('${await files.privateDirectory()}/training_v1'),
+      ),
+    ),
+    scenarios: workspace.repository,
+  );
+  runApp(HeroClixApp(controller: controller, trainingController: training));
 }

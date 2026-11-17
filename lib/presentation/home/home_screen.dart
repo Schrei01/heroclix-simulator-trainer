@@ -6,11 +6,18 @@ import '../theme/app_theme.dart';
 import '../editor/editor_controller.dart';
 import '../editor/editor_screen.dart';
 import '../vision/vision_screen.dart';
+import '../training/training_controller.dart';
+import '../training/training_screen.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({required this.editorController, super.key});
+  const HomeScreen({
+    required this.editorController,
+    required this.trainingController,
+    super.key,
+  });
 
   final EditorController editorController;
+  final TrainingController trainingController;
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +52,7 @@ class HomeScreen extends StatelessWidget {
                   const SizedBox(height: 8),
                   const Text(
                     'Construye tu escenario y ensaya movimiento, distancias, alcance y visión con '
-                    'explicaciones y referencias. Entrenador: próximamente.',
+                    'explicaciones y referencias. Practica ejercicios y guarda tu progreso local.',
                   ),
                   const SizedBox(height: 32),
                   Semantics(
@@ -75,7 +82,12 @@ class HomeScreen extends StatelessWidget {
                                         Navigator.of(context).push(
                                           MaterialPageRoute<void>(
                                             builder: (_) =>
-                                                mode == AppMode.editor
+                                                mode == AppMode.trainer
+                                                ? TrainingScreen(
+                                                    controller:
+                                                        trainingController,
+                                                  )
+                                                : mode == AppMode.editor
                                                 ? EditorScreen(
                                                     controller:
                                                         editorController,

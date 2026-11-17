@@ -40,6 +40,16 @@ import '../test/support/target_contract.dart' show ranged;
 import '../test/support/movement_contract.dart' show mw;
 
 import 'package:heroclix_simulator_trainer/presentation/movement/movement_controls.dart';
+import 'package:heroclix_simulator_trainer/application/training/training_repository.dart';
+import 'package:heroclix_simulator_trainer/application/training/training_codec.dart';
+import 'package:heroclix_simulator_trainer/domain/training/exercise.dart';
+import 'package:heroclix_simulator_trainer/domain/training/curated_exercises.dart';
+import 'package:heroclix_simulator_trainer/presentation/training/training_controller.dart';
+import 'package:heroclix_simulator_trainer/presentation/editor/board_canvas.dart';
+
+import '../test/support/training_fixtures.dart';
+import '../test/character_editor_test.dart' show press;
+import '../test/editor_test.dart' show cellPosition;
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -65,6 +75,14 @@ void main() {
   });
 
   for (final (name, size, dimensions) in [
+    ('training_bank', const Size(400, 900), null),
+    ('training_question', const Size(400, 900), null),
+    ('training_feedback', const Size(400, 900), null),
+    ('training_route', const Size(1000, 700), null),
+    ('training_progress', const Size(400, 900), null),
+    ('training_personal', const Size(400, 900), null),
+    ('training_manual', const Size(400, 900), null),
+    ('training_unknown', const Size(400, 900), null),
     ('movement_route', const Size(400, 900), BoardDimensions.initial),
     ('movement_invalid', const Size(400, 900), BoardDimensions.initial),
     ('movement_report', const Size(400, 900), BoardDimensions.initial),
@@ -206,10 +224,35 @@ void main() {
       // Cada render posee su propio almacenamiento, sin canal de plataforma.
       final persistent = await persistentController(store);
       await persistent.workspace!.save(name: 'Escenario de ejemplo');
+      final training = TrainingController(
+        TrainingRepository(MemoryStore()),
+        scenarios: persistent.workspace!.repository,
+      );
+      await training.initialize();
+      if (name == 'training_personal') {
+        persistent.loadScenario(TrainingCodec.session(curatedExercises.first));
+        persistent.workspace!.edited(persistent.value);
+        await persistent.workspace!.save();
+      }
+      if (name == 'training_manual') {
+        await training.add(personalFixture(manual: true));
+      }
+      if (name == 'training_unknown') {
+        await training.repository.store.write(
+          'working',
+          const TrainingCodec().encode(
+            TrainingData(personal: [personalFixture(version: 'futura')]),
+          ),
+        );
+        await training.initialize(reload: true);
+      }
       await tester.pumpWidget(
         RepaintBoundary(
           key: key,
-          child: HeroClixApp(controller: persistent),
+          child: HeroClixApp(
+            controller: persistent,
+            trainingController: training,
+          ),
         ),
       );
       await tester.pumpAndSettle();
@@ -681,10 +724,10 @@ void main() {
               session: visionSession(world),
             );
             const codec = ScenarioCodec();
-            final file = File('build/verification/prompt-08/$name.json');
+            final file = File('build/verification/prompt-10/$name.json');
             await file.parent.create(recursive: true);
             await file.writeAsString(codec.encode(doc));
-            await File('build/verification/prompt-08/$name-working.json')
+            await File('build/verification/prompt-10/$name-working.json')
                 .writeAsString(
                   jsonEncode({
                     'workspaceSchemaVersion': 1,
@@ -696,6 +739,89 @@ void main() {
           });
         }
       }
+      if (name.startsWith('training_')) {
+        await tester.ensureVisible(find.text('Abrir entrenador'));
+        await tester.tap(find.text('Abrir entrenador'));
+        await tester.pumpAndSettle();
+        if (name == 'training_personal') {
+          await press(tester, 'training-new');
+          await tester.enterText(
+            find.byKey(const ValueKey('personal-title')),
+            'Mi práctica de visión',
+          );
+          await tester.enterText(
+            find.byKey(const ValueKey('personal-question')),
+            '¿Cómo es la visión entre las dos figuras?',
+          );
+          await tester.pumpAndSettle();
+        } else if (name == 'training_progress') {
+          await training.submit(
+            curatedExercises[0],
+            correctTrainingAnswer(curatedExercises[0]),
+            'preview-1',
+          );
+          await training.submit(
+            curatedExercises[1],
+            Answer(AnswerKind.choice, value: 'blocked'),
+            'preview-2',
+          );
+          await tester.pumpAndSettle();
+          await press(tester, 'training-progress');
+          await tester.ensureVisible(
+            find.byKey(const ValueKey('training-stats-vision')),
+          );
+          await tester.pumpAndSettle();
+        } else if (name == 'training_unknown') {
+          await tester.ensureVisible(
+            find.byKey(
+              ValueKey(
+                'training-start-${training.repository.data.personal.single.id}',
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
+        } else if (!['training_bank'].contains(name)) {
+          final id = name == 'training_manual'
+              ? training.repository.data.personal.single.id
+              : name == 'training_route'
+              ? 'hc10-m02'
+              : 'hc10-v02';
+          await press(tester, 'training-start-$id');
+          if (name == 'training_feedback') {
+            await press(tester, 'training-option-hindered');
+            await press(tester, 'training-check');
+            await tester.ensureVisible(
+              find.byKey(const ValueKey('training-feedback')),
+            );
+            await tester.pumpAndSettle();
+          } else if (name == 'training_manual') {
+            await tester.ensureVisible(
+              find.byKey(const ValueKey('training-text')),
+            );
+            await tester.enterText(
+              find.byKey(const ValueKey('training-text')),
+              'Primero revisaría los obstáculos y las capacidades declaradas.',
+            );
+            await press(tester, 'training-check');
+            await tester.ensureVisible(
+              find.byKey(const ValueKey('training-feedback')),
+            );
+            await tester.pumpAndSettle();
+          } else if (name == 'training_route') {
+            for (final label in ['A2', 'B3', 'C2', 'C1']) {
+              await tester.ensureVisible(
+                find.byKey(const ValueKey('board-viewport')),
+              );
+              await tester.pumpAndSettle();
+              final board = tester.widget<BoardCanvas>(
+                find.byType(BoardCanvas),
+              );
+              await tester.tapAt(cellPosition(tester, board.controller, label));
+              await tester.pumpAndSettle();
+            }
+          }
+        }
+      }
       expect(tester.takeException(), isNull);
 
       final boundary =
@@ -704,7 +830,7 @@ void main() {
         final image = await boundary.toImage();
         try {
           final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-          final output = File('build/previews/prompt-09/$name.png');
+          final output = File('build/previews/prompt-10/$name.png');
           await output.parent.create(recursive: true);
           await output.writeAsBytes(bytes!.buffer.asUint8List());
         } finally {
