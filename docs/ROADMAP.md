@@ -1,7 +1,7 @@
 # Hoja de ruta
 
 Se trabaja en este mismo repositorio. Cada etapa requiere revisión de su entrega
-y una nueva orden antes de iniciar la siguiente. Estado al 2026-11-16.
+y una nueva orden antes de iniciar la siguiente. Estado al 2026-11-17.
 
 | Etapa | Entrega | Estado |
 | --- | --- | --- |
@@ -16,8 +16,8 @@ y una nueva orden antes de iniciar la siguiente. Estado al 2026-11-16.
 | 08 | Elevaciones, bases múltiples y capacidades verificadas | Validada; continuación a 09 autorizada por el usuario; informe en ENTREGA_08.md |
 | 09 | Validación y búsqueda de rutas de movimiento | Validada; continuación a 10 autorizada por el usuario; informe en ENTREGA_09.md |
 | 10 | Ejercicios, corrección y progreso local | Validada; continuación a 11 autorizada por el usuario; informe en ENTREGA_10.md |
-| 11 | Comparación de posiciones y métricas tácticas | Entregada: análisis segmentado, comparación, ejercicios y exportación; APK 0.12.0+13 y evidencia en ESTADO.md |
-| 12 | Integración, accesibilidad, verificación y APK final | Pendiente |
+| 11 | Comparación de posiciones y métricas tácticas | Validada; continuación a 12 autorizada por el usuario; informe en ENTREGA_11.md |
+| 12 | Integración, accesibilidad, verificación y APK final | Implementada como 1.0.0-rc.1+14; APK debug y evidencia en ESTADO.md; aceptación nativa pendiente, sin congelar estable |
 
 Editor se habilita en 01. El informe histórico de 00 se conserva en ENTREGA_00.md.
 Simulador y Árbitro tienen visión básica desde 06 y comparten escenario con Editor.

@@ -132,3 +132,9 @@ una ruta cambia únicamente la posición mediante el historial existente. Crear
 ejercicio copia la escena y rutas al formato 3 del Entrenador; no añade campos al
 JSON de escenarios. TXT/PNG de diagnóstico son salidas separadas con datos genéricos,
 distintas de exportar el escenario completo con sus nombres. Véase ANALISIS_TACTICO.md.
+
+En 12 los cinco ejemplos se previsualizan con controlador separado. Abrir copia
+usa importación interna con ID nuevo y protección de cambios sin guardar; los
+archivos anteriores permanecen en biblioteca. No se añade formato, campo ni capa.
+La aceptación recorre archivos JSON/PNG reales y restauración de controladores;
+la restauración después de cierre forzado Android sigue pendiente de dispositivo.

@@ -421,3 +421,28 @@ verificado ni implementado ninguna regla del juego.
 - TXT/PNG con datos controlados y etiquetas genéricas; no captura de pantalla con
   nombres ni metadatos. Sin nuevas dependencias, permisos ni red en runtime.
 - 0.12.0+13; evidencia real y límites nativos en ESTADO.md. No se inicia Prompt 12.
+
+## 2026-11-17 — Prompt 12
+
+- Entrega candidata 1.0.0-rc.1+14. No congelar estable hasta comprobar instalación,
+  restauración tras cierre, selectores, offline con radios apagadas y rendimiento
+  en Android. Se intentó AVD API 37/WHPX: quedó offline y se detuvo sin borrar datos.
+  El usuario indicó continuar sin teléfono; no se confunde Windows con Android.
+- Conservar los cuatro modos/motor/datos y tema existente, añadiendo ayuda breve,
+  cobertura/versiones y licencias locales en Acerca de. AppInfo se contrasta con
+  pubspec y perfil; no se añade un plugin para consultar la versión.
+- Cinco ejemplos originales reutilizan snapshots del banco verificado: H, vértice
+  A1–D6, muro, elevación y rodeo. Vista previa independiente y copia con ID nuevo,
+  protección de cambios y biblioteca conservada, sin sembrar datos al iniciar.
+- Corregir incompatibilidad real de TXT en Android mediante MIME/extensión exactos;
+  mantener 2 MiB para texto/JSON y 16 MiB para PNG. Sin permisos nuevos. Corregir
+  esquema antiguo en detalles y selección de consulta individual desde caché.
+- Matriz E2E explícita; test de archivos/controladores reales y respuesta en UI,
+  migraciones/regresiones anteriores intactas. Fallo de espacio se inyecta como
+  OSError 28 y comprueba documento anterior y recuperación, sin llenar el disco.
+- Accesibilidad básica verificada con guías de objetivos táctiles/etiquetas/contraste
+  y colores de estado ≥4,5:1. No implica validación TalkBack real. Ayudas adaptables
+  y mapa siguen separados; no se añaden reglas, contenido oficial ni juego completo.
+- Sin claves release suministradas; se conserva firma debug para actualizar las
+  entregas anteriores y se documenta custodia/firma segura. No se usa debug como
+  sustituto de release. APK, claves, logs y renders excluidos de Git.

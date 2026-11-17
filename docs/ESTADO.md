@@ -1,151 +1,167 @@
-# Estado actual — etapa 11
+# Estado actual — etapa 12 / candidata
 
-2026-11-16 (America/Bogota). App **0.12.0+13**.
+2026-11-17 (America/Bogota). App **1.0.0-rc.1+14**, APK **debug**.
 Repositorio privado: https://github.com/Schrei01/heroclix-simulator-trainer.
-Rama `codex/prompt-11`, sobre 10 (`2bc0f19`). Informe previo: [ENTREGA_10.md](ENTREGA_10.md).
+Rama `codex/prompt-12`, sobre 11 (`e0312a4`). Informe previo: [ENTREGA_11.md](ENTREGA_11.md).
+**No se congela 1.0.0 estable:** falta aceptación nativa y rendimiento Android.
 
-## A. Operativo
+## A. Operativo y verificado
 
-- Analizar posición desde Editor, Simulador y Árbitro: figura activa, visibles,
-  enemigos que la ven, alcance declarado, líneas H/bloqueadas y amenazas conocidas.
-  Definiciones, referencias y límites visibles. H cuenta como visión; amenaza exige
-  línea y alcance en un mismo par y no equivale a ataque legal.
-- Mapa con indicadores V/T/C y desconocidos, terreno y niveles. Los destinos son
-  anclas; se comprueba toda la huella. Rutas ilegales excluidas de candidatas legales.
-  Se comparan posición actual y destino legal sin modificar escena hasta confirmar.
-- Prioridades transparentes: más visibles, menos visión enemiga o menor movimiento.
-  Orden dentro de la página, sin mejor jugada ni probabilidades. Resultados parciales
-  separados, cotas inferiores y diferencias sin falsa precisión.
-- HIPÓTESIS sin mejoras soportadas del activo, conservando capacidades desconocidas
-  y fichas enemigas. Misma ruta revalidada sin mejoras; ficha original intacta.
-- Cálculo en isolate: 12 destinos/página, progreso por enemigo/posición, cancelación
-  real del worker y descarte de mensajes atrasados. Hasta 32 enemigos; restantes
-  No evaluados. Caché de ocho páginas invalidada por contenido, capacidades,
-  versión y efectos. Cámara/prioridad conservan resultados.
-- Confirmar revalida la ruta declarada y aplica un único comando con Deshacer.
-  Cancelar o salir conserva posición original.
-- Crear ejercicios de recorrido o posición que ve un enemigo desde resultados
-  verificados, usando fábrica en isolate y corrector del Entrenador. Persistencia,
-  práctica y feedback reales; snapshot independiente, sin guardar fichas hipotéticas.
-- TXT/PNG del diagnóstico con etiquetas genéricas, sin nombres, IDs ni metadatos
-  libres. PNG generado desde datos, hasta 2048 px por eje. Puente Android existente.
-- Entrenamiento formato 3 lee 1/2/3, con respaldo exacto de 1/2 antes de reemplazar.
-  Contadores y ejercicios anteriores conservados. Escenarios siguen esquema 3.
-  Banco curado v1 de 24 ejercicios intacto. Sin dependencias ni permisos nuevos.
-
-Definiciones y límites: [ANALISIS_TACTICO.md](ANALISIS_TACTICO.md).
+- Se conservan los cuatro modos reales, la escena compartida del Editor/Simulador/
+  Árbitro y el snapshot independiente del Entrenador. Nueva prueba abre/regresa
+  por los cuatro botones sin mutar figuras. Tema y navegación existentes conservados.
+- Inicio incorpora Guía rápida, Ejemplos locales y Acerca de. Ayuda breve en español
+  distingue Editor/Simulador, H/B/muros, visión, alcance y No evaluado, con edición
+  y advertencia de apoyo. Todo el contenido necesario es local.
+- Catálogo de cinco escenas originales, derivadas de soluciones ya verificadas:
+  visión H, diagonal/vértice A1–D6/B4, muro, elevación intermedia y rodeo de movimiento.
+  Previsualización con controlador propio; Abrir copia usa ID nuevo y protección
+  de cambios sin guardar. Cancelar conserva escena; biblioteca original permanece.
+  Apertura deshabilitada mientras se recupera/guarda. No se siembran archivos al iniciar.
+- Acerca de muestra versión/build, edición 2026-07-01, fuente, cobertura/limitaciones,
+  aviso de herramienta independiente y licencias de dependencias empaquetadas.
+  Identidad AppInfo contrastada con pubspec y el motor; sin plugin adicional.
+- Integración corregida: puente Android admite TXT de diagnóstico, validando pares
+  MIME/extensión JSON/PNG/TXT y límites 2/16/2 MiB. Detalles de escenario muestran
+  esquema 3. Reutilizar caché táctica individual conserva su selección.
+- Aceptación automatizada completa: crear 6×6, figuras/H, guardar/reabrir en disco,
+  visión y alcance, movimiento confirmado, copiar escena a ejercicio, responder y
+  comprobar en UI, releer progreso y hacer intercambio JSON/PNG real.
+- Accesibilidad básica: objetivos táctiles, etiquetas y contraste del Inicio;
+  estados de visión con texto/iconos y contraste ≥4,5:1 sobre las dos superficies.
+  Guía/Acerca de verificadas en vertical/horizontal y 320×320 al 300 %. No es prueba TalkBack.
+- Persistencia/esquemas compatibles de 00–11 intactos. Fallo de espacio inyectado
+  como OSError 28 conserva documento anterior y permite reintentar. Se conserva
+  edición reglamentaria y una implementación por regla. Sin dependencias/permisos nuevos.
 
 ## B. Archivos principales
 
-- `lib/domain/tactics/`: TacticalAnalysisService y diagnósticos inmutables.
-- `lib/application/tactics/`: worker y resumen público del diagnóstico.
-- `lib/presentation/tactics/`: controlador, pantalla, mapa y render PNG.
-- `lib/application/training/analysis_exercises.dart`, TrainingCodec/Repository,
-  Exercise/Evaluator: ejercicios con rutas por posición, formato 3 y respaldo.
-- TrainingScope, app y navegación Editor/Simulador/Árbitro; versión en pubspec.
-- Cinco archivos tactics_*_test, contratos A01–A14, verify_tactics,
-  benchmark_tactics y ocho renders nuevos. Expectativa del codec anterior
-  actualizada a exportación 3, conservando pruebas de compatibilidad.
+- `lib/domain/app_info.dart`: identidad/versiones contrastadas.
+- `lib/application/examples/local_examples.dart`: catálogo y copias desde banco.
+- `lib/presentation/examples/examples_screen.dart`: catálogo, vista previa y apertura.
+- `lib/presentation/help/info_screen.dart`: estructura adaptable, guía y Acerca de/licencias.
+- HomeScreen, ScenarioActions y PositionAnalysisController: integración y correcciones.
+- MainActivity.kt: whitelist TXT/MIME y límites; pubspec 1.0.0-rc.1+14; exclusiones Git.
+- `test/final_acceptance_test.dart`: 19 pruebas nuevas de aceptación, ejemplos,
+  almacenamiento, navegación, accesibilidad y licencia; regresión de caché ampliada.
+- `tool/preview_test.dart`: siete renders nuevos, evidencia de etapa 12.
+- README_FINAL, MATRIZ_ACEPTACION y documentación actualizada; entrega 11 archivada.
 
-## C. Verificación ejecutada
+## C. Comandos y resultados reales
 
-Flutter 3.50.0, Dart 3.14.0, material_ui 1.11.0; Windows 10, i5-7200U, 8 GB.
-Android minSdk 24, compile/target 36. No se cambian configuración nativa ni permisos.
+Flutter 3.50.0, Dart 3.14.0, material_ui 1.11.0; Windows 10 Home 19045,
+i5-7200U, 8 GB, cuatro procesadores lógicos. Android minSdk 24, compile/target 36.
+Se conserva configuración nativa y certificado de desarrollo.
 
-| Comando | Resultado real |
+| Comando | Resultado |
 | --- | --- |
-| `dart run tool/verify_tactics.dart` | **14/14 contratos puros aprobados**. |
-| `dart format --output=none --set-exit-if-changed lib test tool` | **143 archivos, 0 cambios**, 1,27 s, verificación final. |
-| `flutter --no-version-check analyze --no-pub` | **No issues found**, 3,0 s. |
-| `flutter --no-version-check test --no-pub --reporter expanded` | **419 aprobadas**, 166 s. |
-| `flutter --no-version-check test tool/preview_test.dart --no-pub --reporter expanded` | **66 renders aprobados**, 34 s. |
-| `flutter --no-version-check test --no-pub test/tactics_state_test.dart test/tactics_training_test.dart --reporter expanded` | **13 aprobadas**, antes de la batería completa final. |
-| `flutter --no-version-check test --no-pub test/tactics_editor_test.dart test/tactics_export_test.dart --reporter expanded` | **12 aprobadas**, incluye generación real de PNG. |
-| `dart run tool/benchmark_tactics.dart` | Cinco muestras por tablero; resultados y límites abajo. |
-| `flutter --no-version-check build apk --debug --no-pub` | **Correcto**, Gradle 48,4 s. |
-| `aapt dump badging` / `dump permissions` | 0.12.0/código 13, SDK 24/36; sin INTERNET ni almacenamiento amplio. |
+| `dart format --output=none --set-exit-if-changed lib test tool` | **148 archivos, 0 cambios**, 1,43 s. |
+| `flutter --no-version-check analyze --no-pub` | **No issues found**, 3,1 s. |
+| `flutter --no-version-check test --no-pub --reporter expanded` | **438 aprobadas**, 155 s. |
+| `flutter --no-version-check test --no-pub test/final_acceptance_test.dart test/tactics_state_test.dart --reporter expanded` | **27 aprobadas**, 11 s, antes de la batería completa final. |
+| `flutter --no-version-check test tool/preview_test.dart --no-pub --reporter expanded` | **73 renders aprobados**, 36 s. |
+| `flutter --no-version-check build apk --debug --no-pub` | **Correcto**, Gradle 94,1 s. |
+| `aapt dump badging` / `dump permissions` | Versión 1.0.0-rc.1, código 14, SDK 24/36; sin INTERNET/almacenamiento amplio. |
 | `apksigner verify --verbose --print-certs` | **Verifies**, firma v2 válida y mismo certificado. |
-| `adb devices` | **Ningún dispositivo conectado**. |
+| Inspección de licencias empaquetadas | `assets/flutter_assets/NOTICES.Z` descomprimido: avisos de material_ui, Flutter y Dart presentes; 1364985 caracteres. |
+| `adb devices -l` / intento AVD | Sin teléfono; emulador configurado API 37 quedó offline. Sin instalación ni recorrido nativo. |
 
-Se conservan 380 pruebas y se añaden 39: 14 dominio, 8 estado/isolate, 5 integración
-Entrenador/codec/migración, 10 UI y 2 privacidad/PNG. Casos incluyen muro/recalculo,
-capacidades direccionales, par coherente de base, destino ilegal, 40×40 sin enemigos,
-35 enemigos con tres omitidos, incertidumbre, cancelación, caché/cámara, versión
-reglamentaria distinta, confirmar/Deshacer, persistencia y práctica de ambos ejercicios.
-UI comprobada a 320×568, 800×360 y 320×320 con texto al 300 %.
+438 = 419 pruebas anteriores + 19 nuevas. No se desactivó ninguna. Se ejecutan
+contratos de los motores previos, migraciones 1/2/3, archivos, gestos, cancelación,
+casos sin soporte, mapas 2×2/40×40, muchas figuras, zoom/giro, accesibilidad y UI.
+La prueba E2E usa controladores/archivos reales y UI de respuesta; no automatiza
+cada formulario ni sustituye las pruebas instrumentales Android. La matriz enlaza
+los casos y separa pendientes nativos. Ejemplo de exposición: después de mover
+A1→A2, H en B1 solo toca un vértice y el lado libre permite visión despejada.
 
-Durante el desarrollo se corrigieron dos declaraciones de variables con patrón
-incompatibles con la sintaxis usada, una expectativa antigua de exportación 2,
-observaciones del analyzer y el dimensionado del pie PNG. Las verificaciones
-finales de arriba ya incluyen esas correcciones; no queda fallo conocido pendiente.
+Se corrigieron durante preparación de tests: constructor/const/import iniciales,
+el helper Atrás para material_ui y la gestión del entorno asíncrono de archivos
+reales; se cerraron handles semánticos y avisos de estilo del analyzer. Los resultados
+finales de arriba incluyen las correcciones. No hay fallos ejecutables pendientes.
 
-Renders en `build/previews/prompt-11/`: ocho de análisis nuevos y 58 regresiones.
-Se revisaron visualmente mapa, comparación, hipótesis, incertidumbre, evidencia,
-ejercicio y exportación. PNG real en `build/verification/prompt-11/diagnostico.png`.
-Son renders Flutter/Windows, no capturas de un teléfono. Logs/evidencia en build/,
-fuera de Git; copias de escenas de verificación usan carpeta de etapa 11.
+73 renders = 66 anteriores + Inicio horizontal, Acerca de, Acerca de compacto al
+200 %, Guía, Catálogo, Vista previa de ejemplo y Licencias. Nuevas capturas revisadas
+visualmente en `build/previews/prompt-12/`. Renders Flutter/Windows, no capturas Android.
+E2E produce `build/verification/prompt-12/aceptacion.json` y `aceptacion.png`, PNG
+escrito/releído/decodificado. Logs, imágenes y APK fuera de Git; entregas anteriores
+preservadas. No se redistribuye el PDF oficial.
 
-### Medición de CPU
+### Intento de entorno Android y rendimiento
 
-Dart/JIT, cinco muestras por tamaño, 36 figuras, 32 de 35 enemigos evaluados,
-12 destinos más origen. 20×20: primera/máxima **442,961 ms**, mediana **144,803 ms**.
-40×40: primera **131,576 ms**, mediana **130,800 ms**, máxima **137,457 ms**.
-El calentamiento de la primera muestra impide atribuir diferencias al tamaño.
-No es una medición de FPS, rendimiento Android ni latencia de pantalla; tampoco
-un análisis completo de los 35 enemigos. Ver `build/performance-11.log`.
+AVD Medium_Phone_API_37.0 disponible, Google APIs Play Store x86_64/API 37, WHPX
+instalado y utilizable. Se intentó arranque sin ventana/audio/snapshot, dos núcleos,
+1536 MiB solicitados y GPU swiftshader. ADB quedó offline varios minutos; QEMU
+alcanzó unos 2,88 GB residentes y se detuvo para no bloquear el resto del trabajo,
+sin borrar datos ni cambiar el AVD. Logs emulator.out/err.log en verificación de 12.
+No se obtuvo un dispositivo Android operativo ni se ejecutó allí la aplicación.
+El usuario indicó **continuar sin teléfono**. No hay medidas FPS, tiempos de
+arranque/análisis ni perfil de memoria de la app Android. La RAM anterior es del
+intento del emulador, no del producto. Las mediciones CPU de 11 son históricas y
+no se presentan como rendimiento Android de esta entrega.
 
-### APK
+### APK verificado
 
-- `build/releases/heroclix-prompt-11-debug.apk`: **158490773 bytes** (151,15 MiB).
-- SHA-256: `AE527F99ADC31616C9A41AA1AD9D726AFEFB93FE363E31048E7EAA14703335AA`.
-- Copia archivada y `build/app/outputs/flutter-apk/app-debug.apk` tienen el mismo hash.
-- Paquete `com.valinor.heroclixtrainer`, versión 0.12.0, código 13.
+- Ruta: `build/releases/heroclix-1.0.0-rc.1-debug.apk`.
+- Tamaño: **158512913 bytes** (151,17 MiB).
+- SHA-256: `82636C72923BD14981A44515D5EC51375603EE2D57CAD4FF290995A016755D49`.
+- Copia archivada y salida estándar tienen idéntico hash.
+- Paquete `com.valinor.heroclixtrainer`, versión 1.0.0-rc.1, código 14.
 - Certificado SHA-256: `57081ee91137c216eff437a7c75ac5bb6f552bc29167e63370d85628fc82ac54`.
-- La firma permite actualizar sobre anteriores sin desinstalar; instalación física
-  no ejecutada para 11. APK anteriores preservados. Sin variante release validada.
-- APK, PDF, logs y renders no se suben a Git; no se incluyen credenciales ni claves.
+- Firma debug conservada, adecuada para actualizar encima de entregas anteriores;
+  no se ejecutó esa instalación para 12. Sin keystore release suministrada, no
+  se generó release ni se sustituyó su firma por debug.
 
-## D. Comprobación manual en Android
+## D. Comprobar en Android e instalar
 
-1. Instalar el APK sobre la versión anterior. Comprobar biblioteca y progreso de 10.
-2. Simulador → Elegir análisis → Analizar posición: elegir figura y analizar.
-   Consultar métricas/evidencia, tocar destino legal y comparar ruta/costo/diferencias.
-3. Cambiar prioridad/página y comparar sin mejoras. Sin soporte debe mostrar
-   No evaluado, sin ceros falsos ni ranking categórico.
-4. Cancelar durante cálculo: figura intacta. Reanalizar, confirmar destino válido
-   y Deshacer desde Editor: recuperar origen. Un muro nuevo invalida los resultados.
-5. Crear ejercicio de recorrido y practicarlo en Entrenador. Crear uno de posición
-   visible cuando haya contraste entre opciones; comprobar solución y progreso.
-6. Exportar resumen e imagen mediante selector nativo; revisar etiquetas genéricas,
-   incertidumbre y ausencia de nombres. Rotar y ampliar texto al 300 %.
-7. Probar mapa 40×40 con varios enemigos, progreso/cancelación y cerrar/reabrir app.
+1. Android 7/API 24 o superior. Copiar el APK, abrirlo en Archivos y autorizar ese
+   origen cuando Android lo solicite; instalar encima, sin desinstalar. Alternativa:
+   `adb -s ID install -r build/releases/heroclix-1.0.0-rc.1-debug.apk`.
+2. Abrir los cuatro modos, comprobar biblioteca/progreso anteriores. Desactivar
+   Wi-Fi/datos y ejecutar AC01–AC20 de MATRIZ_ACEPTACION usando almacenamiento local.
+3. Inicio → Ejemplos locales → Ver ejemplo → Abrir copia: conservar original y
+   advertir cambios sin guardar. Guía rápida y Acerca de/licencias deben funcionar offline.
+4. Crear/guardar/reabrir escena, visión/alcance, movimiento confirmado y Deshacer;
+   crear/resolver ejercicio y comprobar progreso. Exportar/importar JSON y PNG;
+   exportar también resumen TXT desde Analizar posición.
+5. Esperar autoguardado, forzar cierre y reabrir; comprobar restauración. Girar,
+   ampliar texto al 300 %, TalkBack, mapas 2×2/40×40 y muchas figuras. Registrar
+   modelo/API y métricas/problemas de rendimiento antes de promover estable.
 
-Estos pasos nativos quedan pendientes de dispositivo; no se presentan como ejecutados.
+Estos pasos nativos **no están ejecutados**. Guía completa de instalación,
+recompilación y actualización de reglas: [README_FINAL](../README_FINAL.md).
 
-## E. Limitaciones y pendientes
+## E. Características y pendientes
 
-- Hereda perfiles de visión/movimiento: traslación sin giro, tamaños/capacidades
-  soportados y separación sin dados. Efectos sin soporte permanecen No evaluados.
-  Alcance/velocidad son datos declarados, sin cálculo arbitrario de modificadores.
-- Ordenación por página y límites de 12 destinos/32 enemigos, sin garantía global
-  ni recomendación estratégica. Visión y alcance no prueban legalidad de ataque.
-- El mapa representa anclas de bases, aunque el validador comprueba la huella entera.
-- Ejercicio de visibilidad necesita al menos dos posiciones con contraste verificable;
-  usa hasta cuatro. Límite personal de 50 ejercicios/2 MiB se conserva.
-- Generación de ejercicio cancelada descarta el resultado; su isolate acotado puede
-  terminar el cálculo. El worker principal sí se termina al cancelar. Escritura
-  atómica ya iniciada no se cancela a mitad.
-- Exportación usa datos genéricos, pero conserva geometría y parámetros de juego.
-- No se hizo instalación/recorrido nativo, FPS, emulador ni build release. Sin
-  dispositivos conectados; el puente nativo se reutiliza y se prueba por adaptador.
+| Característica | Implementado/verificado | Pendiente |
+| --- | --- | --- |
+| Editor, Simulador, Entrenador y Árbitro | Navegación real, datos/motores compartidos y snapshots de práctica | Recorrido nativo |
+| Biblioteca, autoguardado, JSON/PNG y formatos compatibles | Archivos reales, migraciones y recuperación entre controladores | Cierre forzado y selectores Android |
+| Visión, alcance, alturas, mejoras y movimiento | Perfil parcial versionado y referencias; No evaluados explícitos | Reglas/poderes fuera de matrices |
+| Tácticas, hipótesis y ejercicios desde análisis | Comparaciones, rutas, persistencia y UI verificadas | Rendimiento Android |
+| Guía, cinco ejemplos y Acerca de/licencias | Locales, copias protegidas, versión/cobertura visibles | TalkBack/lectura nativa |
+| Offline | Sin INTERNET ni clientes de red en runtime; contenido local empaquetado | Radios apagadas en Android |
+| Diagnóstico TXT/PNG | Integración y privacidad probadas; puente TXT compilado | Selector nativo TXT |
+| APK | Debug candidato generado, firma/permisos/hash comprobados | Instalación; release del propietario |
+| Versión estable 1.0.0 | No congelada | Cerrar aceptación nativa de la matriz |
+| Partida completa | Fuera de alcance | Dados, diales, daño, turnos y victoria no implementados |
 
-## F. Documentación
+Se conservan los límites de 06–11: velocidades/alcances declarados, traslación sin
+giro, tamaños/capacidades soportados y separación sin dados. El analizador limita
+12 destinos/página y 32 enemigos por posición; omitidos son No evaluados, sin ranking
+categórico de parciales. Personales máximo 50/2 MiB y sin exportación del banco.
+No hay cuentas, backend, IA externa ni telemetría. Una clave release distinta no
+actualiza debug directamente; planificar conservación de datos antes de cambiar firma.
 
-Actualizados README, ROADMAP, DECISIONES, ARQUITECTURA, ANDROID, ESCENARIOS, REGLAS,
-ENTRENADOR y este ESTADO. Nueva ANALISIS_TACTICO.md; informe 10 archivado en ENTREGA_10.md.
-Se mantiene edición oficial 2026-07-01 y las matrices verificadas de 06–09. No se
-adopta una regla nueva ni se redistribuye el reglamento o arte de terceros.
+## F. Documentación y control de versiones
 
-## G. Límite de etapa
+README_FINAL y MATRIZ_ACEPTACION nuevos; README, ROADMAP, DECISIONES, ARQUITECTURA,
+ANDROID, ESCENARIOS, REGLAS y ESTADO actualizados. Informe anterior en ENTREGA_11.
+Fuente oficial consultada 2026-11-17, misma edición 2026-07-01; no se añade regla.
+Exclusiones cubren APK/AAB, claves/keystores, configuración local y evidencias.
+Implementación y documentación en commits separados de `codex/prompt-12`.
 
-**No se inició Prompt 12.** La siguiente etapa requiere una nueva orden del usuario.
+## G. Límite de entrega
+
+Etapas 00–12 implementadas dentro del perfil documentado. **Entrega candidata,
+sin congelar 1.0.0 estable**, con pendientes nativos enumerados. No se implementan
+funciones de partida completa ni se da por ejecutada una prueba de dispositivo.

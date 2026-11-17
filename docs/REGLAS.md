@@ -86,17 +86,6 @@ Se revisan nuevamente las fuentes oficiales, manteniendo 2026-07-01: elevación
 bases §24.2/a/e (pp. 69–70), y mejoras §27.6a/b/c/e (p. 87). La PAC enlazada por
 WizKids es de 2023; solo se usan las definiciones que coinciden con el texto 2026.
 
-## Composición para 11 — 2026-11-16
-
-No se implementan nuevas reglas: el analizador compone los motores verificados de
-06–09 bajo 2026-07-01. Definiciones de métricas y referencias en ANALISIS_TACTICO.md.
-Visible incluye H y no exige alcance. Amenaza conocida exige visión y alcance
-desde un par coherente (§11.5), sin validar ataque, acción, daño ni dados.
-Capacidades actúan solo en su dirección y componente; retirar mejoras soportadas
-no elimina tamaño/otros efectos sin soporte. Esos casos conservan No evaluado.
-Los contratos A01–A14 incluyen bases que tienen una referencia visible y otra en
-alcance sin una referencia común: no se cuenta una amenaza falsa. No se copia
-texto oficial ni se redistribuye el PDF. Fuente y hash conservados en matrices.
 La matriz MATRIZ_CAPACIDADES_VISION.md distingue soporte y fronteras pendientes,
 orden de composición, pares de referencias y expectativas sintéticas derivadas
 del texto. No son diagramas oficiales copiados ni se interpreta texto de cartas.
@@ -122,3 +111,26 @@ se comparan con los motores en Dart puro y tests. Una divergencia o No evaluado
 inhabilita autocorrección. Los casos son sintéticos originales derivados del
 reglamento; no se copian ejemplos gráficos oficiales. Feedback en palabras propias
 con referencias cortas. Texto personal libre se identifica como revisión manual.
+
+## Composición para 11 — 2026-11-16
+
+No se implementan nuevas reglas: el analizador compone los motores verificados de
+06–09 bajo 2026-07-01. Definiciones de métricas y referencias en ANALISIS_TACTICO.md.
+Visible incluye H y no exige alcance. Amenaza conocida exige visión y alcance
+desde un par coherente (§11.5), sin validar ataque, acción, daño ni dados.
+Capacidades actúan solo en su dirección y componente; retirar mejoras soportadas
+no elimina tamaño/otros efectos sin soporte. Esos casos conservan No evaluado.
+Los contratos A01–A14 incluyen bases que tienen una referencia visible y otra en
+alcance sin una referencia común: no se cuenta una amenaza falsa. No se copia
+texto oficial ni se redistribuye el PDF. Fuente y hash conservados en matrices.
+
+## Consolidación para 12 — 2026-11-17
+
+Se consulta de nuevo la [fuente oficial](https://wizkids.com/heroclix/gameplay/rules-format/):
+sigue enlazando Comprehensive Rulebook 2026-07-01. No se implementan nuevas reglas.
+Los cinco ejemplos locales reutilizan escenarios y soluciones verificadas del
+banco de 10, con referencias, sin arte ni diagramas oficiales. El caso diagonal
+conserva A1–D6/B4 y §16.8b. Ayuda y Acerca de distinguen cobertura parcial y edición,
+y advierten que la herramienta no decide oficialmente un torneo. Sin consulta de
+reglas por red en runtime ni afirmación de validación nativa. Matriz de aceptación
+y evidencia actual en MATRIZ_ACEPTACION.md y ESTADO.md.

@@ -1,13 +1,13 @@
 # HeroClix Simulator & Trainer
 
-Aplicación Android Flutter/Dart, offline y en español. Versión **0.12.0+13**.
-La entrega 11 está en la rama `codex/prompt-11` del repositorio privado
+Aplicación Android Flutter/Dart, offline y en español. Versión **1.0.0-rc.1+14**.
+La entrega 12 está en la rama `codex/prompt-12` del repositorio privado
 [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer).
 
 ```powershell
 git clone https://github.com/Schrei01/heroclix-simulator-trainer.git
 cd heroclix-simulator-trainer
-git switch codex/prompt-11
+git switch codex/prompt-12
 ```
 
 ## Qué existe
@@ -32,6 +32,11 @@ transiciones y cuatro mejoras de visión tipadas. La etapa 09 añade rutas de
 movimiento verificadas, alternativas y comparación de posiciones. La etapa 10
 añade Entrenador, ejercicios personales y progreso local. La etapa 11 incorpora
 comparación de posiciones y métricas tácticas. Ataques completos siguen pendientes.
+
+La etapa 12 integra cinco ejemplos locales, Guía rápida y Acerca de con cobertura
+y licencias offline; corrige la exportación Android TXT y la selección táctica al
+reutilizar caché. Es una **candidata**: falta la aceptación nativa, no se congela
+1.0.0 estable. Instalación, recompilación y mantenimiento en [README_FINAL](README_FINAL.md).
 
 ## Analizar y comparar posiciones
 
@@ -298,7 +303,7 @@ flutter --no-version-check build apk --debug
 
 `--no-version-check` evita una consulta de actualización del SDK; no cambia su
 versión ni omite análisis o pruebas. Los renders se escriben en
-`build/previews/prompt-11/`; son capturas Flutter, no de un dispositivo.
+`build/previews/prompt-12/`; son capturas Flutter, no de un dispositivo.
 
 Preparación Android y firma release en [ANDROID.md](docs/ANDROID.md).
 El APK debug y sus resultados/hash se registran en [ESTADO.md](docs/ESTADO.md).
@@ -324,6 +329,8 @@ No se incluyen binarios, credenciales ni claves en Git.
 - `lib/presentation/editor`: formularios, herramientas, vista previa y canvas por capas.
 - `lib/presentation/vision`: informe y vistas de Simulador/Árbitro.
 - `lib/presentation/training`: banco, pregunta, respuesta y autor de ejercicios.
+- `lib/application/examples` y `lib/presentation/examples`: catálogo local y copias protegidas.
+- `lib/presentation/help`: guía, identidad de versión, cobertura y licencias locales.
 - `test`: contratos de dominio, gestos, confirmaciones, accesibilidad y regresiones.
 
 `ScenarioCodec` define el documento completo con `schemaVersion: 3` y utiliza
@@ -341,6 +348,8 @@ de herramientas y compilación durante el desarrollo sí puede necesitar interne
 Informes anteriores: [00](docs/ENTREGA_00.md), [01](docs/ENTREGA_01.md),
 [02](docs/ENTREGA_02.md), [03](docs/ENTREGA_03.md), [04](docs/ENTREGA_04.md),
 [05](docs/ENTREGA_05.md), [06 inicial](docs/ENTREGA_06.md),
-[06 corregida](docs/ENTREGA_06_FIX.md), [07](docs/ENTREGA_07.md), [08](docs/ENTREGA_08.md), [09](docs/ENTREGA_09.md), [10](docs/ENTREGA_10.md).
+[06 corregida](docs/ENTREGA_06_FIX.md), [07](docs/ENTREGA_07.md), [08](docs/ENTREGA_08.md), [09](docs/ENTREGA_09.md), [10](docs/ENTREGA_10.md), [11](docs/ENTREGA_11.md).
 
-**No se inició Prompt 12.** Requiere una nueva orden tras revisar esta entrega.
+Las etapas 00–12 están implementadas dentro del perfil documentado. La candidata
+mantiene aceptación Android pendiente: [MATRIZ_ACEPTACION](docs/MATRIZ_ACEPTACION.md).
+No se implementó una partida completa.

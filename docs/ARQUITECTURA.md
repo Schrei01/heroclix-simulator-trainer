@@ -314,3 +314,27 @@ DiagnosticSummary y DiagnosticPng generan artefactos desde datos controlados,
 remapeando etiquetas/equipos y sin nombres, IDs ni metadatos de la escena. PNG no
 captura widgets. Reutiliza selector/compartir Android existente sin permisos nuevos.
 Definiciones, límites y mediciones en ANALISIS_TACTICO.md.
+
+## Consolidación en 12
+
+AppInfo identifica versión/build y edición, contrastados con pubspec y el motor
+en test. Inicio añade navegación a Guía rápida, Acerca de y catálogo original.
+InformationScreen comparte estructura desplazable, anchura máxima y altura de
+barra ajustada al texto. La página de licencias usa LicenseRegistry de Flutter
+y los avisos empaquetados, sin servicios remotos.
+
+LocalExample referencia escenas del banco curado ya verificado y crea documentos
+con ID nuevo. La vista previa usa un EditorController independiente; abrir copia
+pasa por la misma protección de cambios sin guardar que biblioteca/importación.
+Se deshabilita durante recuperación/escritura y conserva escenas anteriores.
+No se escribe el catálogo en biblioteca al arrancar ni se cambia esquema alguno.
+
+El puente nativo verifica pares exactos MIME/extensión: JSON/PNG/TXT, con límites
+2/16/2 MiB y nombres controlados. Se corrige el rechazo del resumen táctico TXT
+de 11. Detalles de escenario muestran esquema vigente; caché táctica recupera
+también selección de una consulta individual. No hay dependencias ni permisos nuevos.
+
+La aceptación automatizada combina controladores y almacenamiento real con UI
+de ejercicio, restauración e intercambio de archivos. La matriz separa esa prueba
+del recorrido instrumental pendiente. Se mantiene 1.0.0-rc.1 sin afirmar aceptación
+nativa ni rendimiento en Android; README_FINAL explica cómo cerrar esos criterios.

@@ -53,11 +53,10 @@ ESTADO.md para saber qué se ejecutó realmente.
 2. Ejecutar `flutter devices` y anotar ID, modelo y versión Android.
 3. Instalar con `adb -s ID install -r build/app/outputs/flutter-apk/app-debug.apk`
    y abrir la app desde el launcher.
-4. Comprobar nombre, español y Editor operativo. Desde la etapa 06, Simulador y
-   Árbitro permiten consultar visión básica; Entrenador sigue «Próximamente».
-   Abrir Editor y editar un escenario.
+4. Comprobar nombre, español y los cuatro modos operativos. Abrir Editor y editar
+   un escenario; consultar visión en Simulador/Árbitro y practicar en Entrenador.
 5. Girar vertical/horizontal y recorrer la pantalla. Repetir con texto ampliado
-   en accesibilidad de Android y TalkBack; solo Entrenador se anuncia deshabilitado.
+   en accesibilidad de Android y TalkBack; todas las entradas de modo deben abrir.
 6. Deshabilitar Wi-Fi y datos. Esperar confirmación de autoguardado, forzar cierre,
    reabrir Editor y comprobar contenido. Probar biblioteca y exportar/importar JSON
    con el selector nativo; exportar PNG y abrir Compartir (cancelar para la prueba).
@@ -68,12 +67,12 @@ Los manifiestos de esta app no solicitan INTERNET, ni siquiera en debug/profile.
 Esto limita conexiones al servicio VM de depuración/hot reload. Para comprobar
 la interfaz se puede instalar el APK y abrirlo manualmente sin ese servicio.
 
-## Release firmado en una etapa posterior
+## Release firmado con claves del propietario
 
 Guía oficial: https://docs.flutter.dev/deployment/android#sign-the-app
 
-No se necesita ni se crea una keystore en la etapa 00. Cuando el propietario
-prepare la firma, debe custodiar la clave y contraseñas fuera del repositorio.
+No se proporcionó keystore release durante 00–12. Cuando el propietario prepare
+la firma, debe custodiar la clave y contraseñas fuera del repositorio.
 Ejemplo para crear una keystore con contraseñas solicitadas interactivamente:
 
 ```powershell
@@ -231,3 +230,19 @@ Rotar, ampliar texto al 300 % y cerrar/reabrir para comprobar persistencia.
 Los tests Flutter, isolates, PNG y renders están verificados en Windows. Este
 recorrido nativo, instalación física, FPS y variante release siguen sin verificar;
 consultar evidencia concreta en ESTADO.md.
+
+## Entrega candidata 12
+
+APK debug: `build/releases/heroclix-1.0.0-rc.1-debug.apk`, build 14. Firma de desarrollo
+conservada; instalar encima con `adb install -r`, sin desinstalar para no perder
+escenarios/progreso. Instrucciones completas en ../README_FINAL.md y aceptación
+en MATRIZ_ACEPTACION.md. Abrir Ejemplos locales/Guía rápida/Acerca de y licencias.
+Exportar diagnóstico TXT además de JSON/PNG: el puente admite ahora ese tipo.
+
+Se intentó arrancar Medium_Phone_API_37.0 con WHPX, dos núcleos, 1536 MiB solicitados
+y GPU swiftshader, sin ventana/audio/snapshot. ADB quedó offline; no se instaló la
+app. Se detuvo el emulador sin borrar datos. No hay teléfono y el usuario eligió
+continuar sin uno. Se documentan pendientes; no se anuncia 1.0.0 estable ni FPS.
+Una firma release diferente no actualiza el paquete debug: planificar conservación
+de datos antes de cambiar de canal. Nunca desinstalar para resolver un conflicto
+de firma sin haber conservado los datos necesarios.
