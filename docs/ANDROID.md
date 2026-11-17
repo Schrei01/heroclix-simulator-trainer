@@ -5,6 +5,9 @@ y ensayos están en las herramientas del Editor. El recorrido vigente del Editor
 está al final de este documento. Los apartados identificados por etapa describen
 sus versiones históricas. Resultados efectivamente ejecutados: [ESTADO](ESTADO.md).
 
+La política actual conserva solo el APK entregable más reciente en `build/releases/`.
+Los APK históricos citados en los apartados anteriores ya no se conservan.
+
 ## Herramientas
 
 Flutter estable está en `%USERPROFILE%\develop\flutter`. Para usarlo en una
@@ -45,8 +48,8 @@ flutter pub get
 dart format --output=none --set-exit-if-changed lib test
 flutter analyze
 flutter test
-flutter build apk --debug
-Get-Item -LiteralPath '.\build\app\outputs\flutter-apk\app-debug.apk'
+./tool/build_apk.ps1 | Format-List
+Get-ChildItem -LiteralPath './build/releases' -Filter '*.apk'
 ```
 
 La ruta anterior es la salida esperada, no evidencia de un APK generado. Consultar
@@ -94,8 +97,8 @@ La configuración Gradle carga exclusivamente la firma release proporcionada.
 Si falta, detiene las tareas release con un mensaje explícito.
 
 ```powershell
-flutter build apk --release
-Get-Item -LiteralPath '.\build\app\outputs\flutter-apk\app-release.apk'
+./tool/build_apk.ps1 -Mode release | Format-List
+Get-ChildItem -LiteralPath './build/releases' -Filter '*.apk'
 ```
 
 Antes de distribuir, verificar la firma con `apksigner verify --verbose` de

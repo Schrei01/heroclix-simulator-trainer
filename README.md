@@ -1,7 +1,7 @@
 # TeamFight: GridLab
 
 Aplicación Android Flutter/Dart, offline y en español. Versión **1.0.0-rc.8+21**.
-La versión actual está en la rama `codex/teamfight-gridlab-brand` del repositorio privado
+La versión actual está en la rama `codex/latest-apk-only` del repositorio privado
 [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer).
 
 Desde rc.8 la marca visible es **TeamFight: GridLab**, con los iconos Android y el
@@ -11,7 +11,7 @@ Recursos y procedencia en [IDENTIDAD](docs/IDENTIDAD.md).
 ```powershell
 git clone https://github.com/Schrei01/heroclix-simulator-trainer.git
 cd heroclix-simulator-trainer
-git switch codex/teamfight-gridlab-brand
+git switch codex/latest-apk-only
 ```
 
 ## Qué existe
@@ -343,7 +343,7 @@ dart format --output=none --set-exit-if-changed lib test tool
 flutter --no-version-check analyze
 flutter --no-version-check test
 flutter --no-version-check test tool/preview_test.dart
-flutter --no-version-check build apk --debug
+./tool/build_apk.ps1 | Format-List
 ```
 
 `--no-version-check` evita una consulta de actualización del SDK; no cambia su
@@ -353,6 +353,12 @@ versión ni omite análisis o pruebas. Los renders se escriben en
 Preparación Android y firma release en [ANDROID.md](docs/ANDROID.md).
 El APK debug y sus resultados/hash se registran en [ESTADO.md](docs/ESTADO.md).
 No se incluyen binarios, credenciales ni claves en Git.
+
+La generación con `tool/build_apk.ps1` conserva solo el APK entregable más reciente
+en `build/releases/`. Primero compila, comprueba paquete/versión/firma y verifica
+la copia; después elimina los APK anteriores. Si falla la compilación o la
+validación, conserva los anteriores.
+Las salidas técnicas actuales de Flutter/Gradle permanecen en `build/app/`.
 
 ## Organización y límites
 

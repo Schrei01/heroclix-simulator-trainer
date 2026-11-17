@@ -576,3 +576,16 @@ verificado ni implementado ninguna regla del juego.
   compilados comprobados con aapt; firma/hash y PNG empaquetado verificados.
 - 1.0.0-rc.8+21, candidata debug. Máscaras, tema, launcher/splash y actualización
   reales continúan pendientes según decisión previa de continuar sin teléfono.
+## 2026-11-17 — Conservar únicamente el APK más reciente
+
+- Petición explícita del usuario: eliminar las versiones anteriores al generar un
+  nuevo APK. Sustituye la política previa de conservar entregas binarias históricas.
+- Flujo oficial tool/build_apk.ps1: compilar, verificar paquete/versión/firma, copiar
+  a nombre de entrega y comprobar SHA-256 antes de retirar los otros APK de
+  build/releases/. El fallo conserva los anteriores. Sin cambios de aplicación ni versión.
+- Limpieza acotada a archivos .apk de esa carpeta, con rutas absolutas verificadas,
+  rechazo de enlaces de directorio y operaciones nativas de PowerShell. Se conservan
+  otros archivos, carpetas, informes, datos y salidas técnicas actuales del compilador.
+- AGENTS.md registra el procedimiento para futuras sesiones. Pruebas en una carpeta
+  temporal aislada: fallo de compilación con APK previo válido, versión incorrecta,
+  APK corrupto, publicación correcta y publicación repetida.

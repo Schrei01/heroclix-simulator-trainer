@@ -1,7 +1,7 @@
 # Estado actual — TeamFight: GridLab
 
 2026-11-17 (America/Bogota). **1.0.0-rc.8+21**, candidata debug.
-Rama `codex/teamfight-gridlab-brand`, sobre `370d10e` (rc.7). Código: `ac6d1d3`.
+Rama `codex/latest-apk-only`, sobre `cb4bea1`. Código de aplicación: `ac6d1d3`.
 Informe anterior: [ENTREGA_RC7.md](ENTREGA_RC7.md).
 
 ## Identidad aplicada
@@ -50,7 +50,8 @@ build/verification/teamfight-brand/. Logs/capturas fuera de Git. No son pruebas 
 
 - `build/releases/teamfight-gridlab-1.0.0-rc.8-debug.apk`, **158910079 bytes**.
 - SHA-256: `E9898D2E102FB1FDB9F2FB3834BB65F7FECC9583F2B707F89CE003C1554B532F`.
-- Copia archivada y salida estándar con el mismo hash; anteriores conservadas.
+- Copia entregable y salida estándar con el mismo hash. Solo se conserva este APK
+  en build/releases/; los 20 anteriores se eliminaron por petición del usuario.
 - Paquete com.valinor.heroclixtrainer, nombre TeamFight: GridLab, versión 1.0.0-rc.8,
   código 21, SDK mínimo 24 y objetivo/compilación 36.
 - Certificado SHA-256: `57081ee91137c216eff437a7c75ac5bb6f552bc29167e63370d85628fc82ac54`.
@@ -74,3 +75,29 @@ preparados en el repositorio.
 
 README/README_FINAL, identidad, decisiones, Android, arquitectura, hoja de ruta y
 matriz AC33 actualizados. Rc.7 archivada en ENTREGA_RC7.md.
+
+## Política de APK único — actualización posterior a la identidad
+
+No cambia la app: continúa 1.0.0-rc.8+21 con el mismo APK/hash de la entrega de marca.
+Se implementa tool/build_apk.ps1 y se fija como flujo del repositorio en AGENTS.md.
+README/README_FINAL y ANDROID usan ese comando. Primero compila y valida paquete,
+versión y firma; solo tras comprobar la copia retira los APK anteriores de releases.
+
+Verificación ejecutada:
+
+- tool/test_apk_workflow.ps1: **5 comprobaciones aprobadas** en directorios temporales
+  aislados. Compilación fallida conserva los anteriores aunque exista un APK fuente
+  válido previo; versión incorrecta y APK corrupto también. Publicar correctamente
+  deja un solo APK con hash idéntico y conserva archivos/carpetas ajenos. Repetir
+  conserva el vigente. Se normaliza el modo Debug/debug en el nombre de entrega.
+- tool/build_apk.ps1: compilación debug correcta (Gradle 12,5 s), paquete/versión y
+  firma válidos, copia con hash idéntico, **20 APK anteriores eliminados**.
+- Antes: 21 APK, 3398234428 bytes. Después: 1 APK, 158910079 bytes.
+  Liberados **3239324349 bytes**, aproximadamente 3,02 GiB.
+- Queda build/releases/teamfight-gridlab-1.0.0-rc.8-debug.apk. SHA-256 conservado:
+  E9898D2E102FB1FDB9F2FB3834BB65F7FECC9583F2B707F89CE003C1554B532F.
+
+Las salidas actuales app-debug.apk de Flutter/Gradle permanecen en build/app/;
+son copias técnicas de la misma versión, no versiones históricas. Logs en
+build/test-apk-workflow-final.log y build/build-latest-apk-only.log. Los informes
+anteriores describen su entrega histórica y no garantizan disponibilidad del binario.

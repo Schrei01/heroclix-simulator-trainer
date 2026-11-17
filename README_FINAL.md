@@ -4,7 +4,7 @@ Aplicación Android offline, en español, para construir escenarios, consultar r
 implementadas y practicar. **Versión candidata, APK debug**: faltan las comprobaciones
 nativas de aceptación y rendimiento descritas abajo. No se congela 1.0.0 estable.
 Repositorio privado: [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer),
-rama `codex/teamfight-gridlab-brand`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
+rama `codex/latest-apk-only`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
 
 Nombre e iconos de Android, Inicio y Acerca de actualizados a TeamFight: GridLab.
 La identidad técnica y firma se conservan para actualizar la instalación anterior.
@@ -121,19 +121,22 @@ No se añaden dependencias para 12. Las licencias empaquetadas se consultan sin
 conexión en Acerca de → Licencias de dependencias.
 
 ```powershell
-git switch codex/teamfight-gridlab-brand
+git switch codex/latest-apk-only
 $env:Path = "$env:USERPROFILE\develop\flutter\bin;$env:Path"
 flutter --no-version-check pub get
 dart format --output=none --set-exit-if-changed lib test tool
 flutter --no-version-check analyze --no-pub
 flutter --no-version-check test --no-pub --reporter expanded
 flutter --no-version-check test tool/preview_test.dart --no-pub --reporter expanded
-flutter --no-version-check build apk --debug --no-pub
+./tool/build_apk.ps1 | Format-List
 ```
 
-El build escribe `build/app/outputs/flutter-apk/app-debug.apk`; copiarlo al nombre
-de entrega después de comprobar versión/firma/hash. No ejecutar `flutter clean`
-si se necesitan conservar los APK/evidencias ignorados de entregas anteriores.
+El script compila y valida el APK, comprueba su copia en `build/releases/` y elimina
+los APK entregables anteriores de esa carpeta. **Solo queda el más reciente**.
+Una compilación fallida o un APK inválido conserva los anteriores. Las salidas
+técnicas actuales de Flutter/Gradle quedan en `build/app/`; no se usa `flutter clean`.
+Para generar release: `./tool/build_apk.ps1 -Mode release`, con firma configurada.
+Para validar/publicar un APK ya compilado: `./tool/build_apk.ps1 -SkipBuild`.
 Compilar puede requerir internet para herramientas; la app instalada no lo necesita.
 No tiene permiso INTERNET, por lo que el servicio VM/hot reload remoto no está
 disponible: probar instalando el APK y abriéndolo normalmente.
