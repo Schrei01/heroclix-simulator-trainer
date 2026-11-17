@@ -163,6 +163,7 @@ void main() {
       Future<EditorController> restore() async {
         final c = EditorController();
         final w = WorkspaceController(
+          persistWorkingSession: true,
           repository: ScenarioRepository(FileDocumentStore(() async => root)),
           readSession: () => c.value,
           loadSession: c.loadScenario,

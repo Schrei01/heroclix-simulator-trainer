@@ -15,6 +15,7 @@ import 'layer_actions.dart';
 import '../scenarios/scenario_actions.dart';
 import 'sight_controls.dart';
 import '../vision/vision_controls.dart';
+import '../vision/vision_verdict_bar.dart';
 import '../vision/tactical_controls.dart';
 import 'elevation_controls.dart';
 import '../movement/movement_controls.dart';
@@ -292,7 +293,7 @@ class EditorScreen extends StatelessWidget {
                     ),
                     const PopupMenuItem(
                       value: _ViewAction.details,
-                      child: Text('Escenario y autoguardado'),
+                      child: Text('Escenario actual'),
                     ),
                     const PopupMenuDivider(),
                   ],
@@ -356,11 +357,14 @@ class EditorScreen extends StatelessWidget {
                       final horizontal =
                           MediaQuery.orientationOf(context) ==
                               Orientation.landscape ||
-                          (session.tool == EditorTool.terrain &&
+                          ((session.tool == EditorTool.terrain ||
+                                  session.tool == EditorTool.vision) &&
                               constraints.maxHeight < 200);
                       final canvas = Expanded(
                         child: Column(
                           children: [
+                            if (session.tool == EditorTool.vision)
+                              VisionVerdictBar(controller: controller),
                             Expanded(
                               child: BoardCanvas(controller: controller),
                             ),

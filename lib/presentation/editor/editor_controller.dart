@@ -214,6 +214,7 @@ final class EditorController extends ValueNotifier<BoardSession> {
   void setTool(EditorTool tool) {
     cancelDraft();
     if (tool != EditorTool.movement) movement.clear();
+    if (tool == EditorTool.vision) vision.enabled = true;
     if (tool == EditorTool.targets) enableTargets();
     value = value.setTool(tool);
     if (tool == EditorTool.movement &&

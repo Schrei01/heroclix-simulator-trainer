@@ -125,7 +125,7 @@ class _ExamplePreviewState extends State<ExamplePreview> {
             _opening
                 ? 'Abriendo copia…'
                 : widget.editor.workspace?.loading == true
-                ? 'Recuperando sesión…'
+                ? 'Preparando escenario…'
                 : 'Abrir copia en editor',
           ),
         ),

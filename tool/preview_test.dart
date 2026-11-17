@@ -82,6 +82,12 @@ void main() {
   });
 
   for (final (name, size, dimensions) in [
+    ('session_clear', const Size(400, 900), null),
+    ('session_blocked', const Size(400, 900), null),
+    ('session_hindered', const Size(1000, 720), null),
+    ('session_unknown', const Size(400, 900), null),
+    ('session_compact', const Size(320, 320), null),
+    ('session_fresh', const Size(400, 900), null),
     ('quick_palette_portrait', const Size(400, 900), BoardDimensions.initial),
     ('quick_palette_landscape', const Size(1000, 700), BoardDimensions.initial),
     ('quick_palette_compact', const Size(320, 320), BoardDimensions.initial),
@@ -194,7 +200,7 @@ void main() {
       BoardDimensions(rows: 4, columns: 4),
     ),
     (
-      'autoguardado_error',
+      'guardado_error',
       const Size(400, 900),
       BoardDimensions(rows: 4, columns: 4),
     ),
@@ -254,11 +260,20 @@ void main() {
         tester.platformDispatcher.textScaleFactorTestValue = 3;
         addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
       }
+      if (name == 'session_compact') {
+        tester.platformDispatcher.textScaleFactorTestValue = 3;
+        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      }
       final key = GlobalKey();
       final store = MemoryStore();
       // Cada render posee su propio almacenamiento, sin canal de plataforma.
-      final persistent = await persistentController(store);
-      await persistent.workspace!.save(name: 'Escenario de ejemplo');
+      final persistent = await persistentController(
+        store,
+        persistWorkingSession: false,
+      );
+      if (!name.startsWith('session_')) {
+        await persistent.workspace!.save(name: 'Escenario de ejemplo');
+      }
       final training = TrainingController(
         TrainingRepository(MemoryStore()),
         scenarios: persistent.workspace!.repository,
@@ -291,6 +306,45 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      if (name.startsWith('session_')) {
+        if (name != 'session_fresh') {
+          persistent.loadScenario(
+            visionSession(
+              vs(
+                terrain: {
+                  'B1': name == 'session_blocked'
+                      ? TerrainType.blocking
+                      : name == 'session_hindered'
+                      ? TerrainType.hindering
+                      : TerrainType.clear,
+                },
+              ),
+            ),
+          );
+          persistent.workspace!.edited(persistent.value);
+        }
+        await tester.ensureVisible(find.text('Abrir editor'));
+        await tester.tap(find.text('Abrir editor'));
+        await tester.pumpAndSettle();
+        if (name == 'session_fresh') {
+          expect(persistent.value.characters.isEmpty, isTrue);
+          expect(persistent.value.nextCharacter, 1);
+        } else {
+          await press(tester, 'tool-vision');
+          await tester.tapAt(cellPosition(tester, persistent, 'A1'));
+          await tester.pumpAndSettle();
+          await tester.tapAt(cellPosition(tester, persistent, 'D1'));
+          await tester.pumpAndSettle();
+          if (name == 'session_unknown') {
+            persistent.updateVision((v) => v.specialEffects = true);
+            await tester.pumpAndSettle();
+          }
+          expect(
+            find.byKey(const ValueKey('vision-map-verdict')),
+            findsOneWidget,
+          );
+        }
+      }
       if (name == 'quick_character') {
         await press(tester, 'mode-editor');
         await press(tester, 'tool-characters');
@@ -461,7 +515,7 @@ void main() {
           await tester.tap(item);
           await tester.pumpAndSettle();
         }
-        if (name == 'autoguardado_error') {
+        if (name == 'guardado_error') {
           store.failWrite = true;
           controller.saveCharacter(
             CharacterDraft(
@@ -471,6 +525,7 @@ void main() {
             ),
           );
           await tester.pumpAndSettle();
+          await persistent.workspace!.save();
           await tester.ensureVisible(
             find.byKey(const ValueKey('autosave-status')),
           );
@@ -792,21 +847,18 @@ void main() {
               session: visionSession(world),
             );
             const codec = ScenarioCodec();
-            final file = File(
-              'build/verification/editor-quick-tools/$name.json',
-            );
+            final file = File('build/verification/session-vision/$name.json');
             await file.parent.create(recursive: true);
             await file.writeAsString(codec.encode(doc));
-            await File(
-              'build/verification/editor-quick-tools/$name-working.json',
-            ).writeAsString(
-              jsonEncode({
-                'workspaceSchemaVersion': 1,
-                'document': codec.toMap(doc),
-                'dirty': true,
-                'saved': false,
-              }),
-            );
+            await File('build/verification/session-vision/$name-working.json')
+                .writeAsString(
+                  jsonEncode({
+                    'workspaceSchemaVersion': 1,
+                    'document': codec.toMap(doc),
+                    'dirty': true,
+                    'saved': false,
+                  }),
+                );
           });
         }
       }
@@ -972,7 +1024,7 @@ void main() {
                 analysis.priority,
               );
               final file = File(
-                'build/verification/editor-quick-tools/diagnostico.png',
+                'build/verification/session-vision/diagnostico.png',
               );
               await file.parent.create(recursive: true);
               await file.writeAsBytes(bytes);
@@ -988,7 +1040,7 @@ void main() {
         final image = await boundary.toImage();
         try {
           final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-          final output = File('build/previews/editor-quick-tools/$name.png');
+          final output = File('build/previews/session-vision/$name.png');
           await output.parent.create(recursive: true);
           await output.writeAsBytes(bytes!.buffer.asUint8List());
         } finally {

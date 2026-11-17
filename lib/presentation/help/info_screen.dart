@@ -75,7 +75,7 @@ class QuickGuideScreen extends StatelessWidget {
         'Un dedo usa la herramienta elegida; dos dedos navegan. Amplía el tablero para tocar casillas pequeñas. Mantén pulsado un icono para leer su ayuda.',
       ),
       Text(
-        'Biblioteca conserva varias escenas. Espera la confirmación de autoguardado antes de cerrar. Exporta JSON para copias externas: desinstalar elimina los datos privados. PNG es una imagen, no un escenario editable.',
+        'Cada apertura empieza con un escenario vacío y las figuras desde A. La sesión se conserva mientras la app siga abierta, también al cambiar de sección o dejarla en segundo plano si el proceso continúa activo. Guarda en biblioteca para conservar una escena después de cerrar; el progreso del Entrenador se guarda aparte. JSON sirve como copia externa y PNG es solo una imagen.',
       ),
       Text(
         'Todo el análisis, ejemplos, ejercicios y licencias funciona sin internet ni cuenta. El selector de archivos puede mostrar proveedores externos que requieran conexión; elige almacenamiento del dispositivo para trabajar offline.',

@@ -32,7 +32,9 @@ final class ScenarioActions {
         title: 'Cambios fuera de la biblioteca',
         children: [
           Text(
-            workspace.autosaveCurrent
+            !workspace.persistWorkingSession
+                ? 'Este escenario solo se conserva mientras la app está abierta. Guarda en la biblioteca antes de cambiarlo si quieres conservarlo.'
+                : workspace.autosaveCurrent
                 ? 'El autoguardado protege la sesión actual. Al cambiar de escenario será sustituido. Guarda en la biblioteca para conservar estos cambios.'
                 : 'El autoguardado está pendiente o ha fallado. Cambiar de escenario puede perder estos cambios. Guarda en la biblioteca para conservarlos.',
           ),
@@ -155,7 +157,11 @@ final class ScenarioActions {
                       await _failure(context);
                     }
                   },
-                  child: const Text('Reintentar autoguardado'),
+                  child: Text(
+                    workspace.persistWorkingSession
+                        ? 'Reintentar autoguardado'
+                        : 'Reintentar guardado',
+                  ),
                 ),
               TextButton(
                 onPressed: () => Navigator.pop(context),

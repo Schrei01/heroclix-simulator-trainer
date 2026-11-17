@@ -11,6 +11,7 @@ import '../editor/board_canvas.dart';
 import '../editor/sight_controls.dart';
 import '../scenarios/scenario_actions.dart';
 import 'vision_controls.dart';
+import 'vision_verdict_bar.dart';
 import 'tactical_controls.dart';
 import '../movement/movement_controls.dart';
 import '../tactics/tactical_screen.dart';
@@ -169,6 +170,8 @@ class _VisionScreenState extends State<VisionScreen> {
                   MovementToolbar(controller: widget.controller),
                 if (session.tool == EditorTool.vision)
                   SightToolbar(controller: widget.controller),
+                if (session.tool == EditorTool.vision)
+                  VisionVerdictBar(controller: widget.controller),
                 if (session.tool == EditorTool.distance ||
                     session.tool == EditorTool.targets)
                   TacticalToolbar(controller: widget.controller),

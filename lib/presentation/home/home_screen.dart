@@ -112,7 +112,7 @@ class HomeScreen extends StatelessWidget {
                   const SizedBox(height: 28),
                   const Text(
                     'Sin cuentas ni conexión a internet. '
-                    'Autoguardado local y biblioteca de escenarios en el editor.',
+                    'Escenario temporal mientras la app está abierta. Guarda en biblioteca para conservarlo.',
                   ),
                   const SizedBox(height: 16),
                   Wrap(

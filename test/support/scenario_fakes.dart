@@ -83,9 +83,11 @@ final class FakeScenarioFiles implements ScenarioFiles {
 Future<EditorController> persistentController(
   MemoryStore store, {
   FakeScenarioFiles? files,
+  bool persistWorkingSession = true,
 }) async {
   final controller = EditorController();
   final workspace = WorkspaceController(
+    persistWorkingSession: persistWorkingSession,
     repository: ScenarioRepository(store),
     readSession: () => controller.value,
     loadSession: controller.loadScenario,
