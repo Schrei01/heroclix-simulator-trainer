@@ -126,3 +126,9 @@ modifica el documento del Editor. Entrenamiento tiene formato propio versionado,
 descrito en ENTRENADOR.md, e incluye escenarios mediante el mismo ScenarioCodec.
 Esquema de escenario continúa 3. Progreso, pistas y respuestas no se insertan en
 el JSON de escenarios ni aparecen como archivos de biblioteca.
+
+En 11 los diagnósticos, caché e hipótesis siguen siendo transitorios. Confirmar
+una ruta cambia únicamente la posición mediante el historial existente. Crear
+ejercicio copia la escena y rutas al formato 3 del Entrenador; no añade campos al
+JSON de escenarios. TXT/PNG de diagnóstico son salidas separadas con datos genéricos,
+distintas de exportar el escenario completo con sus nombres. Véase ANALISIS_TACTICO.md.

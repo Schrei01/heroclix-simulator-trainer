@@ -212,3 +212,22 @@ ruta o texto manual. Solución automática errada debe impedir guardar; la manua
 requiere guía y no genera un acierto automático. Reiniciar estadísticas exige
 confirmación, borra intentos y conserva ejercicios personales. Probar orientaciones,
 texto al 300 %, teclado y desplazamiento en formularios/resultados.
+
+## Recorrido manual de 11
+
+Instalar `build/releases/heroclix-prompt-11-debug.apk` (0.12.0+13) sobre la anterior,
+sin desinstalar para conservar datos. Abrir escenarios y progreso de 10. Simulador
+→ Elegir análisis → Analizar posición: elegir figura, analizar, seleccionar destino
+y comprobar ruta, costo, métricas, diferencias y evidencia. Probar Cancelar: figura
+intacta. Confirmar una ruta válida y Deshacer debe recuperar el origen.
+
+Comparar prioridades, cambiar de página y activar HIPÓTESIS sin mejoras. Un poder
+sin soporte debe conservar No evaluado. Añadir un muro en Editor obliga a recalcular;
+zoom/cámara conservan resultados. En 40×40 comprobar progreso y cancelación.
+
+Crear ambos ejercicios y practicarlos desde Entrenador. Exportar TXT/PNG usando
+el selector nativo y comprobar etiquetas genéricas y límites del diagnóstico.
+Rotar, ampliar texto al 300 % y cerrar/reabrir para comprobar persistencia.
+Los tests Flutter, isolates, PNG y renders están verificados en Windows. Este
+recorrido nativo, instalación física, FPS y variante release siguen sin verificar;
+consultar evidencia concreta en ESTADO.md.

@@ -85,6 +85,18 @@ Se revisan nuevamente las fuentes oficiales, manteniendo 2026-07-01: elevación
 §16.5c–g (p. 42), transiciones §16.7 (p. 43), tamaños intermedios §21.2b (p. 60),
 bases §24.2/a/e (pp. 69–70), y mejoras §27.6a/b/c/e (p. 87). La PAC enlazada por
 WizKids es de 2023; solo se usan las definiciones que coinciden con el texto 2026.
+
+## Composición para 11 — 2026-11-16
+
+No se implementan nuevas reglas: el analizador compone los motores verificados de
+06–09 bajo 2026-07-01. Definiciones de métricas y referencias en ANALISIS_TACTICO.md.
+Visible incluye H y no exige alcance. Amenaza conocida exige visión y alcance
+desde un par coherente (§11.5), sin validar ataque, acción, daño ni dados.
+Capacidades actúan solo en su dirección y componente; retirar mejoras soportadas
+no elimina tamaño/otros efectos sin soporte. Esos casos conservan No evaluado.
+Los contratos A01–A14 incluyen bases que tienen una referencia visible y otra en
+alcance sin una referencia común: no se cuenta una amenaza falsa. No se copia
+texto oficial ni se redistribuye el PDF. Fuente y hash conservados en matrices.
 La matriz MATRIZ_CAPACIDADES_VISION.md distingue soporte y fronteras pendientes,
 orden de composición, pares de referencias y expectativas sintéticas derivadas
 del texto. No son diagramas oficiales copiados ni se interpreta texto de cartas.

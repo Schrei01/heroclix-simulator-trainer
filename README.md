@@ -1,13 +1,13 @@
 # HeroClix Simulator & Trainer
 
-Aplicación Android Flutter/Dart, offline y en español. Versión **0.11.0+12**.
-La entrega 10 está en la rama `codex/prompt-10` del repositorio privado
+Aplicación Android Flutter/Dart, offline y en español. Versión **0.12.0+13**.
+La entrega 11 está en la rama `codex/prompt-11` del repositorio privado
 [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer).
 
 ```powershell
 git clone https://github.com/Schrei01/heroclix-simulator-trainer.git
 cd heroclix-simulator-trainer
-git switch codex/prompt-10
+git switch codex/prompt-11
 ```
 
 ## Qué existe
@@ -30,8 +30,28 @@ exacta. La etapa 06 incorpora visión reglamentaria básica en Editor, Simulador
 con alcance declarado y consulta de objetivos. La etapa 08 incorpora alturas,
 transiciones y cuatro mejoras de visión tipadas. La etapa 09 añade rutas de
 movimiento verificadas, alternativas y comparación de posiciones. La etapa 10
-añade Entrenador, ejercicios personales y progreso local. Ataques completos y
-métricas tácticas generales siguen pendientes.
+añade Entrenador, ejercicios personales y progreso local. La etapa 11 incorpora
+comparación de posiciones y métricas tácticas. Ataques completos siguen pendientes.
+
+## Analizar y comparar posiciones
+
+1. En **Simulador → Elegir análisis → Analizar posición**, elige la figura activa
+   y pulsa Analizar. También está disponible en las herramientas del Editor.
+2. Consulta visibles, enemigos que la ven, alcance, líneas H/bloqueadas y amenazas
+   conocidas. Cada métrica muestra definición, referencias y No evaluados.
+3. Elige una casilla candidata del mapa o la lista: muestra ruta, costo y cambios
+   frente a la posición actual. Las casillas representan anclas de la base;
+   el validador comprueba toda su huella. No mueve la figura hasta confirmar.
+4. Cambia prioridad: más visibles, menos líneas enemigas o menor movimiento.
+   Solo ordena resultados completos de esta página; no declara la mejor jugada.
+5. Compara sin mejoras soportadas del activo con la opción HIPÓTESIS. Conserva
+   capacidades sin soporte como incertidumbre. Puedes cancelar o cambiar de página.
+6. Crea un ejercicio de recorrido o de posición desde la comparación; aparece
+   en el Entrenador con snapshot propio y solución verificada. Exporta el diagnóstico
+   como TXT o PNG con etiquetas genéricas, sin nombres ni metadatos del escenario.
+
+Se calculan 12 destinos por página y hasta 32 enemigos por posición. Los restantes
+son No evaluados, nunca ceros. Detalles y límites: [ANALISIS_TACTICO](docs/ANALISIS_TACTICO.md).
 
 ## Practicar con el Entrenador
 
@@ -265,8 +285,10 @@ dart run tool/verify_targets.dart
 dart run tool/verify_advanced_vision.dart
 dart run tool/verify_movement.dart
 dart run tool/verify_training.dart
+dart run tool/verify_tactics.dart
 dart run tool/benchmark_targets.dart --mixed
 dart run tool/benchmark_movement.dart
+dart run tool/benchmark_tactics.dart
 dart format --output=none --set-exit-if-changed lib test tool
 flutter --no-version-check analyze
 flutter --no-version-check test
@@ -276,7 +298,7 @@ flutter --no-version-check build apk --debug
 
 `--no-version-check` evita una consulta de actualización del SDK; no cambia su
 versión ni omite análisis o pruebas. Los renders se escriben en
-`build/previews/prompt-10/`; son capturas Flutter, no de un dispositivo.
+`build/previews/prompt-11/`; son capturas Flutter, no de un dispositivo.
 
 Preparación Android y firma release en [ANDROID.md](docs/ANDROID.md).
 El APK debug y sus resultados/hash se registran en [ESTADO.md](docs/ESTADO.md).
@@ -291,6 +313,9 @@ No se incluyen binarios, credenciales ni claves en Git.
 - `lib/domain/rules`: perfil versionado de visión, observaciones y referencias.
 - `lib/domain/movement`: validación de pasos, rutas, paradas y búsqueda verificada.
 - `lib/domain/training`: ejercicios, correctores compartidos, banco y progreso.
+- `lib/domain/tactics`: métricas, incertidumbre y comparación sobre snapshots.
+- `lib/application/tactics`: cálculo segmentado en isolate y resumen público.
+- `lib/presentation/tactics`: mapa, comparación, cancelación y exportación PNG.
 - `lib/application/board`: sesión inmutable, comandos reversibles e historial acotado.
 - `lib/application/scenarios`: documento, codec y repositorio de escenarios.
 - `lib/application/training`: formato versionado y persistencia del Entrenador.
@@ -316,6 +341,6 @@ de herramientas y compilación durante el desarrollo sí puede necesitar interne
 Informes anteriores: [00](docs/ENTREGA_00.md), [01](docs/ENTREGA_01.md),
 [02](docs/ENTREGA_02.md), [03](docs/ENTREGA_03.md), [04](docs/ENTREGA_04.md),
 [05](docs/ENTREGA_05.md), [06 inicial](docs/ENTREGA_06.md),
-[06 corregida](docs/ENTREGA_06_FIX.md), [07](docs/ENTREGA_07.md), [08](docs/ENTREGA_08.md), [09](docs/ENTREGA_09.md).
+[06 corregida](docs/ENTREGA_06_FIX.md), [07](docs/ENTREGA_07.md), [08](docs/ENTREGA_08.md), [09](docs/ENTREGA_09.md), [10](docs/ENTREGA_10.md).
 
-**No se inició Prompt 11.** Requiere una nueva orden tras revisar esta entrega.
+**No se inició Prompt 12.** Requiere una nueva orden tras revisar esta entrega.

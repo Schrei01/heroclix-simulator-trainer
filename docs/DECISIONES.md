@@ -397,3 +397,27 @@ verificado ni implementado ninguna regla del juego.
   en 09. Escenarios siguen esquema 3. Sin dependencias ni permisos nuevos.
 - 0.11.0+12. La revisión visual conserva la respuesta manual legible y el feedback
   entra automáticamente en vista al comprobar. No se inicia Prompt 11.
+
+## 2026-11-16 — Prompt 11
+
+- Mantener el perfil 2026-07-01 y una implementación por regla. Visibilidad cuenta
+  H; alcance es independiente. Amenazas conocidas requieren línea y alcance en
+  un mismo par, sin declarar ataque legal, mejor jugada ni probabilidad de victoria.
+- Limitar a 12 destinos/página y 32 enemigos por posición, con progreso y worker
+  separado. Omitidos son No evaluados; diferencias parciales no dan números exactos
+  y resultados incompletos no reciben ranking categórico. Orden por página explícito.
+- Caché de ocho páginas y de pares acotada por enemigo. Cambios de contenido,
+  capacidades, versión o efectos limpian; prioridad/cámara conservan. Cancelar mata
+  el isolate y descarta mensajes tardíos. No se requiere servicio externo.
+- Snapshot hipotético inmutable. La comparación sin mejoras retira únicamente
+  capacidades soportadas del activo; no borra poderes desconocidos para forzar un
+  resultado. Confirmar revalida la ruta declarada y crea una operación reversible.
+- Crear ejercicios de ruta/visibilidad mediante el corrector de 10, en isolate,
+  con rutas literales guardadas y hasta cuatro posiciones. No se persisten fichas
+  modificadas de laboratorio. Cancelar antes de guardar descarta la generación.
+- Entrenamiento formato 3 lee 1/2/3 y respalda exactamente 1/2 antes de reemplazar.
+  Escenarios siguen 3. Tests conservan ejercicios y contadores de 10 y protegen
+  original ante fallo de respaldo. Banco curado v1 y sus 24 soluciones se conservan.
+- TXT/PNG con datos controlados y etiquetas genéricas; no captura de pantalla con
+  nombres ni metadatos. Sin nuevas dependencias, permisos ni red en runtime.
+- 0.12.0+13; evidencia real y límites nativos en ESTADO.md. No se inicia Prompt 12.

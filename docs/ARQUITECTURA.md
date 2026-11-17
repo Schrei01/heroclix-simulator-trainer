@@ -283,3 +283,34 @@ pista/solución y verifica antes de guardar. Texto libre se declara manual.
 La única comparación de posiciones de 10 es un predicado de ejercicio: un paso
 legal con alcance y visión despejada. No se introducen métricas ni recomendaciones
 tácticas de 11. Límites, banco y almacenamiento: ENTRENADOR.md.
+
+## Análisis de posiciones en 11
+
+TacticalAnalysisService y diagnósticos son Dart puro. Componen los servicios de
+movimiento, distancia y visión mediante TargetAnalysisService. Separan visión
+independiente de alcance de la consulta combinada que requiere un mismo par de
+referencias. Cada métrica conserva conocidos/desconocidos y límites por edición.
+
+PositionAnalysisController toma un snapshot inmutable del Editor y manda lotes de
+12 destinos a un isolate con progreso por enemigo/posición. Cancelar mata el worker;
+tokens de generación descartan mensajes tardíos. Caché de ocho páginas invalidada
+por contenido, ficha, versión y efectos; cámara/prioridad no invalidan. El cálculo
+limita a 32 enemigos y conserva omitidos como desconocidos. Resultados completos
+se ordenan por prioridad transparente; incompletos quedan separados.
+
+TacticalScreen usa cámara propia. El mapa representa anclas y la ruta valida toda
+la huella. Confirmar revalida y aplica un solo comando con Deshacer. Comparar sin
+mejoras soportadas del activo es una hipótesis; no modifica fichas ni elimina
+incertidumbre por capacidades que no se saben evaluar.
+
+AnalysisExerciseRequest y fábrica en isolate crean ejercicios con rutas guardadas,
+verificados por ExerciseEvaluator antes de añadirlos al repositorio existente.
+TrainingScope comparte el controlador del Entrenador con las rutas del analizador.
+TrainingCodec pasa a esquema 3 y lee 1/2/3: candidateRoutes es opcional para legado.
+Se respalda exactamente formato 1/2 antes de reemplazar y se conservan contadores.
+El esquema de escenarios continúa 3; no se guardan métricas en la escena.
+
+DiagnosticSummary y DiagnosticPng generan artefactos desde datos controlados,
+remapeando etiquetas/equipos y sin nombres, IDs ni metadatos de la escena. PNG no
+captura widgets. Reutiliza selector/compartir Android existente sin permisos nuevos.
+Definiciones, límites y mediciones en ANALISIS_TACTICO.md.

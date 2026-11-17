@@ -1,4 +1,4 @@
-# Entrenador — etapa 10
+# Entrenador — etapas 10 y 11
 
 Banco curado **versión 1**, 24 ejercicios originales, IDs estables `hc10-*`.
 Se conserva Comprehensive Rulebook **2026-07-01**, enlazado por
@@ -40,7 +40,8 @@ automáticos: opciones, tocar objetivo, elegir casilla, ruta y justificación.
 Las rutas aceptan cualquier recorrido verificable al destino dentro del presupuesto,
 no solo la ruta de regresión. La comparación de posiciones pregunta un predicado
 concreto después de un paso: visión despejada y alcance. No puntúa daño, amenazas,
-ventaja estratégica ni recomienda la mejor jugada; no se inicia 11.
+ventaja estratégica ni recomienda la mejor jugada. El banco curado de 10 se
+conserva; los ejercicios generados en 11 se describen abajo.
 
 ## Correctores y límites
 
@@ -92,9 +93,10 @@ Reiniciar estadísticas requiere confirmación y conserva los ejercicios persona
 
 Producción: subdirectorio privado `files/scenarios_v1/training_v1`, independiente
 de los documentos del Editor. Reutiliza FileDocumentStore atómico, sin permisos
-nuevos. `trainingSchemaVersion: 2`, `bankVersion: 1`: lee 1/2, rechaza versiones
+nuevos. `trainingSchemaVersion: 3`, `bankVersion: 1`: lee 1/2/3, rechaza versiones
 futuras y campos desconocidos sin sobrescribir. Leer no escribe. Antes de reemplazar
-formato 1 guarda copia exacta `schema1-working`; si falla, protege el original.
+formato 1/2 guarda copia exacta `schema1-working` o `schema2-working`; si falla,
+protege el original. Los ejercicios personales y contadores de 10 se conservan.
 La compatibilidad con formato 1 se prueba con datos sintéticos; no hubo Entrenador
 publicado en 09. El formato 2 añade revisión y uso de pista, por defecto 1/false
 al migrar. Snapshots usan ScenarioCodec: importa 1/2/3 y exporta 3; capas siguen 2.
@@ -102,5 +104,26 @@ al migrar. Snapshots usan ScenarioCodec: importa 1/2/3 y exporta 3; capas siguen
 Escrituras serializadas y token de intento evitan duplicados al confirmar. El
 estado se publica después de guardar; fallos conservan los datos anteriores.
 No hay cuentas, ranking online, IA externa ni red en runtime.
+
+## Crear desde el análisis (11)
+
+En Analizar posición, seleccionar un destino con ruta válida y usar Crear ejercicio.
+Se puede preguntar por un recorrido al destino o por las posiciones que permiten
+ver a un enemigo. Visión obstaculizada cuenta como visible; no exige alcance.
+La comparación de posiciones necesita contraste verificable entre opciones.
+
+La fábrica trabaja en un isolate sobre una copia inmutable y contrasta la solución
+con ExerciseEvaluator antes de persistir. Se usa siempre la ficha declarada; la
+hipótesis sin mejoras no se guarda como si fuera la ficha real. Cancelar durante
+el cálculo o cambiar la escena impide guardar ese resultado. La escritura atómica
+no se cancela a mitad. Después de guardar se puede practicar en el Entrenador.
+
+El formato 3 añade el criterio `visibilityFromPositions` (respuesta de opciones)
+y `candidateRoutes`: lista de objetos `cell`/`route`, hasta 12 recorridos y 101
+casillas por recorrido. En el generador actual hay hasta cuatro posiciones.
+El corrector revalida cada ruta guardada y la visión en su snapshot futuro;
+acepta cualquiera de las posiciones verificadas, sin ejecutar un buscador en UI.
+Los documentos antiguos carecen de ese campo y se leen con colección vacía.
+No cambia el formato del escenario ni el banco curado versión 1.
 
 Resultados de pruebas, renders y APK: [ESTADO.md](ESTADO.md).
