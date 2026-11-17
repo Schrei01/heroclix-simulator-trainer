@@ -158,7 +158,7 @@ Map<String, void Function()> geometryCases() => {
     );
   },
   'muro cruzado por interior frente a contacto terminal en vértice': () {
-    final dims = BoardDimensions.initial;
+    final dims = BoardDimensions(rows: 4, columns: 4);
     final edge = EdgeWall.between(cell('A1'), cell('B1'));
     final walls = const WallLayer.empty().edit([edge], dims, erase: false);
     final cross = path('A1', 'C1', walls: walls).crossings.first;
@@ -179,7 +179,7 @@ Map<String, void Function()> geometryCases() => {
     );
   },
   'simetría exhaustiva y orden exacto A→B / B→A en 4×4': () {
-    final dimensions = BoardDimensions.initial;
+    final dimensions = BoardDimensions(rows: 4, columns: 4);
     final walls = const WallLayer.empty().edit(
       [
         for (var x = 1; x < 4; x++)
@@ -328,17 +328,20 @@ Map<String, void Function()> geometryCases() => {
       SightPath(id: 'one', origin: cell('A1'), destination: cell('D4')),
       SightPath(id: 'two', origin: cell('B1'), destination: cell('D4')),
     ];
-    final results = geometry.traceCandidates(BoardDimensions.initial, requests);
+    final results = geometry.traceCandidates(
+      BoardDimensions(rows: 4, columns: 4),
+      requests,
+    );
     same(results.map((r) => r.path.id).toList(), ['one', 'two']);
     same(labels(results.first), labels(path('A1', 'D4')));
     rejects(
-      () => geometry.traceCandidates(BoardDimensions.initial, [
+      () => geometry.traceCandidates(BoardDimensions(rows: 4, columns: 4), [
         requests.first,
         requests.first,
       ]),
     );
     rejects(
-      () => geometry.traceCandidates(BoardDimensions.initial, [
+      () => geometry.traceCandidates(BoardDimensions(rows: 4, columns: 4), [
         for (var i = 0; i < 17; i++)
           SightPath(id: '$i', origin: cell('A1'), destination: cell('B2')),
       ]),

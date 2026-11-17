@@ -4,8 +4,19 @@ import 'package:heroclix_simulator_trainer/domain/characters/character.dart';
 import 'package:heroclix_simulator_trainer/presentation/editor/editor_controller.dart';
 import 'package:material_ui/material_ui.dart';
 
-import 'editor_test.dart' show openEditor, cellPosition;
+import 'editor_test.dart' show cellPosition;
+import 'editor_test.dart' as editor;
+
+import 'package:heroclix_simulator_trainer/domain/board/board_dimensions.dart';
+
 import 'editor_test.dart' show configureSize;
+
+Future<EditorController> openEditor(WidgetTester tester) async {
+  final c = await editor.openEditor(tester);
+  c.changeDimensions(BoardDimensions(rows: 4, columns: 4));
+  await tester.pumpAndSettle();
+  return c;
+}
 
 Finder keyed(String key) => find.byKey(ValueKey(key));
 CharacterDraft data(String cell, {Footprint footprint = Footprint.single}) =>
@@ -191,7 +202,7 @@ void main() {
       expect(controller.value.teams.last.code, 'T3');
       await openFigure(tester);
       await press(tester, 'delete-character');
-      expect(find.textContaining('Deshacer estará'), findsOneWidget);
+      expect(find.textContaining('recuperarla con Deshacer'), findsOneWidget);
       await press(tester, 'confirm-delete-character');
       expect(controller.value.characters.length, 1);
       expect(controller.value.characters.byId(original.id), same(original));

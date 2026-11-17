@@ -17,7 +17,6 @@ import 'sight_controls.dart';
 import '../vision/vision_controls.dart';
 import '../vision/vision_verdict_bar.dart';
 import '../vision/tactical_controls.dart';
-import 'elevation_controls.dart';
 import '../movement/movement_controls.dart';
 import '../tactics/tactical_screen.dart';
 
@@ -40,7 +39,6 @@ enum _ViewAction {
   details,
   sight,
   visionVerdict,
-  elevation,
 }
 
 class EditorScreen extends StatelessWidget {
@@ -222,8 +220,6 @@ class EditorScreen extends StatelessWidget {
                       showSightInspector(context, controller);
                     case _ViewAction.visionVerdict:
                       showVisionReport(context, controller);
-                    case _ViewAction.elevation:
-                      showElevationDialog(context, controller);
                   }
                 },
                 itemBuilder: (context) => [
@@ -234,14 +230,6 @@ class EditorScreen extends StatelessWidget {
                   const PopupMenuItem(
                     value: _ViewAction.sight,
                     child: Text('Inspeccionar geometría'),
-                  ),
-                  const PopupMenuItem(
-                    value: _ViewAction.elevation,
-                    child: Text(
-                      'Alturas y transiciones',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
                   ),
                   if (workspace != null) ...[
                     PopupMenuItem(
@@ -343,7 +331,8 @@ class EditorScreen extends StatelessWidget {
             maintainBottomViewPadding: true,
             child: Column(
               children: [
-                if (session.editsLayers) LayerToolbar(controller: controller),
+                if (session.editsLayers || session.tool == EditorTool.terrain)
+                  LayerToolbar(controller: controller),
                 if (session.tool == EditorTool.movement)
                   MovementToolbar(controller: controller),
                 if (session.tool == EditorTool.vision)
@@ -434,15 +423,6 @@ class _CameraBar extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 8),
         child: Row(
           children: [
-            if (verdict != null)
-              Padding(
-                padding: const EdgeInsets.only(right: 4),
-                child: Icon(
-                  visionIcon(verdict.status),
-                  color: visionColor(verdict.status),
-                  size: 20,
-                ),
-              ),
             if (figure != null)
               IconButton(
                 key: const ValueKey('edit-character'),
@@ -457,9 +437,7 @@ class _CameraBar extends StatelessWidget {
                 child: Semantics(
                   liveRegion: true,
                   child: Text(
-                    verdict == null
-                        ? message
-                        : '${visionLabel(verdict.status)} · $message',
+                    message,
                     key: ValueKey(
                       session.tool == EditorTool.vision
                           ? 'sight-status'
@@ -518,7 +496,6 @@ class _ToolBar extends StatelessWidget {
       ('vision', 'Línea de visión · Geometría', Icons.visibility_outlined),
       ('distance', 'Medir distancia', Icons.straighten_outlined),
       ('targets', 'Mostrar objetivos', Icons.radar_outlined),
-      ('elevation', 'Alturas y transiciones', Icons.layers_outlined),
       ('movement', 'Movimiento', Icons.route_outlined),
       ('positionAnalysis', 'Analizar posición', Icons.analytics_outlined),
       ('erase', 'Borrar elemento', Icons.backspace_outlined),
@@ -602,10 +579,6 @@ class _ToolBar extends StatelessWidget {
                           if (controller.value.editsLayers) return;
                           if (id == 'movement') {
                             showMovementReport(context, controller);
-                            return;
-                          }
-                          if (id == 'elevation') {
-                            showElevationDialog(context, controller);
                             return;
                           }
                           if (id == 'targets') {

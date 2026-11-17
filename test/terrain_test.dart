@@ -40,7 +40,7 @@ void main() {
     expect(clear.walls, same(state.walls));
     expect(() => state.terrain.cells.clear(), throwsUnsupportedError);
   });
-  test('bloqueado ocupado exige decisión explícita, sin mutar figura ni perder base 2×2', () {
+  test('bloqueado ocupado se rechaza; documentos antiguos conservan datos para corregirlos', () {
     final before = BoardSession.initial().createCharacter(
       figure('B2', footprint: Footprint.square2),
     );
@@ -51,10 +51,15 @@ void main() {
       throwsA(isA<PlacementException>()),
     );
     expect(before.terrain.isEmpty, isTrue);
-    final study = before.paintTerrain(
-      targets,
-      TerrainType.blocking,
-      allowStudy: true,
+    // Fixture heredada: la restauración conserva datos; editar ya no permite crearlos.
+    final study = before.replaceLayers(
+      terrain: before.terrain.paint(
+        targets,
+        TerrainType.blocking,
+        before.dimensions,
+      ),
+      walls: before.walls,
+      characters: before.characters,
     );
     expect(study.studyConflicts, {c('C3')});
     expect(study.characters, same(before.characters));
@@ -64,35 +69,41 @@ void main() {
       isEmpty,
     );
   });
-  test('figura hacia bloqueado rechazada por defecto; ficha de estudio explícita y ocupación intacta', () {
-    final before = BoardSession.initial().paintTerrain([
-      c('A1'),
-    ], TerrainType.blocking);
-    expect(
-      () => before.createCharacter(figure('A1')),
-      throwsA(isA<PlacementException>()),
-    );
-    final study = before.createCharacter(figure('A1'), allowStudy: true);
-    expect(study.studyConflicts, {c('A1')});
-    expect(
-      () => study.createCharacter(figure('A1'), allowStudy: true),
-      throwsA(isA<PlacementException>()),
-    );
-    var state = before.createCharacter(figure('B1'));
-    final id = state.selectedCharacterId!;
-    expect(
-      state.validateFigurePlacement(state.selectedCharacter!, c('A1')).isValid,
-      isFalse,
-    );
-    expect(
-      () => state.moveCharacter(id, c('A1')),
-      throwsA(isA<PlacementException>()),
-    );
-    expect(state.selectedCharacter!.position, c('B1'));
-    state = state.editCharacter(id, figure('A1'), allowStudy: true);
-    expect(state.selectedCharacter!.id, id);
-    expect(state.studyConflicts, {c('A1')});
-  });
+  test(
+    'bloqueado rechaza creación, movimiento, duplicación y edición de figuras',
+    () {
+      final before = BoardSession.initial().paintTerrain([
+        c('A1'),
+      ], TerrainType.blocking);
+      expect(
+        () => before.createCharacter(figure('A1')),
+        throwsA(isA<PlacementException>()),
+      );
+      final state = before.createCharacter(figure('B1'));
+      final id = state.selectedCharacterId!;
+      expect(
+        state
+            .validateFigurePlacement(state.selectedCharacter!, c('A1'))
+            .isValid,
+        isFalse,
+      );
+      expect(
+        () => state.moveCharacter(id, c('A1')),
+        throwsA(isA<PlacementException>()),
+      );
+      expect(state.selectedCharacter!.position, c('B1'));
+      expect(
+        () => state.editCharacter(id, figure('A1')),
+        throwsA(isA<PlacementException>()),
+      );
+      expect(
+        () => state.duplicateCharacter(id, c('A1')),
+        throwsA(isA<PlacementException>()),
+      );
+      expect(state.selectedCharacter!.position, c('B1'));
+      expect(state.studyConflicts, isEmpty);
+    },
+  );
   test('muro compartido normalizado, sin duplicación, borrar solo el muro', () {
     final a = wall('A1', 'B1'), b = wall('B1', 'A1');
     expect(a, b);
@@ -113,7 +124,9 @@ void main() {
     expect(() => state.walls.edges.clear(), throwsUnsupportedError);
   });
   test('bordes externos inválidos y hit tests fuera no generan cambios ni error de UI', () {
-    final state = BoardSession.initial();
+    final state = BoardSession.initial().changeDimensions(
+      BoardDimensions(rows: 4, columns: 4),
+    );
     for (final edge in [
       EdgeWall(axis: EdgeAxis.vertical, column: 0, row: 0),
       EdgeWall(axis: EdgeAxis.vertical, column: 4, row: 0),
@@ -304,6 +317,7 @@ void main() {
   test('fragmento rechaza datos corruptos, versión desconocida, duplicados, bordes externos e IDs falsos', () {
     const codec = LayerCodec();
     final state = BoardSession.initial()
+        .changeDimensions(BoardDimensions(rows: 4, columns: 4))
         .paintTerrain([c('A1')], TerrainType.hindering)
         .editWalls([wall('A1', 'B1')], erase: false);
     Map<String, dynamic> fresh() =>

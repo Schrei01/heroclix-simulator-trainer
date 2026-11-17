@@ -414,7 +414,7 @@ Map<String, void Function()> visionCases() => {
   },
   'R22 §11.4 registro vincula eventos y no evalúa alcance': () {
     final world = VisionSnapshot(
-      dimensions: BoardDimensions.initial,
+      dimensions: BoardDimensions(rows: 4, columns: 4),
       characters: [
         vf(1, 'A1', range: 0),
         vf(2, 'D1', team: 'team-2'),

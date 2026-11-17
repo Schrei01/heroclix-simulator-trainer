@@ -207,9 +207,6 @@ Future<void> _editRange(
       movementAbilities: latest.movementAbilities,
     ),
     id: latest.id,
-    allowStudy: latest.occupiedCells.any(
-      controller.value.studyConflicts.contains,
-    ),
   );
   if (error != null && context.mounted) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));

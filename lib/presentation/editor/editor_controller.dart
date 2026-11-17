@@ -10,6 +10,7 @@ import '../../domain/characters/team.dart';
 import '../../application/board/board_edit.dart';
 import '../../application/board/layer_draft.dart';
 import '../../domain/terrain/terrain.dart';
+import '../../domain/terrain/edge_wall.dart';
 import '../scenarios/workspace_controller.dart';
 import '../../application/ports/scenario_files.dart';
 import '../../application/board/sight_probe.dart';
@@ -27,6 +28,7 @@ final class EditorController extends ValueNotifier<BoardSession> {
   final vision = VisionAnalysis();
   final tactical = TacticalAnalysis();
   final movement = MovementAnalysis();
+  CellCoordinate? transitionStart;
   String get rulesVersion =>
       workspace?.current.rulesVersion ?? VisionContext.supportedVersion;
   void _evaluateVision(BoardSession next) {
@@ -116,6 +118,22 @@ final class EditorController extends ValueNotifier<BoardSession> {
 
   void setSightEndpoint(ProbeEndpoint endpoint, {required bool asOrigin}) {
     sight.setEndpoint(endpoint, asOrigin: asOrigin);
+    if (value.tool == EditorTool.vision &&
+        sight.origin != null &&
+        sight.destination != null) {
+      try {
+        if ((sight.origin!.figureId != null &&
+                sight.origin!.figureId == sight.destination!.figureId) ||
+            sight.origin!.resolve(value) == sight.destination!.resolve(value)) {
+          sight.clear();
+          value = value.clearSelection();
+          notifyListeners();
+          return;
+        }
+      } on ArgumentError {
+        // La evaluación existente explica extremos antiguos o no resolubles.
+      }
+    }
     sight.evaluate(value);
     _evaluateVision(value);
     notifyListeners();
@@ -143,6 +161,7 @@ final class EditorController extends ValueNotifier<BoardSession> {
   }
 
   void loadScenario(BoardSession session) {
+    transitionStart = null;
     cancelDraft();
     sight.clear();
     vision.clear();
@@ -178,13 +197,19 @@ final class EditorController extends ValueNotifier<BoardSession> {
   void cancelDraft() => draft.value = null;
   void configureLayers({
     TerrainType? type,
+    TerrainBrush? brush,
     bool? rectangle,
     bool? removeWalls,
     EraseLayer? erase,
   }) {
     cancelDraft();
+    if (transitionStart != null) {
+      transitionStart = null;
+      value = value.clearSelection();
+    }
     value = value.configureLayers(
       type: type,
+      brush: brush,
       rectangle: rectangle,
       removeWalls: removeWalls,
       erase: erase,
@@ -212,6 +237,10 @@ final class EditorController extends ValueNotifier<BoardSession> {
   void centerCamera() => value = value.centerCamera();
   void resetCamera() => value = value.resetCamera();
   void setTool(EditorTool tool) {
+    if (transitionStart != null) {
+      transitionStart = null;
+      value = value.clearSelection();
+    }
     cancelDraft();
     if (tool != EditorTool.movement) movement.clear();
     if (tool == EditorTool.vision) vision.enabled = true;
@@ -298,15 +327,32 @@ final class EditorController extends ValueNotifier<BoardSession> {
     }
   }
 
-  String? saveCharacter(
-    CharacterDraft data, {
-    String? id,
-    bool allowStudy = false,
-  }) => attempt(
+  String? saveCharacter(CharacterDraft data, {String? id}) => attempt(
     (session) => id == null
-        ? session.createCharacter(data, allowStudy: allowStudy)
-        : session.editCharacter(id, data, allowStudy: allowStudy),
+        ? session.createCharacter(data)
+        : session.editCharacter(id, data),
   );
+
+  String? raiseElevation(CellCoordinate cell) {
+    final level = value.terrain.at(cell).level;
+    if (level >= 40) return 'La elevación máxima es E40.';
+    return attempt((s) => s.paintElevation([cell], level + 1));
+  }
+
+  String? transitionCell(CellCoordinate cell) {
+    final start = transitionStart;
+    if (start == null) {
+      transitionStart = cell;
+      value = value.clearSelection().toggleCell(cell);
+      return null;
+    }
+    transitionStart = null;
+    value = value.clearSelection();
+    return attempt(
+      (s) => s.setTransition(EdgeWall.between(start, cell), remove: false),
+    );
+  }
+
   String? moveCharacter(String id, CellCoordinate cell) =>
       attempt((session) => session.moveCharacter(id, cell));
   String? addTeam(String name, int color, TeamPattern pattern) => attempt(

@@ -8,6 +8,7 @@ import '../../domain/terrain/edge_wall.dart';
 import '../theme/app_theme.dart';
 import 'editor_controller.dart';
 import 'layer_actions.dart';
+import 'elevation_controls.dart';
 
 class LayerToolbar extends StatelessWidget {
   const LayerToolbar({required this.controller, super.key});
@@ -44,7 +45,8 @@ class LayerToolbar extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 8),
           child: Row(
             children: [
-              if (state.tool == EditorTool.terrain) ...[
+              if (state.tool == EditorTool.terrain &&
+                  state.terrainBrush.type != null) ...[
                 PopupMenuButton<bool>(
                   key: const ValueKey('terrain-brush'),
                   tooltip: 'Trazo o rectángulo',
@@ -98,19 +100,14 @@ class LayerToolbar extends StatelessWidget {
                   onSelected: (layer) =>
                       controller.configureLayers(erase: layer),
                   itemBuilder: (_) => [
-                    const PopupMenuItem(
-                      value: EraseLayer.figures,
-                      child: Text('Borrar figura'),
-                    ),
-                    const PopupMenuItem(
-                      value: EraseLayer.walls,
-                      child: Text('Borrar muro'),
-                    ),
+                    for (final layer in EraseLayer.values)
+                      PopupMenuItem(
+                        value: layer,
+                        child: Text(eraseName(layer)),
+                      ),
                   ],
                   child: _choice(
-                    state.eraseLayer == EraseLayer.figures
-                        ? 'Borrar figura'
-                        : 'Borrar muro',
+                    eraseName(state.eraseLayer),
                     compact: compact,
                     icon: Icons.backspace_outlined,
                   ),
@@ -149,6 +146,12 @@ class LayerToolbar extends StatelessWidget {
   }
 
   Future<void> _coordinates(BuildContext context) async {
+    final initial = controller.value;
+    if (initial.tool == EditorTool.terrain &&
+        initial.terrainBrush == TerrainBrush.elevated) {
+      await showElevationDialog(context, controller);
+      return;
+    }
     final result = await showDialog<(CellCoordinate, CellCoordinate)>(
       context: context,
       builder: (_) => _CoordinatesDialog(controller: controller),
@@ -156,19 +159,35 @@ class LayerToolbar extends StatelessWidget {
     if (result == null || !context.mounted) return;
     final state = controller.value;
     final (a, b) = result;
+    if (state.tool == EditorTool.terrain &&
+        state.terrainBrush == TerrainBrush.transition) {
+      final error = controller.attempt(
+        (s) => s.setTransition(EdgeWall.between(a, b), remove: false),
+      );
+      if (error != null && context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(error)));
+      }
+      return;
+    }
     controller.draft.value = LayerDraft(
       tool: state.tool,
       type: state.terrainType,
       rectangle: state.tool == EditorTool.terrain,
       eraseWalls: state.eraseWalls,
       eraseLayer: state.eraseLayer,
-      cells: state.tool == EditorTool.terrain
+      cells:
+          state.tool == EditorTool.terrain ||
+              (state.tool == EditorTool.erase &&
+                  (state.eraseLayer == EraseLayer.terrain ||
+                      state.eraseLayer == EraseLayer.elevation))
           ? const EditingGeometry().rectangle(a, b)
           : [],
       edges:
           state.tool == EditorTool.walls ||
               (state.tool == EditorTool.erase &&
-                  state.eraseLayer == EraseLayer.walls)
+                  (state.eraseLayer == EraseLayer.walls ||
+                      state.eraseLayer == EraseLayer.transitions))
           ? [EdgeWall.between(a, b)]
           : [],
       figureId:
@@ -219,7 +238,10 @@ class _CoordinatesDialogState extends State<_CoordinatesDialog> {
     final wall =
         state.tool == EditorTool.walls ||
         (state.tool == EditorTool.erase &&
-            state.eraseLayer == EraseLayer.walls);
+            (state.eraseLayer == EraseLayer.walls ||
+                state.eraseLayer == EraseLayer.transitions)) ||
+        (state.tool == EditorTool.terrain &&
+            state.terrainBrush == TerrainBrush.transition);
     return Dialog(
       insetPadding: const EdgeInsets.all(16),
       child: ConstrainedBox(
@@ -238,10 +260,10 @@ class _CoordinatesDialogState extends State<_CoordinatesDialog> {
                 ),
                 Text(
                   wall
-                      ? 'Indica dos casillas vecinas que compartan el borde interno del muro.'
+                      ? 'Indica dos casillas vecinas que compartan el borde interno.'
                       : state.tool == EditorTool.terrain
                       ? 'Inicio y fin del rectángulo. Fin vacío pinta una casilla. Se mostrará vista previa.'
-                      : 'Indica la casilla ocupada por la figura que quieres eliminar.',
+                      : 'Indica la casilla que quieres borrar de la capa elegida.',
                 ),
                 TextFormField(
                   key: const ValueKey('layer-start'),

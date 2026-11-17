@@ -15,7 +15,7 @@ CellCoordinate qc(String label) => CellCoordinate.parse(label);
 void main() {
   WidgetController.hitTestWarningShouldBeFatal = true;
   testWidgets(
-    'tres iconos de terreno centrados: elegir no pinta, tocar mapa sí, cambiar herramienta los oculta',
+    'paleta de terreno centrada: elegir no pinta, tocar mapa sí, cambiar herramienta los oculta',
     (tester) async {
       final c = await openEditor(tester);
       await press(tester, 'tool-terrain');

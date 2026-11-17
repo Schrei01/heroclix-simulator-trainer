@@ -12,7 +12,7 @@ final class BoardDimensions {
 
   static const minimum = 2;
   static const maximum = 40;
-  static const initial = BoardDimensions._(4, 4);
+  static const initial = BoardDimensions._(10, 10);
 
   final int rows;
   final int columns;

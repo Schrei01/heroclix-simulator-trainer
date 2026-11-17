@@ -27,6 +27,7 @@ void main() {
     'PNG 4×4 sin controles ni selección; coordenadas y leyenda opcionales',
     (tester) async {
       final state = BoardSession.initial()
+          .changeDimensions(BoardDimensions(rows: 4, columns: 4))
           .createCharacter(character('B2'))
           .paintTerrain([cell('A1')], TerrainType.hindering);
       final selected = state.selectedCharacterId;

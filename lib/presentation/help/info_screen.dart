@@ -51,7 +51,7 @@ class QuickGuideScreen extends StatelessWidget {
     title: 'Guía rápida',
     children: [
       Text(
-        'Editor: prepara y guarda figuras, terreno, muros y alturas. El arrastre libre sirve para construir el escenario.',
+        'Editor: empieza con un tablero de 10×10. Prepara y guarda figuras, terreno, muros y alturas. El arrastre libre sirve para construir el escenario.',
       ),
       Text(
         'Analizar en el Editor: consulta visión y alcance, ensaya rutas y compara posiciones. Una hipótesis solo se aplica al confirmar un movimiento válido; toca el dictamen para ver explicación y referencias.',
@@ -67,6 +67,15 @@ class QuickGuideScreen extends StatelessWidget {
       ),
       Text(
         'Elevación: E2/E3… y borde rojo. Transición: dos triángulos numerados conectados, uno dentro de cada casilla, con su nivel. Una casilla elevada sin transición conserva la marca E2/E3….',
+      ),
+      Text(
+        'Terrenos reúne Bloqueado, Obstaculizado, Elevado, Transición y Despejado. Con Elevado, tocar suelo coloca E2 y volver a tocar sube a E3. Despejado conserva la altura. Para una transición toca dos vecinos ortogonales de niveles distintos, sin muro entre ellos; una selección inválida muestra el motivo.',
+      ),
+      Text(
+        'En Seleccionar, toca dos veces la misma casilla para preguntar si quieres borrar: primero personaje, después terreno y luego elevación. Borrar elemento permite elegir también elevaciones y transiciones. Puedes recuperar los cambios con Deshacer.',
+      ),
+      Text(
+        'No se permite colocar personajes sobre bloqueado ni pintar bloqueado bajo ellos. Improved Targeting e Improved Movement se abren desde sus listas en la ficha. En Visión, elegir el mismo origen y destino limpia la línea y las marcas; el dictamen se consulta sobre el mapa.',
       ),
       Text(
         '? · No evaluado: faltan reglas o datos para decidir. No significa despejado, bloqueado, fallo del ejercicio ni permiso para actuar. Consulta el motivo antes de continuar.',

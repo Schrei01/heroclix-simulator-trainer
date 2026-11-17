@@ -80,6 +80,7 @@ void main() {
       character: c.value.characters.byId('figure-1'),
     );
     await tester.pumpAndSettle();
+    await press(tester, 'targeting-abilities');
     await press(tester, 'ability-blocking');
     await press(tester, 'save-character');
     expect(c.value.characters.byId('figure-1')!.abilities, {

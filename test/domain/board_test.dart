@@ -54,15 +54,15 @@ void main() {
       'el tablero valida una coordenada sin confundirla con su etiqueta',
       () {
         expect(
-          BoardDimensions.initial.contains(CellCoordinate.parse('D4')),
+          BoardDimensions.initial.contains(CellCoordinate.parse('J10')),
           isTrue,
         );
         expect(
-          BoardDimensions.initial.contains(CellCoordinate.parse('E4')),
+          BoardDimensions.initial.contains(CellCoordinate.parse('K10')),
           isFalse,
         );
         expect(
-          BoardDimensions.initial.contains(CellCoordinate.parse('A5')),
+          BoardDimensions.initial.contains(CellCoordinate.parse('A11')),
           isFalse,
         );
       },
@@ -96,7 +96,7 @@ void main() {
     test(
       'un borde compartido elige derecha/abajo y el exterior se excluye',
       () {
-        final dimensions = BoardDimensions.initial;
+        final dimensions = BoardDimensions(rows: 4, columns: 4);
         expect(
           geometry.cellAt(const BoardPoint(32, 32), dimensions),
           CellCoordinate.parse('A1'),
@@ -184,7 +184,7 @@ void main() {
       );
       expect(
         () => geometry.cellCenter(
-          CellCoordinate.parse('E1'),
+          CellCoordinate.parse('K1'),
           BoardDimensions.initial,
         ),
         throwsRangeError,
