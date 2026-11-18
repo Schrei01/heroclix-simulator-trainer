@@ -28,11 +28,14 @@ void main() {
           File('test/fixtures/scenario_schema1.json').readAsStringSync(),
         );
     final map = codec.toMap(doc);
-    for (final version in [2, 3]) {
+    for (final version in [2, 3, 4]) {
       final legacy = Map<String, Object?>.from(map);
       legacy['schemaVersion'] = version;
-      legacy.remove('environment');
-      legacy.remove('indoorCells');
+      if (version < 4) {
+        legacy.remove('environment');
+        legacy.remove('indoorCells');
+      }
+      legacy.remove('debrisCells');
       legacy['characters'] = [
         for (final f in map['characters'] as List)
           Map<String, Object?>.from(f as Map<String, Object?>),
@@ -58,6 +61,7 @@ void main() {
     map['schemaVersion'] = 2;
     map.remove('environment');
     map.remove('indoorCells');
+    map.remove('debrisCells');
     for (final f in map['characters'] as List) {
       (f as Map).remove('movementAbilities');
     }
@@ -74,6 +78,7 @@ void main() {
     next['schemaVersion'] = 2;
     next.remove('environment');
     next.remove('indoorCells');
+    next.remove('debrisCells');
     for (final f in next['characters'] as List) {
       expect((f as Map).remove('movementAbilities'), isEmpty);
     }
@@ -146,7 +151,7 @@ void main() {
       expect(store.documents['schema2-working'], raw);
       expect(
         jsonDecode(store.documents['working']!)['document']['schemaVersion'],
-        4,
+        5,
       );
     },
   );

@@ -1,6 +1,6 @@
 # Preparar, compilar e instalar en Android
 
-Candidata actual: **TeamFight: GridLab 1.0.0-rc.11+24**. Inicio contiene Editor y Entrenador; las consultas
+Candidata actual: **TeamFight: GridLab 1.0.0-rc.12+25**. Inicio contiene Editor y Entrenador; las consultas
 y ensayos están en las herramientas del Editor. El recorrido vigente del Editor
 está al final de este documento. Los apartados identificados por etapa describen
 sus versiones históricas. Resultados efectivamente ejecutados: [ESTADO](ESTADO.md).
@@ -417,7 +417,7 @@ y texto ampliado, biblioteca/JSON/PNG, dictamen de visión y ruta sobre agua.
 Pruebas Flutter y capturas en Windows no sustituyen aceptación Android. Sigue la
 decisión previa del usuario de continuar sin teléfono; pruebas nativas pendientes.
 
-## Indoor y trazos de movimiento — candidata actual rc.11+24
+## Indoor y trazos de movimiento — candidata rc.11+24 (histórica)
 
 APK: build/releases/teamfight-gridlab-1.0.0-rc.11-debug.apk. Instalar encima con la
 misma firma. Mantiene vencimiento 30/12/2026 00:00 Colombia.
@@ -437,3 +437,23 @@ misma firma. Mantiene vencimiento 30/12/2026 00:00 Colombia.
    y menú de siete pinceles. Verificar amarillo/IM Bloqueado exterior/JSON/PNG.
 
 El recorrido Android real sigue pendiente según la decisión de continuar sin teléfono.
+
+## Destrucción confirmada — candidata actual rc.12+25
+
+APK: build/releases/teamfight-gridlab-1.0.0-rc.12-debug.apk. Instalar encima sin
+desinstalar; conserva firma, datos y vencimiento 30/12/2026 00:00 Colombia.
+
+1. Figura con IM Bloqueado normal: atravesar B/muro y confirmar no los destruye.
+2. Activar IM Destruir bloqueado y muros en ficha. Trazar B y muro: plan visible,
+   mapa original intacto. Confirmar mueve y crea Db/H; muro desaparece. Probar que
+   puede terminar sobre la casilla que acaba de dejar de ser B, pero no sobre figuras.
+3. Deshacer/Rehacer: recuperar posición y todas las capas juntas. Cancelar, ruta
+   inválida o cambiar el escenario no deben aplicar destrucción parcial.
+4. Probar diagonales con un lado libre, muros/Indoor/elevación, base 2×2 y bucles.
+   Revisar plan de laterales antes de confirmar; conserva el perfil de traslación.
+5. Comprobar ambos lados del muro, debris sobre agua y B cercano intacto. Borrar
+   escombros recupera agua o despejado; no reconstruye B/muro. Altura/Indoor se conservan.
+6. Guardar/reabrir/exportar JSON y PNG. Verificar migración con respaldo desde
+   biblioteca rc.11, datos de entrenador, giro/texto ampliado y consultas de visión.
+
+Pruebas en Android real pendientes; se mantiene la decisión de continuar sin teléfono.

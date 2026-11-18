@@ -17,7 +17,9 @@ final class LayerCodec {
     final walls = session.walls.edges.values.toList()
       ..sort((a, b) => a.id.compareTo(b.id));
     return {
-      'layerSchemaVersion': 3,
+      'layerSchemaVersion': 4,
+      'debrisCells': (session.terrain.debrisCells.map((c) => c.label).toList()
+        ..sort()),
       'environment': session.terrain.environment.name,
       'indoorCells': (session.terrain.indoorCells.map((c) => c.label).toList()
         ..sort()),
@@ -69,10 +71,11 @@ final class LayerCodec {
       'columns',
       'terrain',
       'walls',
-      if (version == 2 || version == 3) 'transitions',
-      if (version == 3) ...{'environment', 'indoorCells'},
+      if (version == 2 || version == 3 || version == 4) 'transitions',
+      if (version == 3 || version == 4) ...{'environment', 'indoorCells'},
+      if (version == 4) 'debrisCells',
     });
-    if ((version != 1 && version != 2 && version != 3) ||
+    if ((version != 1 && version != 2 && version != 3 && version != 4) ||
         root['layerSchemaVersion'] is! int ||
         root['rows'] is! int ||
         root['columns'] is! int ||
@@ -171,7 +174,7 @@ final class LayerCodec {
         }
         terrain = terrain.setTransition(edge, dimensions, remove: false);
       }
-      if (version == 3) {
+      if (version == 3 || version == 4) {
         final environment = MapEnvironment.values
             .where((v) => v.name == root['environment'])
             .firstOrNull;
@@ -201,6 +204,25 @@ final class LayerCodec {
         terrain = terrain
             .setEnvironment(environment)
             .paintIndoor(parsed, dimensions);
+      }
+      if (version == 4) {
+        final raw = root['debrisCells'];
+        if (raw is! List ||
+            raw.length > dimensions.cellCount ||
+            raw.any((c) => c is! String)) {
+          throw const FormatException('Escombros inválidos.');
+        }
+        final parsed = raw
+            .map((c) => CellCoordinate.parse(c as String))
+            .toList();
+        if (parsed.toSet().length != raw.length ||
+            List.generate(
+              raw.length,
+              (i) => parsed[i].label != raw[i],
+            ).any((v) => v)) {
+          throw const FormatException('Escombros duplicados o no canónicos.');
+        }
+        terrain = terrain.withDebris(parsed, dimensions);
       }
       return (terrain: terrain, walls: wallLayer);
     } on ArgumentError catch (error) {

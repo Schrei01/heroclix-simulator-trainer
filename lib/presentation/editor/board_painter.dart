@@ -59,10 +59,11 @@ final class BoardPainter extends CustomPainter {
     canvas.drawRect(grid, Paint()..color = AppTheme.surface);
     final terrain = session?.terrain;
     if (terrain != null) {
-      for (final entry in terrain.cells.entries) {
-        final type = entry.value.type;
+      for (final cellKey in {...terrain.cells.keys, ...terrain.debrisCells}) {
+        final type = terrain.at(cellKey).type;
+        final debris = terrain.debrisCells.contains(cellKey);
         if (type == TerrainType.clear) continue;
-        final rect = _cellRect(entry.key);
+        final rect = _cellRect(cellKey);
         final blocking = type == TerrainType.blocking;
         final water = type == TerrainType.water;
         canvas.drawRect(
@@ -83,7 +84,20 @@ final class BoardPainter extends CustomPainter {
               ? const Color(0xff79c9ff)
               : const Color(0xff87d8c0)
           ..strokeWidth = 1.5;
-        if (blocking) {
+        if (debris) {
+          for (double x = rect.left + 9; x < rect.right; x += 17) {
+            for (double y = rect.top + 13; y < rect.bottom; y += 17) {
+              canvas.drawPath(
+                Path()
+                  ..moveTo(x - 4, y + 3)
+                  ..lineTo(x, y - 3)
+                  ..lineTo(x + 5, y + 3)
+                  ..close(),
+                pattern..color = const Color(0xffceb794),
+              );
+            }
+          }
+        } else if (blocking) {
           for (double x = rect.left - cell; x < rect.right; x += 12) {
             canvas.drawLine(
               Offset(x, rect.top),
@@ -109,19 +123,21 @@ final class BoardPainter extends CustomPainter {
           }
         }
         canvas.restore();
-        if (water) _waterBoundary(canvas, entry.key, rect, terrain);
+        if (water) _waterBoundary(canvas, cellKey, rect, terrain);
         canvas.drawRect(
-          Rect.fromLTWH(rect.left + 3, rect.top + 3, 14, 15),
+          Rect.fromLTWH(rect.left + 3, rect.top + 3, debris ? 23 : 14, 15),
           Paint()..color = AppTheme.background,
         );
         _text(
           canvas,
-          blocking
+          debris
+              ? 'Db'
+              : blocking
               ? 'B'
               : water
               ? 'A'
               : 'H',
-          Offset(rect.left + 10, rect.top + 10),
+          Offset(rect.left + (debris ? 14 : 10), rect.top + 10),
           fontSize: 11,
           color: Colors.white,
         );

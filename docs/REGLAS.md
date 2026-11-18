@@ -35,6 +35,40 @@ movimiento, ataques ni excepciones. El inicio no emite dictámenes.
 No se distribuyen el PDF, texto completo, iconografía ni ilustraciones oficiales.
 La herramienta futura será de apoyo, no una decisión oficial de torneo.
 
+## Destrucción durante movimiento — rc.12, 2026-11-18
+
+Se mantiene la edición oficial 07.01.2026 enlazada por WizKids. Revisados §10.4–5
+(p. 24), §16.8a (p. 44), §16.9a–c (p. 45), §17.14d (p. 51) y §27.5b–d (p. 86).
+IM Bloqueado y Bloqueado exterior permiten pasar sin destruir. IM Destruir bloqueado
+destruye el bloqueado que atraviesa, incluidos los muros, durante el movimiento.
+El destino también forma parte de las casillas atravesadas: al destruir B de destino
+queda debris H y puede terminar allí si cumple ocupación, altura y demás restricciones.
+El origen se valida primero; no se concede permiso para representar una figura en B
+intacto ni ocupar un muro en su huella original. Cero pasos sigue sin confirmación.
+
+B destruido pierde su tipo base y genera debris, conservando elevación e Indoor.
+Un muro destruido se retira y genera debris en ambos lados salvo las casillas que
+continúen bloqueadas. No se destruye por proximidad otro B no atravesado. Retirar el
+debris no reconstruye B/muro; el marcador es H y conserva debajo el tipo previo de
+una casilla no destruida (por ejemplo agua). El modelo del Editor representa terreno
+impreso; no se añaden objetos portables, marcadores con vencimiento o efectos de
+retirada de marcadores especiales de §16.9c.
+
+Cada paso se evalúa sobre el mundo simulado después del paso anterior, también para
+adyacencia y aterrizaje. Bases múltiples agregan las partes del perfil de traslación
+ya soportado; si requieren otra maniobra sigue No evaluado. En diagonal se elige el
+lado menos restrictivo de §16.8a. A igualdad se prefiere menos destrucción y después
+una clave canónica: el informe enumera exactamente las casillas/muros elegidos antes
+de confirmar. No se destruyen ambos laterales por simple contacto con el vértice.
+Todavía no hay selector manual entre laterales equivalentes del mismo paso diagonal.
+
+Confirmar revalida el escenario original y aplica posición/capas juntas, con un solo
+Deshacer. Rutas inválidas, canceladas o con efectos sin soporte no aplican cambios.
+La búsqueda destructiva considera el estado del terreno, se limita a 4096 prefijos
+y solo devuelve alternativas completas verificadas. Un prefijo no se puede confirmar.
+La comparación futura de visión/alcance usa debris y muros retirados. Contratos en
+movement_destruction_test.dart; se conservan los contratos de movimiento anteriores.
+
 ## Indoor/Outdoor — revisión 2026-11-18, rc.11
 
 Se mantiene el enlace oficial 07.01.2026. Revisados §15.1a–c/15.2 (p. 37) y

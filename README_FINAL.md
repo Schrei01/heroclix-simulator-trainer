@@ -1,16 +1,16 @@
-# TeamFight: GridLab — 1.0.0-rc.11+24
+# TeamFight: GridLab — 1.0.0-rc.12+25
 
 Aplicación Android offline, en español, para construir escenarios, consultar reglas
 implementadas y practicar. **Versión candidata, APK debug**: faltan las comprobaciones
 nativas de aceptación y rendimiento descritas abajo. No se congela 1.0.0 estable.
 Repositorio privado: [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer),
-rama `codex/indoor-movement-strokes`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
+rama `codex/movement-destruction`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
 
 Nombre e iconos de Android, Inicio y Acerca de actualizados a TeamFight: GridLab.
 La identidad técnica y firma se conservan para actualizar la instalación anterior.
 Archivos de Google Play preparados en distribution/google-play/; [detalles de identidad](docs/IDENTIDAD.md).
 
-Esta beta rc.11 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
+Esta beta rc.12 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
 (2026-12-30T05:00:00Z). Desde ese instante muestra «Versión de prueba finalizada»
 y bloquea todas las pantallas, también al reanudar o si permanece abierta. Acerca de
 muestra la fecha. No elimina biblioteca ni progreso. Usa el reloj del dispositivo:
@@ -23,7 +23,7 @@ anterior sin caducidad también queda fuera de este control local.
 El archivo generado se conserva en:
 
 ```text
-build/releases/teamfight-gridlab-1.0.0-rc.11-debug.apk
+build/releases/teamfight-gridlab-1.0.0-rc.12-debug.apk
 ```
 
 1. Android 7.0/API 24 o superior. Copiar el APK al teléfono, abrirlo en Archivos
@@ -35,7 +35,7 @@ build/releases/teamfight-gridlab-1.0.0-rc.11-debug.apk
 
 ```powershell
 adb devices -l
-adb -s ID install -r build/releases/teamfight-gridlab-1.0.0-rc.11-debug.apk
+adb -s ID install -r build/releases/teamfight-gridlab-1.0.0-rc.12-debug.apk
 adb -s ID shell am start -n com.valinor.heroclixtrainer/com.valinor.heroclix_simulator_trainer.MainActivity
 ```
 
@@ -45,6 +45,20 @@ desinstalación elimina progreso y ejercicios personales; su exportación todav�
 no está implementada. PNG sirve para compartir una imagen, no para recuperar datos.
 
 ## Uso básico
+
+En la ficha, **IM Destruir bloqueado y muros** permite destruir lo que atraviesa.
+El ensayo conserva el mapa original y muestra el plan; Confirmar aplica posición,
+destrucción y escombros como una sola operación. B recorrido se convierte en debris
+obstaculizado; el muro cruzado desaparece y deja debris en sus lados no bloqueados.
+Se incluyen origen/destino según §10.4; el destino puede ser la casilla B que acaba
+de destruirse, porque ahora es H. La elevación e Indoor se conservan.
+
+**IM Bloqueado** y **Bloqueado exterior** no destruyen. Deshacer recupera posición,
+terreno y muros. Borrar escombros retira solo el marcador y descubre el terreno
+subyacente (por ejemplo, agua); B destruido queda despejado y el muro no reaparece.
+Los debris se conservan en biblioteca/JSON/PNG. Las diagonales escogen el lado menos
+restrictivo, prefiriendo menos destrucción y un desempate canónico visible en el
+plan; no se destruyen automáticamente los cuatro lados de un vértice.
 
 El selector **Indoor/Outdoor** sustituye el botón de estado del escenario en la
 barra de herramientas. Cambiarlo aplica el tipo al mapa completo y reinicia las
@@ -64,8 +78,9 @@ muro. Un muro que coincide con ese límite es Indoor. IM Bloqueado exterior ahor
 distingue ambos ámbitos; IM Bloqueado conserva su alcance y nunca permite terminar
 sobre bloqueado. Fuente: §15.1/27.5c en [REGLAS](docs/REGLAS.md).
 
-Se escribe JSON de escenario versión 4 (capas 3), leyendo versiones 1–3 como
-Outdoor. Guardar una versión anterior crea primero una copia schema1/schema2/schema3,
+Se escribe JSON de escenario versión 5 (capas 4), leyendo versiones 1–4. Los formatos
+1–3 se interpretan como Outdoor, y 1–4 no tienen debris. Guardar una versión anterior
+crea primero una copia schema1/schema2/schema3/schema4,
 también con archivos reales. Los archivos nuevos no se pueden abrir con apps viejas.
 
 | Entrada | Para qué sirve |
@@ -143,7 +158,7 @@ usa etiquetas genéricas. Exportar la escena completa sí conserva sus nombres.
 | Instalación, nueva sesión tras cierre y selectores nativos | Pendiente de Android; equivalentes de archivos/controladores sí verificados |
 | Offline con radios desactivadas y rendimiento Android/FPS | Pendiente de dispositivo/emulador funcional |
 | APK release con firma del propietario | Preparado; sin claves suministradas, no generado |
-| Congelar 1.0.0 estable | Pendiente de cerrar aceptación nativa; esta entrega es 1.0.0-rc.11 |
+| Congelar 1.0.0 estable | Pendiente de cerrar aceptación nativa; esta entrega es 1.0.0-rc.12 |
 | Partida completa, dados, diales, daño y victoria | Fuera del alcance del proyecto |
 
 ## Dependencias y recompilación
@@ -154,7 +169,7 @@ No se añaden dependencias para 12. Las licencias empaquetadas se consultan sin
 conexión en Acerca de → Licencias de dependencias.
 
 ```powershell
-git switch codex/indoor-movement-strokes
+git switch codex/movement-destruction
 $env:Path = "$env:USERPROFILE\develop\flutter\bin;$env:Path"
 flutter --no-version-check pub get
 dart format --output=none --set-exit-if-changed lib test tool
@@ -193,7 +208,7 @@ añadir regresiones con expectativas explicadas; actualizar cobertura y versione
 de contexto/ejercicios; ejecutar contratos puros y toda la batería. Nunca dar por
 aprobada una condición sin soporte. No recalificar silenciosamente intentos antiguos.
 
-Escenarios exportan esquema 3 y leen 1/2/3; capas siguen 2. Entrenamiento exporta 3
+Escenarios exportan esquema 5 y leen 1/2/3/4/5; capas escriben 4 y leen 1/2/3/4. Entrenamiento exporta 3
 y lee 1/2/3. Las migraciones conservan copia exacta del legado antes del primer
 reemplazo y protegen el original si falla el respaldo. No cambian rutas privadas.
 Antes de migrar, conservar proyecto, copia externa JSON y datos privados disponibles.

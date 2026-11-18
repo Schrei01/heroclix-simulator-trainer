@@ -61,6 +61,9 @@ class QuickGuideScreen extends StatelessWidget {
         'Entrenador: responde ejercicios con una copia independiente; Comprobar muestra explicación y registra el intento.',
       ),
       Text(
+        'IM Bloqueado permite atravesar sin destruir. Para dejar escombros usa IM Destruir bloqueado y muros en la ficha. El ensayo muestra los cambios previstos; al confirmar aplica posición y destrucción juntas. B recorrido se convierte en debris obstaculizado; un muro destruido desaparece y deja debris a sus dos lados salvo casillas aún bloqueadas. Deshacer recupera todo. Borrar escombros retira solo el marcador y descubre el terreno que había debajo (§27.5d/16.9/17.14d).',
+      ),
+      Text(
         'Mapa: el desplegable Indoor/Outdoor aplica el tipo a todo el mapa y reinicia las marcas Indoor locales. Indoor completo lleva borde amarillo. En Outdoor, Terrenos → Indoor permite pintar zonas con límite amarillo y letra I sin cambiar agua, obstáculos o elevación. Despejado conserva Indoor; Borrar todo retira las marcas locales y Borrar Indoor solo esa capa. El tipo global se cambia en el desplegable.',
       ),
       Text(

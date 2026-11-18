@@ -653,3 +653,30 @@ verificado ni implementado ninguna regla del juego.
   con texto completo en semántica/ayuda para evitar desbordes al girar.
 - Se conserva marca/paquete/firma, vencimiento 30/12/2026 00:00 Colombia y flujo de
   APK único. No se añaden permisos ni dependencias. Aceptación nativa pendiente.
+
+## 2026-11-18 — Efectos de movimiento y debris, rc.12+25
+
+- Se habilita IM Destruir bloqueado y muros (§27.5d). Las mejoras Bloqueado y
+  Bloqueado exterior normales conservan el comportamiento de atravesar sin destruir.
+- StepEvaluation aporta los obstáculos atravesados; RouteEvaluation ofrece un plan
+  inmutable de cambios solo para rutas válidas. Cada paso actualiza un snapshot
+  temporal antes del siguiente; el aterrizaje se comprueba tras destruir. Predicción
+  de visión/alcance usa ese mundo futuro. El escenario real se conserva hasta confirmar.
+- Confirmación fresca y atómica de posición, terreno, muros y escombros en un solo
+  historial. Cancelar, ruta inválida, velocidad excedida, efecto sin soporte o edición
+  concurrente no aplican el plan. Normal/Indoor/altura y bases mantienen su alcance.
+- Debris es un marcador separado, visible como Db/piedras y efectivo como H; conserva
+  el terreno base debajo. Destruir B cambia esa base a despejado; destruir muro no
+  destruye B vecino no atravesado. Se generan debris en los lados no bloqueados.
+  Borrar escombros retira solo el marcador; Deshacer reconstruye la operación completa.
+- Diagonales conservan el lado menos restrictivo; a igualdad se minimiza destrucción
+  y se desempata canónicamente, visible en el plan. No se afectan los cuatro lados
+  por vértice. No existe todavía selección manual de laterales equivalentes.
+- BFS especial para destrucción con clave posición/obstáculos destruidos, límite
+  explícito de 4096 prefijos y alternativas completas revalidadas. Prefijos marcados
+  no confirmables; BFS previo se conserva para el resto de figuras.
+- JSON escenario 5/capas 4: debrisCells canónicas, únicas y acotadas; lee 1–4 sin
+  debris. Respaldo schema4 admitido en archivos reales antes de guardar. Modelos de
+  biblioteca, ejercicios, exportación y diagnósticos preservan los mismos datos.
+- Se corrige Borrar todo sobre casillas con solo Indoor o debris, sin tipo base.
+  Marca, paquete, firma, vencimiento y política de APK único se conservan.

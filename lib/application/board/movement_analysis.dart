@@ -125,8 +125,8 @@ final class MovementAnalysis {
     if (result!.status != MovementStatus.valid) return;
     final future = VisionSnapshot(
       dimensions: w.dimensions,
-      terrain: w.terrain,
-      walls: w.walls,
+      terrain: result!.changes?.terrain ?? w.terrain,
+      walls: result!.changes?.walls ?? w.walls,
       characters: w.characters.map(
         (f) => f.id == sourceId ? f.revised(f.data.at(route.last)) : f,
       ),

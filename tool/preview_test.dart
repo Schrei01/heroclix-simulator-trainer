@@ -16,6 +16,7 @@ import 'package:heroclix_simulator_trainer/domain/board/board_dimensions.dart';
 import 'package:heroclix_simulator_trainer/domain/board/board_viewport.dart';
 import 'package:heroclix_simulator_trainer/domain/board/cell_coordinate.dart';
 import 'package:heroclix_simulator_trainer/domain/characters/character.dart';
+import 'package:heroclix_simulator_trainer/domain/characters/movement_ability.dart';
 import 'package:heroclix_simulator_trainer/presentation/editor/editor_screen.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:heroclix_simulator_trainer/application/board/board_session.dart';
@@ -87,6 +88,10 @@ void main() {
   });
 
   for (final (name, size, dimensions) in [
+    ('destruction_before', const Size(400, 900), null),
+    ('destruction_after', const Size(400, 900), null),
+    ('destruction_report', const Size(400, 900), null),
+    ('destruction_compact', const Size(320, 568), null),
     ('indoor_entire', const Size(400, 900), null),
     ('indoor_zones', const Size(400, 900), null),
     ('indoor_compact', const Size(320, 320), null),
@@ -411,7 +416,8 @@ void main() {
       }
       if (name == 'quick_palette_compact' ||
           name == 'water_compact' ||
-          name == 'indoor_compact') {
+          name == 'indoor_compact' ||
+          name == 'destruction_compact') {
         tester.platformDispatcher.textScaleFactorTestValue = 3;
         addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
       }
@@ -482,6 +488,47 @@ void main() {
         await tester.pumpAndSettle();
       }
       TestGesture? brushGesture;
+      if (name.startsWith('destruction_')) {
+        persistent.loadScenario(
+          visionSession(
+            mw(
+              abilities: [MovementAbility.destroyBlocking],
+              terrain: {'B1': TerrainType.blocking, 'C1': TerrainType.water},
+              walls: [
+                EdgeWall.between(
+                  CellCoordinate.parse('B1'),
+                  CellCoordinate.parse('C1'),
+                ),
+              ],
+            ),
+          ),
+        );
+        await tester.ensureVisible(find.text('Abrir editor'));
+        await tester.tap(find.text('Abrir editor'));
+        await tester.pumpAndSettle();
+        await press(tester, 'tool-movement');
+        final gesture = await tester.startGesture(
+          cellPosition(tester, persistent, 'A1'),
+        );
+        await gesture.moveTo(cellPosition(tester, persistent, 'D1'));
+        await tester.pump();
+        await gesture.up();
+        await tester.pumpAndSettle();
+        expect(
+          persistent.value.terrain.at(CellCoordinate.parse('B1')).type,
+          TerrainType.blocking,
+        );
+        if (name == 'destruction_after') {
+          await press(tester, 'movement-apply');
+          expect(persistent.value.walls.isEmpty, isTrue);
+          expect(persistent.value.terrain.debrisCells.length, 2);
+        }
+        if (name == 'destruction_report') {
+          await press(tester, 'movement-report');
+        }
+        await tester.pump(const Duration(seconds: 5));
+        await tester.pumpAndSettle();
+      }
       if (name.startsWith('indoor_') || name.startsWith('movement_trace')) {
         var scene = BoardSession.initial()
             .paintTerrain([CellCoordinate.parse('D4')], TerrainType.blocking)
@@ -1398,7 +1445,7 @@ void main() {
         final image = await boundary.toImage();
         try {
           final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-          final output = File('build/previews/indoor-movement/$name.png');
+          final output = File('build/previews/movement-destruction/$name.png');
           await output.parent.create(recursive: true);
           await output.writeAsBytes(bytes!.buffer.asUint8List());
         } finally {

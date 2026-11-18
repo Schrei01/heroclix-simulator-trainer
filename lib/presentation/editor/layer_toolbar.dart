@@ -184,7 +184,8 @@ class LayerToolbar extends StatelessWidget {
                   (state.eraseLayer == EraseLayer.all ||
                       state.eraseLayer == EraseLayer.terrain ||
                       state.eraseLayer == EraseLayer.elevation ||
-                      state.eraseLayer == EraseLayer.indoor))
+                      state.eraseLayer == EraseLayer.indoor ||
+                      state.eraseLayer == EraseLayer.debris))
           ? const EditingGeometry().rectangle(a, b)
           : [],
       edges:

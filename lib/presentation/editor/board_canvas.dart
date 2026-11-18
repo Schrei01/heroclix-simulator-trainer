@@ -294,7 +294,8 @@ class _BoardCanvasState extends State<BoardCanvas> {
         (draft.eraseLayer == EraseLayer.all ||
             draft.eraseLayer == EraseLayer.terrain ||
             draft.eraseLayer == EraseLayer.elevation ||
-            draft.eraseLayer == EraseLayer.indoor)) {
+            draft.eraseLayer == EraseLayer.indoor ||
+            draft.eraseLayer == EraseLayer.debris)) {
       controller.draft.value = draft.update(
         cells: {
           ...draft.cells,

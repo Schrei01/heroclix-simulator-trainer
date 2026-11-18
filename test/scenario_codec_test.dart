@@ -64,7 +64,7 @@ void main() {
     () {
       final document = sampleDocument(), json = codec.encode(sampleDocument());
       final decoded = codec.decode(json);
-      expect(json, contains('"schemaVersion": 4'));
+      expect(json, contains('"schemaVersion": 5'));
       expect(json, contains('\n  "metadata"'));
       expect(codec.encode(decoded), json);
       expect(decoded.session.dimensions.rows, 8);

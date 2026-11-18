@@ -23,6 +23,7 @@ El PDF local y su SHA-256 están registrados en MATRIZ_REGLAS_VISION.md.
 | IM Bloqueado | Permite atravesar B y muros, conserva altura y figuras. No permite acabar sobre B/figuras/muros. | 27.5b, p. 86; 13.2, p. 35 | M16 |
 | Indoor/Outdoor | Amarillo no es muro ni añade costo. Un muro con un lado Indoor se considera interior. | 15.1/15.1c, p. 37 | indoor_movement_test |
 | IM Bloqueado exterior | Atraviesa B y muros Outdoor; no ignora B/muros Indoor ni permite terminar sobre B. | 27.5c, p. 86; 13.2, p. 35 | indoor_movement_test |
+| IM Destruir bloqueado | Atraviesa B/muros y los destruye inmediatamente en la simulación; confirma cambios y posición juntos. Destino destruido ya es H. | 10.4, p. 24; 27.5d, p. 86; 16.9a–b, p. 45; 17.14d, p. 51 | movement_destruction_test |
 | IM Personajes | Separación automática y paso por enemigos/adyacencia sin detenerse. Conserva otros obstáculos. | 27.5e, p. 86 | M17 |
 | IM Atravesar personajes | Permite pasar junto a enemigos o por ellos; sigue requiriendo separación inicial. | 27.5f, p. 86 | M09, M18 |
 | Bases múltiples | Traslación de orientación fija, referencia en el ancla superior izquierda; verifica todas las partes. Formatos reconocidos de 08. Destino completo libre, dentro y a nivel uniforme. | 24.2a/d, pp. 69–70; 16.5g, p. 42 | M19–M20, M26 |
@@ -35,7 +36,6 @@ El PDF local y su SHA-256 están registrados en MATRIZ_REGLAS_VISION.md.
 | --- | --- |
 | Separación que requiere dado | §10.8, p. 25. No se simula una tirada ni se supone éxito. IM Atravesar no concede separación automática. IM Personajes sí está verificada. |
 | Tamaños Tiny/Giant/Colossal | Perfil conservador con figuras Normal en el escenario; otras interacciones de tamaño quedan pendientes. |
-| IM Destruir bloqueado | Exige destrucción y efectos sobre el mapa que no se modelan; §27.5d. No se convierte en un simple permiso para ignorar B. |
 | Vuelo, transporte, poderes/efectos arbitrarios | No se deducen del nombre o tamaño de base. Deben declararse como otro efecto o capacidad sin soporte. |
 | Giro o elección de otra referencia de base | §24.2d mueve una referencia; no exige arrastrar rígidamente toda la base durante el trayecto. El producto verifica un subconjunto conservador: traslación fija. Si otra parte requiere una maniobra distinta se informa No evaluado, sin afirmar ilegalidad reglamentaria general. |
 | Base mixta de niveles o formato no reconocido | Se preserva el dato antiguo, pero no se aprueba su movimiento. |
@@ -63,16 +63,22 @@ volver al inicio o cerrar el informe no desplazan la figura. Cerrar el informe
 permite seguir añadiendo pasos en el tablero. Confirmar exige ruta válida no vacía,
 vuelve a validar el escenario vigente y aplica un comando de posición reversible.
 Una edición, carga, cambio de contenido o salida de herramienta limpia el ensayo.
+
+Con IM Destruir bloqueado la simulación modifica un mundo temporal por paso y valida
+el aterrizaje después de los efectos. El buscador tiene en cuenta la destrucción en
+su clave y limita a 4096 prefijos; solo devuelve rutas completas revalidadas. La barra
+y el informe anticipan el plan, pero no cambian el mapa hasta Confirmar. La comparación
+futura usa debris y muros retirados. Deshacer revierte todas las capas y la posición.
 Cámara y selección no lo alteran. Editor mantiene el reposicionamiento libre para
 montar escenarios; su herramienta Movimiento ofrece explícitamente rutas reglamentarias.
 
 ## Persistencia y pruebas
 
-Esquema de documento 4: conserva `movementAbilities`, visión, tamaño y capas,
-añadiendo `environment` e `indoorCells`. Lee 1/2/3/4 y exporta 4. Antes de reemplazar
-1, 2 o 3, guarda copia exacta `schema1-ID` / `schema2-ID` / `schema3-ID` (también
+Esquema de documento 5: conserva `movementAbilities`, visión, tamaño y capas,
+incluyendo `environment`, `indoorCells` y `debrisCells`. Lee 1/2/3/4/5 y exporta 5. Antes de reemplazar
+1, 2, 3 o 4, guarda copia exacta `schema1-ID` / `schema2-ID` / `schema3-ID` / `schema4-ID` (también
 working). Los respaldos no aparecen en biblioteca; un fallo conserva el original.
-Las capas escriben esquema 3 y leen 1/2/3.
+Las capas escriben esquema 4 y leen 1/2/3/4.
 Ruta, alternativas y posiciones hipotéticas no se serializan ni escriben archivos.
 
 Los casos M01–M27 son escenarios sintéticos con expectativas derivadas de los

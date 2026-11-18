@@ -20,7 +20,16 @@ enum EditorTool {
   positionAnalysis,
 }
 
-enum EraseLayer { all, figures, terrain, elevation, transitions, walls, indoor }
+enum EraseLayer {
+  all,
+  figures,
+  terrain,
+  elevation,
+  transitions,
+  walls,
+  indoor,
+  debris,
+}
 
 enum TerrainBrush {
   blocking,
@@ -143,7 +152,7 @@ final class BoardSession {
       tool == EditorTool.erase;
   Set<CellCoordinate> get studyConflicts => {
     for (final entry in terrain.cells.entries)
-      if (entry.value.type == TerrainType.blocking &&
+      if (terrain.at(entry.key).type == TerrainType.blocking &&
           characters.at(entry.key) != null)
         entry.key,
   };
@@ -394,6 +403,7 @@ final class BoardSession {
     if (next == dimensions) return this;
     if (terrain.cells.keys.any((cell) => !next.contains(cell)) ||
         terrain.indoorCells.any((cell) => !next.contains(cell)) ||
+        terrain.debrisCells.any((cell) => !next.contains(cell)) ||
         walls.edges.values.any((edge) => !edge.isInternal(next)) ||
         terrain.transitions.any((edge) => !edge.isInternal(next))) {
       throw const PlacementException(
@@ -574,6 +584,8 @@ final class BoardSession {
         .toList();
     final terrainChanged =
         targets.any(terrain.cells.containsKey) ||
+        targets.any(terrain.indoorCells.contains) ||
+        targets.any(terrain.debrisCells.contains) ||
         terrain.transitions.any(touches);
     if (!terrainChanged && edges.isEmpty && figures.isEmpty) return this;
     var remaining = characters;
@@ -604,8 +616,28 @@ final class BoardSession {
   }
 
   BoardSession clearTerrain() => _copy(
-    terrain: terrain.paint(terrain.cells.keys, TerrainType.clear, dimensions),
+    terrain: terrain.paint(
+      {...terrain.cells.keys, ...terrain.debrisCells},
+      TerrainType.clear,
+      dimensions,
+    ),
   );
+  BoardSession removeDebris(Iterable<CellCoordinate> cells) {
+    final targets = cells.toSet();
+    if (targets.any(
+      (c) =>
+          terrain.baseAt(c).type == TerrainType.blocking &&
+          characters.at(c) != null,
+    )) {
+      throw const PlacementException(
+        'Retira la figura antes de descubrir terreno bloqueado.',
+      );
+    }
+    return _copy(
+      terrain: terrain.withDebris(targets, dimensions, remove: true),
+    );
+  }
+
   BoardSession clearWalls() => _copy(walls: const WallLayer.empty());
   BoardSession clearCharacters() => _copy(
     characters: const CharacterRepository.empty(),
@@ -624,6 +656,7 @@ final class BoardSession {
     }
     if (terrain.cells.keys.any((cell) => !dimensions.contains(cell)) ||
         terrain.indoorCells.any((cell) => !dimensions.contains(cell)) ||
+        terrain.debrisCells.any((cell) => !dimensions.contains(cell)) ||
         walls.edges.values.any((edge) => !edge.isInternal(dimensions)) ||
         characters.all.any(
           (figure) =>

@@ -22,7 +22,7 @@ final class ScenarioDocument {
       throw ArgumentError('Metadatos de escenario inválidos.');
     }
   }
-  static const schemaVersion = 4;
+  static const schemaVersion = 5;
   static bool validId(String id) => RegExp(r'^s-[a-f0-9]{32}$').hasMatch(id);
   static String newId() {
     final random = Random.secure();

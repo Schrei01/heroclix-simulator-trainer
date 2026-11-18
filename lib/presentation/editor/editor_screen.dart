@@ -413,7 +413,7 @@ class _CameraBar extends StatelessWidget {
         ? (session.characters.isEmpty
               ? (session.terrain.isEmpty && session.walls.isEmpty
                     ? 'Cuadrícula vacía · toca una casilla'
-                    : 'Terreno ${session.terrain.cells.length} · Muros ${session.walls.edges.length}')
+                    : 'Terreno ${{...session.terrain.cells.keys, ...session.terrain.debrisCells}.length} · Muros ${session.walls.edges.length}')
               : '${session.characters.length} figuras · toca una casilla')
         : 'Seleccionada: ${selected.label}';
     final probe = controller.sight;

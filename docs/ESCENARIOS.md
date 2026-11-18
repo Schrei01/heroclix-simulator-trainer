@@ -1,4 +1,4 @@
-# Escenarios e intercambio — esquema 4 (lectura de 1/2/3/4)
+# Escenarios e intercambio — esquema 5 (lectura de 1/2/3/4/5)
 
 Introducido en 04 y ampliado en 08–09 y rc.11. Formato UTF-8 JSON legible, máximo
 2 MiB, profundidad máxima 16 y 20.000 contenedores antes de decodificar.
@@ -11,7 +11,7 @@ con identidad nueva en biblioteca. Desde rc.3 la sesión activa es temporal.
 
 | Campo | Contenido |
 | --- | --- |
-| `schemaVersion` | Entero 4 al exportar; importa también 1/2/3 mediante migración compatible |
+| `schemaVersion` | Entero 5 al exportar; importa también 1/2/3/4 mediante migración compatible |
 | `metadata` | `id`, `name`, `rulesVersion`, `createdAt`, `modifiedAt` |
 | `board` | `rows`, `columns`: enteros independientes 2–40 |
 | `teams` | Lista de `id`, `code`, `name`, `color`, `pattern` |
@@ -21,15 +21,21 @@ con identidad nueva en biblioteca. Desde rc.3 la sesión activa es temporal.
 | `transitions` | Lista de `axis`, `column`, `row`, con vecinos internos de altura distinta y sin muro compartido |
 | `environment` | `outdoor` o `indoor`, tipo global del mapa; formatos 1–3 se leen como Outdoor |
 | `indoorCells` | Lista única de coordenadas canónicas dentro del mapa; debe estar vacía en Indoor global |
+| `debrisCells` | Lista única de coordenadas canónicas; marcador obstaculizado sobre el tipo base de terrain |
 | `counters` | `nextCharacter`, `nextTeam`: identidad siguiente, sin reutilización |
 
 El ID de escenario tiene forma `s-` seguida de 32 dígitos hexadecimales aleatorios.
 
-Rc.11 guarda capas versión 3 y escenarios versión 4. La marca Indoor no sustituye
+Rc.12 guarda capas versión 4 y escenarios versión 5. La marca Indoor no sustituye
 terreno/elevación y sobrevive a sus cambios. Guardar una versión anterior crea
-primero un respaldo schema1/schema2/schema3, también para working, admitido por
+primero un respaldo schema1/schema2/schema3/schema4, también para working, admitido por
 el adaptador real. El original se conserva si falla la copia. Las apps anteriores
-no admiten el formato 4; no se descartan esos campos para simular compatibilidad.
+no admiten el formato 5; no se descartan esos campos para simular compatibilidad.
+
+debrisCells es independiente del terreno base y la altura. Al destruir B, el tipo
+base pasa a despejado y se añade debris; al destruir un muro se conservan los tipos
+base de sus lados y se añade debris salvo B no destruido. Retirar debris recupera
+ese tipo base sin reconstruir lo destruido. Editar altura o Indoor conserva el marcador.
 Nombre: 1–80 unidades UTF-16, recortado. Referencia reglamentaria: 1–40, por
 defecto `2026-07-01`; es metadato, no certifica reglas implementadas. Fechas UTC
 ISO 8601 canónicas, creación no posterior a modificación. Exportar no cambia fechas.

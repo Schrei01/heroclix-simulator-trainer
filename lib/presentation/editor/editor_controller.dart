@@ -331,7 +331,15 @@ final class EditorController extends ValueNotifier<BoardSession> {
       context: m.context,
     );
     if (!fresh.canConfirm) return fresh.reason;
-    return moveCharacter(id, fresh.route.last);
+    return attempt(
+      (s) => s
+          .replaceLayers(
+            terrain: fresh.changes?.terrain ?? s.terrain,
+            walls: fresh.changes?.walls ?? s.walls,
+            characters: s.characters,
+          )
+          .moveCharacter(id, fresh.route.last),
+    );
   }
 
   void setTargetSource(String id) {

@@ -186,6 +186,7 @@ void main() {
       final old = codec.toMap(doc)..['schemaVersion'] = 3;
       old.remove('environment');
       old.remove('indoorCells');
+      old.remove('debrisCells');
       final raw = jsonEncode(old), store = MemoryStore();
       store.documents[doc.id] = raw;
       final repository = ScenarioRepository(store),
@@ -193,7 +194,7 @@ void main() {
       expect(migrated.session.terrain.isIndoor(vc('B1')), isFalse);
       await repository.save(migrated);
       expect(store.documents['schema3-${doc.id}'], raw);
-      expect(jsonDecode(store.documents[doc.id]!)['schemaVersion'], 4);
+      expect(jsonDecode(store.documents[doc.id]!)['schemaVersion'], 5);
     },
   );
 

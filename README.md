@@ -1,12 +1,17 @@
 # TeamFight: GridLab
 
-Aplicación Android Flutter/Dart, offline y en español. Versión **1.0.0-rc.11+24**.
-La versión actual está en la rama `codex/indoor-movement-strokes` del repositorio privado
+Aplicación Android Flutter/Dart, offline y en español. Versión **1.0.0-rc.12+25**.
+La versión actual está en la rama `codex/movement-destruction` del repositorio privado
 [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer).
 
 Desde rc.8 la marca visible es **TeamFight: GridLab**, con los iconos Android y el
 símbolo aportados por el usuario. Conserva el identificador y los datos de la app.
 Recursos y procedencia en [IDENTIDAD](docs/IDENTIDAD.md).
+
+Desde rc.12, **IM Destruir bloqueado y muros** simula destrucción y debris durante
+el ensayo y los aplica junto con la posición al confirmar, con un único Deshacer.
+Los escombros se muestran como **Db** y actúan como obstaculizado. **IM Bloqueado**
+y **Bloqueado exterior** normales solo permiten atravesar; no destruyen.
 
 Desde rc.11, el selector **Indoor/Outdoor** de la barra aplica el tipo a todo el
 mapa (al cambiar reinicia las zonas Indoor locales). Indoor completo lleva borde
@@ -19,7 +24,7 @@ azul con ondas y letra A. Conserva alturas, admite figuras y se guarda en biblio
 JSON y PNG. La paleta reúne seis pinceles. Según §16.6 de la edición implementada,
 agua se considera despejado para visión/movimiento salvo efectos específicos.
 
-Esta beta rc.11 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
+Esta beta rc.12 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
 (2026-12-30T05:00:00Z). Desde ese instante muestra «Versión de prueba finalizada»
 y bloquea todas las pantallas, también al reanudar o si permanece abierta. Acerca de
 muestra la fecha. No elimina biblioteca ni progreso. Usa el reloj del dispositivo:
@@ -30,7 +35,7 @@ anterior sin caducidad también queda fuera de este control local.
 ```powershell
 git clone https://github.com/Schrei01/heroclix-simulator-trainer.git
 cd heroclix-simulator-trainer
-git switch codex/indoor-movement-strokes
+git switch codex/movement-destruction
 ```
 
 ## Qué existe
