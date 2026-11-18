@@ -339,6 +339,7 @@ final class LineOfSightService implements VisionEvaluator {
           'bloqueado ignorado por IT Bloqueado',
         if (rawHinder && !hinder) 'obstaculizado ignorado por IT Obstaculizado',
         if (hinder) 'terreno obstaculizado',
+        if (terrain.type == TerrainType.water) 'agua: se considera despejado',
         if (terrain.type == TerrainType.hindering && atSource)
           'obstaculizado de origen excluido',
         if (blocksFigure)
@@ -363,6 +364,7 @@ final class LineOfSightService implements VisionEvaluator {
           if (rawFigure && !blocksFigure) VisionRule.improvedCharacters,
           if (terrain.type == TerrainType.hindering) VisionRule.hindering,
           if (terrain.type == TerrainType.blocking) VisionRule.blocking,
+          if (terrain.type == TerrainType.water) VisionRule.water,
           if (figure != null) VisionRule.character,
         ],
         cells: [cell],

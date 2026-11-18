@@ -35,6 +35,23 @@ movimiento, ataques ni excepciones. El inicio no emite dictámenes.
 No se distribuyen el PDF, texto completo, iconografía ni ilustraciones oficiales.
 La herramienta futura será de apoyo, no una decisión oficial de torneo.
 
+## Agua — revisión 2026-11-18, rc.10
+
+La página oficial continúa enlazando la edición 07.01.2026. Revisado §16.6,
+página impresa 42 (página PDF 59, índice cero 58), en el PDF oficial arriba enlazado
+y en la copia de consulta local de build/verification/prompt-06/.
+El agua usa límite azul y se considera despejado salvo interacciones con efectos
+específicos. En el perfil ordinario no obstaculiza la visión, no bloquea el paso,
+no añade costo de movimiento ni exige detenerse. Las restricciones independientes
+de figura, muro, altura y ocupación se siguen aplicando. No se añaden poderes de
+agua ni marcadores especiales. La opción de efectos sin soporte sigue dando No
+evaluado cuando corresponda.
+
+Contratos en water_terrain_test.dart: agua en origen/interior/destino mantiene
+visión despejada; obstaculizado o bloqueado distintos siguen prevaleciendo; entrar,
+cruzar y salir cuesta una casilla por paso. El dictamen añade W01/§16.6 al observar
+agua; el recorrido añade §16.6 al paso de agua sin una restricción prioritaria.
+
 ## Cobertura en 05
 
 Geometría exacta centro-a-centro operativa en el Editor: casillas interiores,

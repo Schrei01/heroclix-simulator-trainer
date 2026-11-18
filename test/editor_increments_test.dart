@@ -27,7 +27,7 @@ Future<void> eraseLayer(WidgetTester t, String name) async {
 void main() {
   WidgetController.hitTestWarningShouldBeFatal = true;
   testWidgets(
-    'terreno integra cinco pinceles; E2/E3 por toque y despejado conserva altura',
+    'terreno integra seis pinceles; E2/E3 por toque y despejado conserva altura',
     (t) async {
       final c = await openEditor(t);
       expect(c.value.dimensions.rows, 10);
@@ -257,7 +257,7 @@ void main() {
     (const Size(320, 320), 3.0),
   ]) {
     testWidgets(
-      'cinco terrenos caben y se pueden elegir en $size texto $scale',
+      'seis terrenos caben y se pueden elegir en $size texto $scale',
       (t) async {
         t.view.devicePixelRatio = 1;
         t.view.physicalSize = size;

@@ -70,7 +70,7 @@ class QuickGuideScreen extends StatelessWidget {
         'Elevación: E2/E3… y borde rojo. Transición: dos triángulos numerados conectados, uno dentro de cada casilla, con su nivel. Una casilla elevada sin transición conserva la marca E2/E3….',
       ),
       Text(
-        'Terrenos reúne Bloqueado, Obstaculizado, Elevado, Transición y Despejado. Con Elevado, traza para subir cada casilla un nivel: suelo a E2, E2 a E3. Cada casilla sube una vez por trazo aunque vuelvas sobre ella. Despejado conserva la altura. Para una transición toca dos vecinos ortogonales de niveles distintos, sin muro entre ellos; una selección inválida muestra el motivo.',
+        'Terrenos reúne Bloqueado, Obstaculizado, Agua, Elevado, Transición y Despejado. Agua se pinta por trazo y se reconoce por azul, ondas y letra A. Se considera despejado para visión y movimiento salvo efectos específicos (§16.6). Con Elevado, traza para subir cada casilla un nivel: suelo a E2, E2 a E3. Cada casilla sube una vez por trazo aunque vuelvas sobre ella. Despejado conserva la altura. Para una transición toca dos vecinos ortogonales de niveles distintos, sin muro entre ellos; una selección inválida muestra el motivo.',
       ),
       Text(
         'En Seleccionar, toca dos veces la misma casilla para preguntar si quieres borrar: primero personaje, después terreno y luego elevación. Borrar empieza en Borrar todo: un trazo limpia figuras, terreno, alturas, muros y transiciones. Si toca una base grande, retira la figura completa. Puedes recuperar todo el trazo con Deshacer o elegir una capa específica.',

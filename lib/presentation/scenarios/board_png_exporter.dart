@@ -54,6 +54,7 @@ final class BoardPngExporter {
       row(
         'D Despejado · H puntos: obstaculizado · B rayas: bloqueado · || muro',
       );
+      row('A ondas azules: agua (despejado salvo efectos específicos).');
       row(
         'Elevación: borde rojo y E2/E3… · Transición: dos triángulos numerados unidos por el borde.',
       );

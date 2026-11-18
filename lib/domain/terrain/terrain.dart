@@ -2,7 +2,7 @@ import '../board/board_dimensions.dart';
 import '../board/cell_coordinate.dart';
 import 'edge_wall.dart';
 
-enum TerrainType { clear, hindering, blocking }
+enum TerrainType { clear, hindering, blocking, water }
 
 /// El 0 histórico es un alias de suelo (nivel oficial 1), nunca un nivel oficial 0.
 final class CellTerrain {

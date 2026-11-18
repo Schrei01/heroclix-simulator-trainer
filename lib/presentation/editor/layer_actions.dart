@@ -9,11 +9,13 @@ String terrainName(TerrainType type) => switch (type) {
   TerrainType.clear => 'Despejado',
   TerrainType.hindering => 'Obstaculizado',
   TerrainType.blocking => 'Bloqueado',
+  TerrainType.water => 'Agua',
 };
 String terrainMark(TerrainType type) => switch (type) {
   TerrainType.clear => 'D',
   TerrainType.hindering => 'H ···',
   TerrainType.blocking => 'B ///',
+  TerrainType.water => 'A ≈',
 };
 
 Future<bool> confirmLayerAction(
@@ -217,7 +219,7 @@ Future<void> showLayerLegend(BuildContext context) => showDialog<void>(
     scrollable: true,
     title: const Text('Leyenda y capas'),
     content: const Text(
-      'D · Despejado: terreno predeterminado.\nH ··· Obstaculizado: puntos verdes y letra H.\nB /// Bloqueado: rayas ámbar y letra B.\n|| Muro: línea doble sobre borde interno.\n! Posición incompatible para estudio: figura sobre bloqueado.\n\n'
+      'D · Despejado: terreno predeterminado.\nH ··· Obstaculizado: puntos verdes y letra H.\nB /// Bloqueado: rayas ámbar y letra B.\nA ≈ Agua: azul, ondas y letra A; se considera despejado salvo efectos específicos (§16.6).\n|| Muro: línea doble sobre borde interno.\n! Posición incompatible para estudio: figura sobre bloqueado.\n\n'
       'Terreno, elevación, muros y figuras son capas independientes. Despejado limpia solo el tipo de terreno y conserva la altura. Borrar empieza con Borrar todo por trazo y también permite elegir una capa. Retira la figura completa si toca su base; limpia el terreno, altura, muros y transiciones de las casillas recorridas. Dos toques en la misma casilla con Seleccionar preguntan si quieres borrar, en ese orden de prioridad: personaje, terreno y elevación.\n\n'
       'En Terrenos, Muros y Borrar, un dedo edita; dos dedos amplían y desplazan. Seleccionar permite pan con un dedo. Cancelar un gesto o añadir otro dedo descarta la edición en curso.\n\n'
       'Elevación: borde rojo y E2/E3… en casillas elevadas sin transición. Transición: triángulo blanco con su nivel en cada casilla conectada, formando un par sobre el borde.\n\n'

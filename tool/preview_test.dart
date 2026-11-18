@@ -87,6 +87,10 @@ void main() {
   });
 
   for (final (name, size, dimensions) in [
+    ('water_portrait', const Size(400, 900), null),
+    ('water_landscape', const Size(1000, 700), null),
+    ('water_compact', const Size(320, 568), null),
+    ('water_preview', const Size(400, 900), null),
     ('beta_expired', const Size(400, 900), null),
     ('beta_expired_landscape', const Size(800, 360), null),
     ('brush_hint_portrait', const Size(400, 900), null),
@@ -400,7 +404,7 @@ void main() {
         tester.platformDispatcher.textScaleFactorTestValue = 2;
         addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
       }
-      if (name == 'quick_palette_compact') {
+      if (name == 'quick_palette_compact' || name == 'water_compact') {
         tester.platformDispatcher.textScaleFactorTestValue = 3;
         addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
       }
@@ -471,6 +475,32 @@ void main() {
         await tester.pumpAndSettle();
       }
       TestGesture? brushGesture;
+      if (name.startsWith('water_')) {
+        persistent.loadScenario(
+          BoardSession.initial()
+              .paintElevation([CellCoordinate.parse('E4')], 2)
+              .paintTerrain([
+                for (var row = 2; row < 5; row++)
+                  for (var column = 2; column < 7; column++)
+                    CellCoordinate(column: column, row: row),
+              ], TerrainType.water)
+              .paintTerrain([CellCoordinate.parse('H4')], TerrainType.blocking)
+              .paintTerrain([
+                CellCoordinate.parse('B4'),
+              ], TerrainType.hindering),
+        );
+        await press(tester, 'mode-editor');
+        await press(tester, 'tool-terrain');
+        await press(tester, 'terrain-water');
+        if (name == 'water_preview') {
+          brushGesture = await tester.startGesture(
+            cellPosition(tester, persistent, 'C2'),
+          );
+          await brushGesture.moveTo(cellPosition(tester, persistent, 'G2'));
+          await tester.pump();
+          expect(persistent.draft.value!.cells.length, 5);
+        }
+      }
       if (name.startsWith('brush_')) {
         persistent.loadScenario(
           BoardSession.initial()
@@ -1315,7 +1345,7 @@ void main() {
         final image = await boundary.toImage();
         try {
           final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-          final output = File('build/previews/beta-expiry/$name.png');
+          final output = File('build/previews/water-terrain/$name.png');
           await output.parent.create(recursive: true);
           await output.writeAsBytes(bytes!.buffer.asUint8List());
         } finally {

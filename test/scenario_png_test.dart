@@ -29,7 +29,8 @@ void main() {
       final state = BoardSession.initial()
           .changeDimensions(BoardDimensions(rows: 4, columns: 4))
           .createCharacter(character('B2'))
-          .paintTerrain([cell('A1')], TerrainType.hindering);
+          .paintTerrain([cell('A1')], TerrainType.hindering)
+          .paintTerrain([cell('D1')], TerrainType.water);
       final selected = state.selectedCharacterId;
       final plain = (await tester.runAsync(
         () => const BoardPngExporter().render(state, legend: false),
@@ -37,6 +38,22 @@ void main() {
       expect(plain.width, 640);
       expect(plain.height, 640);
       expect(plain.bytes.take(8), [137, 80, 78, 71, 13, 10, 26, 10]);
+      await tester.runAsync(() async {
+        final codec = await ui.instantiateImageCodec(plain.bytes);
+        final frame = await codec.getNextFrame();
+        final pixels = (await frame.image.toByteData())!;
+        const geometry = BoardGeometry();
+        final point = geometry.cellCenter(cell('D1'), state.dimensions);
+        final x = (point.x * 2).round(), y = (point.y * 2 + 4).round();
+        final offset = (y * plain.width + x) * 4;
+        expect(pixels.getUint8(offset + 2), greaterThan(90));
+        expect(
+          pixels.getUint8(offset + 2),
+          greaterThan(pixels.getUint8(offset + 1)),
+        );
+        frame.image.dispose();
+        codec.dispose();
+      });
       final changedView = state.clearSelection().withCamera(
         BoardCamera(scale: 3, offsetX: -999, offsetY: 222),
       );

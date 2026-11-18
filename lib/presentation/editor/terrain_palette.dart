@@ -7,6 +7,7 @@ import 'editor_controller.dart';
 String brushName(TerrainBrush brush) => switch (brush) {
   TerrainBrush.blocking => 'Bloqueado',
   TerrainBrush.hindering => 'Obstaculizado',
+  TerrainBrush.water => 'Agua',
   TerrainBrush.elevated => 'Elevado',
   TerrainBrush.transition => 'Transición',
   TerrainBrush.clear => 'Despejado',
@@ -22,7 +23,8 @@ class TerrainPalette extends StatelessWidget {
       final labels =
           constraints.maxWidth >= 560 &&
           MediaQuery.textScalerOf(context).scale(12) <= 15.6;
-      final width = ((constraints.maxWidth - 16) / 5).clamp(0.0, 110.0);
+      final width = ((constraints.maxWidth - 16) / TerrainBrush.values.length)
+          .clamp(48.0, 110.0);
       return Padding(
         key: const ValueKey('terrain-palette'),
         padding: const EdgeInsets.all(4),
@@ -34,8 +36,8 @@ class TerrainPalette extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             child: Padding(
               padding: const EdgeInsets.all(4),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
+              child: Wrap(
+                alignment: WrapAlignment.center,
                 children: [
                   for (final brush in TerrainBrush.values)
                     _button(context, brush, labels, width),
@@ -97,6 +99,7 @@ class TerrainPalette extends StatelessWidget {
                         Icon(switch (brush) {
                           TerrainBrush.blocking => Icons.block,
                           TerrainBrush.hindering => Icons.grain,
+                          TerrainBrush.water => Icons.water_drop_outlined,
                           TerrainBrush.elevated => Icons.layers_outlined,
                           TerrainBrush.transition => Icons.change_history,
                           TerrainBrush.clear => Icons.crop_square,

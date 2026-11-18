@@ -1,6 +1,6 @@
 # Preparar, compilar e instalar en Android
 
-Candidata actual: **TeamFight: GridLab 1.0.0-rc.9+22**. Inicio contiene Editor y Entrenador; las consultas
+Candidata actual: **TeamFight: GridLab 1.0.0-rc.10+23**. Inicio contiene Editor y Entrenador; las consultas
 y ensayos están en las herramientas del Editor. El recorrido vigente del Editor
 está al final de este documento. Los apartados identificados por etapa describen
 sus versiones históricas. Resultados efectivamente ejecutados: [ESTADO](ESTADO.md).
@@ -387,7 +387,7 @@ pendiente, manteniendo la decisión del usuario de continuar sin teléfono.
 
 ## Beta con vencimiento — candidata rc.9+22
 
-APK actual: build/releases/teamfight-gridlab-1.0.0-rc.9-debug.apk. Mismo paquete y
+APK histórico: build/releases/teamfight-gridlab-1.0.0-rc.9-debug.apk. Mismo paquete y
 certificado debug; instalar encima. Caduca al empezar el 30 de diciembre de 2026,
 00:00 Colombia (05:00 UTC). Acerca de muestra ese límite. El corte cubre Navigator,
 diálogos y todas las funciones; no elimina los datos guardados.
@@ -401,3 +401,18 @@ La app mantiene funcionamiento offline y no añade permisos. El reloj local pued
 alterarse: la caducidad no es protección contra manipulación. La futura versión
 oficial debe retirar expresamente BetaAccessGate; compilar en release por sí solo
 no elimina el vencimiento. No se incluye enlace de Play hasta disponer de la ficha.
+
+## Agua — candidata actual rc.10+23
+
+APK: build/releases/teamfight-gridlab-1.0.0-rc.10-debug.apk. Instalar encima con la
+misma firma; se mantiene el corte del 30/12/2026 a las 00:00 Colombia.
+
+En Editor → Terrenos → Agua (gota), arrastrar por varias casillas: vista previa azul,
+al soltar quedan azul/ondas/A. Repetir sobre obstaculizado/bloqueado y sobre altura:
+cambia el tipo, conserva nivel y transiciones. Admite personajes sobre agua.
+Probar Deshacer/Rehacer, cancelar gesto, segundo dedo, rectángulo con confirmación,
+Despejado y Borrar por trazo. Revisar paleta de seis botones en vertical/horizontal
+y texto ampliado, biblioteca/JSON/PNG, dictamen de visión y ruta sobre agua.
+
+Pruebas Flutter y capturas en Windows no sustituyen aceptación Android. Sigue la
+decisión previa del usuario de continuar sin teléfono; pruebas nativas pendientes.

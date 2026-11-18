@@ -64,17 +64,24 @@ final class BoardPainter extends CustomPainter {
         if (type == TerrainType.clear) continue;
         final rect = _cellRect(entry.key);
         final blocking = type == TerrainType.blocking;
+        final water = type == TerrainType.water;
         canvas.drawRect(
           rect,
           Paint()
             ..color = blocking
                 ? const Color(0xff524229)
+                : water
+                ? const Color(0xff193e60)
                 : const Color(0xff25453c),
         );
         canvas.save();
         canvas.clipRect(rect.deflate(1));
         final pattern = Paint()
-          ..color = blocking ? const Color(0xffe9bd6b) : const Color(0xff87d8c0)
+          ..color = blocking
+              ? const Color(0xffe9bd6b)
+              : water
+              ? const Color(0xff79c9ff)
+              : const Color(0xff87d8c0)
           ..strokeWidth = 1.5;
         if (blocking) {
           for (double x = rect.left - cell; x < rect.right; x += 12) {
@@ -84,6 +91,16 @@ final class BoardPainter extends CustomPainter {
               pattern,
             );
           }
+        } else if (water) {
+          final waves = Path();
+          for (double y = rect.top + 16; y < rect.bottom; y += 16) {
+            waves.moveTo(rect.left + 4, y);
+            for (double x = rect.left + 4; x + 12 < rect.right; x += 12) {
+              waves.quadraticBezierTo(x + 3, y - 4, x + 6, y);
+              waves.quadraticBezierTo(x + 9, y + 4, x + 12, y);
+            }
+          }
+          canvas.drawPath(waves, pattern..style = PaintingStyle.stroke);
         } else {
           for (double x = rect.left + 8; x < rect.right; x += 12) {
             for (double y = rect.top + 8; y < rect.bottom; y += 12) {
@@ -92,13 +109,18 @@ final class BoardPainter extends CustomPainter {
           }
         }
         canvas.restore();
+        if (water) _waterBoundary(canvas, entry.key, rect, terrain);
         canvas.drawRect(
           Rect.fromLTWH(rect.left + 3, rect.top + 3, 14, 15),
           Paint()..color = AppTheme.background,
         );
         _text(
           canvas,
-          blocking ? 'B' : 'H',
+          blocking
+              ? 'B'
+              : water
+              ? 'A'
+              : 'H',
           Offset(rect.left + 10, rect.top + 10),
           fontSize: 11,
           color: Colors.white,
@@ -267,6 +289,9 @@ final class BoardPainter extends CustomPainter {
       final color =
           incompatible || draft.tool == EditorTool.erase || draft.eraseWalls
           ? const Color(0xffff8a80)
+          : draft.tool == EditorTool.terrain &&
+                draft.brush == TerrainBrush.water
+          ? const Color(0xff79c9ff)
           : const Color(0xff69f0ae);
       for (final cell in draft.cells) {
         final rect = _cellRect(cell).deflate(1);
@@ -331,6 +356,35 @@ final class BoardPainter extends CustomPainter {
     BoardGeometry.cellExtent,
     BoardGeometry.cellExtent,
   );
+  void _waterBoundary(
+    Canvas canvas,
+    CellCoordinate cell,
+    Rect rect,
+    TerrainLayer terrain,
+  ) {
+    bool isWater(int column, int row) =>
+        column >= 0 &&
+        row >= 0 &&
+        column < dimensions.columns &&
+        row < dimensions.rows &&
+        terrain.at(CellCoordinate(column: column, row: row)).type ==
+            TerrainType.water;
+    final border = Paint()
+      ..color = const Color(0xff79c9ff)
+      ..strokeWidth = 3;
+    final inset = rect.deflate(1.5);
+    for (final (dx, dy, from, to) in [
+      (-1, 0, inset.topLeft, inset.bottomLeft),
+      (1, 0, inset.topRight, inset.bottomRight),
+      (0, -1, inset.topLeft, inset.topRight),
+      (0, 1, inset.bottomLeft, inset.bottomRight),
+    ]) {
+      if (!isWater(cell.column + dx, cell.row + dy)) {
+        canvas.drawLine(from, to, border);
+      }
+    }
+  }
+
   void _elevations(Canvas canvas, BoardSession state) {
     const extent = BoardGeometry.cellExtent, gutter = BoardGeometry.gutter;
     final transitionCells = {

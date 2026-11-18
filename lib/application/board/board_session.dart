@@ -25,6 +25,7 @@ enum EraseLayer { all, figures, terrain, elevation, transitions, walls }
 enum TerrainBrush {
   blocking,
   hindering,
+  water,
   elevated,
   transition,
   clear;
@@ -32,6 +33,7 @@ enum TerrainBrush {
   TerrainType? get type => switch (this) {
     blocking => TerrainType.blocking,
     hindering => TerrainType.hindering,
+    water => TerrainType.water,
     clear => TerrainType.clear,
     _ => null,
   };

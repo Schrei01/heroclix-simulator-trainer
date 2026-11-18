@@ -608,3 +608,20 @@ verificado ni implementado ninguna regla del juego.
 - El reloj es inyectable para verificar límites y mantener los recorridos y renders
   funcionales deterministas cuando pase la fecha. El arranque real usa DateTime.now.
   La futura edición oficial debe retirar expresamente este corte, incluso en release.
+
+## 2026-11-18 — Agua por trazo, rc.10+23
+
+- Se añade TerrainType.water y TerrainBrush.water sin alterar valores anteriores.
+  Agua comparte el flujo existente de trazo/rectángulo, cancelación, confirmación,
+  historial y borrado. Cambiar tipo de terreno conserva elevación/transiciones.
+- Paleta de seis pinceles, gota para Agua, distribución adaptable y ancho mínimo
+  de 48 px por botón. El mapa y PNG comparten azul, ondas, letra A y borde azul
+  exterior de la región; el trazo pendiente de Agua usa azul. Leyendas/Guía actualizadas.
+- LayerCodec ya serializa tipos por nombre; water se conserva en escenario,
+  biblioteca y snapshots de ejercicios sin cambiar la estructura JSON. Las versiones
+  anteriores que no reconozcan water rechazan ese escenario; no lo convierten en H/D.
+- Revisión de §16.6 del PDF oficial 07.01.2026: agua se trata como despejado salvo
+  efectos específicos. Se incluyen referencias en visión/movimiento sin añadir
+  poderes nuevos ni omitir restricciones de muro/altura/ocupación.
+- Se mantiene vencimiento 30/12/2026 a las 00:00 Colombia, marca, paquete, firma,
+  funcionamiento offline y política de APK único. No se modifica el flujo de APK.

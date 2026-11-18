@@ -155,6 +155,8 @@ final class MovementRulesService {
           ? 'Paso por figura permitido; no permite terminar ocupado.'
           : w.terrain.at(b).type == TerrainType.hindering
           ? 'H no añade costo de movimiento.'
+          : w.terrain.at(b).type == TerrainType.water
+          ? 'Agua se considera despejado: sin costo adicional.'
           : 'Paso permitido.',
       stop
           ? '16.5a'
@@ -172,6 +174,8 @@ final class MovementRulesService {
                 : '27.5f')
           : w.terrain.at(b).type == TerrainType.hindering
           ? '16.2a'
+          : w.terrain.at(b).type == TerrainType.water
+          ? '16.6'
           : '10.2',
       stop: stop,
     );
