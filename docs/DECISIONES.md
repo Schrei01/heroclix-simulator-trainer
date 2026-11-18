@@ -625,3 +625,31 @@ verificado ni implementado ninguna regla del juego.
   poderes nuevos ni omitir restricciones de muro/altura/ocupación.
 - Se mantiene vencimiento 30/12/2026 a las 00:00 Colombia, marca, paquete, firma,
   funcionamiento offline y política de APK único. No se modifica el flujo de APK.
+
+## 2026-11-18 — Indoor/Outdoor y movimiento directo, rc.11+24
+
+- El botón de estado del escenario se sustituye por selector Indoor/Outdoor en la
+  misma barra. El detalle permanece en Información del escenario del menú general.
+  El selector aplica el tipo al mapa completo y vacía marcas Indoor locales, con
+  una operación reversible. Outdoor es el valor inicial y el de los formatos antiguos.
+- Indoor es metadato independiente en TerrainLayer: ambiente global e indoorCells
+  locales solo en Outdoor. Pincel Indoor por trazo/rectángulo, contorno amarillo/I;
+  mapa Indoor con borde amarillo exterior. Preserva terreno, agua, alturas y
+  transiciones. Despejado conserva Indoor; borrado total retira marcas locales;
+  Borrar Indoor solo esa capa. El mapa global solo cambia con el selector.
+- JSON de escenario 4/capas 3, lectura histórica 1–3. Validación estricta de tipo,
+  casillas únicas/canónicas/dentro de límites y ausencia de redundancias en Indoor
+  global. Respaldo schema3 antes de sobrescribir, admitido por FileDocumentStore;
+  biblioteca/entrenador/diagnósticos/PNG comparten los mismos datos y codecs.
+- §15.1 confirma que el amarillo no bloquea por sí solo. IM Bloqueado exterior
+  pasa a estar soportado según §27.5c, distinguiendo B/muros Indoor y Outdoor.
+  Un muro con alguno de sus lados Indoor no se ignora con esa mejora. No se
+  conceden poderes adicionales ni se permite terminar sobre bloqueado.
+- Movimiento abre en tablero, exige elegir figura, acepta toques o trazos ordenados
+  desde la figura/último paso. Conserva el ancla de bases múltiples. La confirmación
+  inline usa la validación actual e historial; informe manual disponible. Cancelar
+  o añadir otro dedo restaura la ruta previa y el efecto especial, sin mover.
+- Paleta de siete pinceles adaptable, mínimo 48 px, etiquetas limitadas a una línea
+  con texto completo en semántica/ayuda para evitar desbordes al girar.
+- Se conserva marca/paquete/firma, vencimiento 30/12/2026 00:00 Colombia y flujo de
+  APK único. No se añaden permisos ni dependencias. Aceptación nativa pendiente.

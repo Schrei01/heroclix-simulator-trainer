@@ -53,12 +53,14 @@ String eraseName(EraseLayer layer) => switch (layer) {
   EraseLayer.elevation => 'Borrar elevación',
   EraseLayer.transitions => 'Borrar transición',
   EraseLayer.walls => 'Borrar muro',
+  EraseLayer.indoor => 'Borrar Indoor',
 };
 
 bool hasDeletableContent(BoardSession state, CellCoordinate cell) =>
     state.characters.at(cell) != null ||
     state.terrain.at(cell).type != TerrainType.clear ||
     state.terrain.at(cell).level > 1 ||
+    state.terrain.indoorCells.contains(cell) ||
     state.terrain.transitions.any(
       (e) => e.firstCell == cell || e.secondCell == cell,
     );
@@ -80,7 +82,9 @@ Future<void> deleteAtCell(
       ? 'el terreno ${terrainName(terrain.type).toLowerCase()}'
       : terrain.level > 1
       ? 'la elevación E${terrain.level}'
-      : 'las transiciones';
+      : transitions.isNotEmpty
+      ? 'las transiciones'
+      : 'la marca Indoor';
   if (!await confirmLayerAction(
     context,
     '¿Borrar $name?',
@@ -97,6 +101,7 @@ Future<void> deleteAtCell(
       return s.paintTerrain([cell], TerrainType.clear);
     }
     if (terrain.level > 1) return s.paintElevation([cell], 1);
+    if (transitions.isEmpty) return s.paintIndoor([cell], remove: true);
     for (final edge in transitions) {
       s = s.setTransition(edge, remove: true);
     }
@@ -117,7 +122,8 @@ Future<void> commitLayerDraft(
       draft.tool == EditorTool.erase &&
       (draft.eraseLayer == EraseLayer.all ||
           draft.eraseLayer == EraseLayer.terrain ||
-          draft.eraseLayer == EraseLayer.elevation);
+          draft.eraseLayer == EraseLayer.elevation ||
+          draft.eraseLayer == EraseLayer.indoor);
   if (draft.tool == EditorTool.terrain || erasingCells) {
     if (draft.cells.isEmpty) {
       controller.cancelDraft();
@@ -155,6 +161,9 @@ Future<void> commitLayerDraft(
   if (!context.mounted || controller.draft.value != draft) return;
   final error = controller.attempt((session) {
     if (draft.tool == EditorTool.terrain) {
+      if (draft.brush == TerrainBrush.indoor) {
+        return session.paintIndoor(draft.cells);
+      }
       if (draft.brush == TerrainBrush.elevated) {
         return session.raiseElevations(draft.cells);
       }
@@ -162,6 +171,8 @@ Future<void> commitLayerDraft(
     }
     if (draft.tool == EditorTool.erase) {
       switch (draft.eraseLayer) {
+        case EraseLayer.indoor:
+          return session.paintIndoor(draft.cells, remove: true);
         case EraseLayer.all:
           return session.eraseCells(draft.cells);
         case EraseLayer.figures:
@@ -220,7 +231,8 @@ Future<void> showLayerLegend(BuildContext context) => showDialog<void>(
     title: const Text('Leyenda y capas'),
     content: const Text(
       'D · Despejado: terreno predeterminado.\nH ··· Obstaculizado: puntos verdes y letra H.\nB /// Bloqueado: rayas ámbar y letra B.\nA ≈ Agua: azul, ondas y letra A; se considera despejado salvo efectos específicos (§16.6).\n|| Muro: línea doble sobre borde interno.\n! Posición incompatible para estudio: figura sobre bloqueado.\n\n'
-      'Terreno, elevación, muros y figuras son capas independientes. Despejado limpia solo el tipo de terreno y conserva la altura. Borrar empieza con Borrar todo por trazo y también permite elegir una capa. Retira la figura completa si toca su base; limpia el terreno, altura, muros y transiciones de las casillas recorridas. Dos toques en la misma casilla con Seleccionar preguntan si quieres borrar, en ese orden de prioridad: personaje, terreno y elevación.\n\n'
+      'Indoor: límite amarillo y letra I en zonas pintadas; el mapa Indoor completo lleva borde amarillo. Es independiente del terreno y la elevación. El amarillo no bloquea visión o movimiento y no es un muro. Un muro en ese límite es Indoor (§15.1c).\n\n'
+      'Terreno, Indoor, elevación, muros y figuras son capas independientes. Despejado limpia solo el tipo de terreno y conserva altura e Indoor. Borrar empieza con Borrar todo por trazo y también permite elegir una capa. Retira la figura completa si toca su base; limpia terreno, marcas Indoor locales, altura, muros y transiciones de las casillas recorridas. El tipo de mapa global solo cambia con Indoor/Outdoor. Dos toques en la misma casilla con Seleccionar preguntan si quieres borrar, en ese orden de prioridad: personaje, terreno, elevación, transiciones y marca Indoor.\n\n'
       'En Terrenos, Muros y Borrar, un dedo edita; dos dedos amplían y desplazan. Seleccionar permite pan con un dedo. Cancelar un gesto o añadir otro dedo descarta la edición en curso.\n\n'
       'Elevación: borde rojo y E2/E3… en casillas elevadas sin transición. Transición: triángulo blanco con su nivel en cada casilla conectada, formando un par sobre el borde.\n\n'
       'Los muros externos no se admiten. Consulta Visión o Movimiento para obtener un dictamen del perfil implementado.',

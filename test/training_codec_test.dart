@@ -127,7 +127,7 @@ void main() {
     map['scenario'] = old;
     final e = codec.exerciseFrom(map),
         migrated = codec.exerciseMap(e)['scenario'] as Map;
-    expect(migrated['schemaVersion'], 3);
+    expect(migrated['schemaVersion'], 4);
     expect(migrated['terrain'], old['terrain']);
     expect(migrated['walls'], old['walls']);
     expect(

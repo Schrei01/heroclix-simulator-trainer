@@ -28,15 +28,26 @@ void main() {
           File('test/fixtures/scenario_schema1.json').readAsStringSync(),
         );
     final map = codec.toMap(doc);
-    map['schemaVersion'] = 2;
-    for (final f in map['characters'] as List) {
-      (f as Map).remove('movementAbilities');
+    for (final version in [2, 3]) {
+      final legacy = Map<String, Object?>.from(map);
+      legacy['schemaVersion'] = version;
+      legacy.remove('environment');
+      legacy.remove('indoorCells');
+      legacy['characters'] = [
+        for (final f in map['characters'] as List)
+          Map<String, Object?>.from(f as Map<String, Object?>),
+      ];
+      if (version == 2) {
+        for (final f in legacy['characters'] as List) {
+          (f as Map).remove('movementAbilities');
+        }
+      }
+      final raw = jsonEncode(legacy);
+      await store.write(doc.id, raw);
+      await ScenarioRepository(store).save(codec.decode(raw));
+      expect(await store.read('schema$version-${doc.id}'), raw);
+      expect(await store.listIds(), [doc.id]);
     }
-    final raw = jsonEncode(map);
-    await store.write(doc.id, raw);
-    await ScenarioRepository(store).save(codec.decode(raw));
-    expect(await store.read('schema2-${doc.id}'), raw);
-    expect(await store.listIds(), [doc.id]);
   });
   Map<String, dynamic> legacy2() {
     final map = codec.toMap(
@@ -45,6 +56,8 @@ void main() {
       ),
     );
     map['schemaVersion'] = 2;
+    map.remove('environment');
+    map.remove('indoorCells');
     for (final f in map['characters'] as List) {
       (f as Map).remove('movementAbilities');
     }
@@ -59,6 +72,8 @@ void main() {
         decoded = codec.fromMap(old),
         next = codec.toMap(decoded);
     next['schemaVersion'] = 2;
+    next.remove('environment');
+    next.remove('indoorCells');
     for (final f in next['characters'] as List) {
       expect((f as Map).remove('movementAbilities'), isEmpty);
     }
@@ -131,7 +146,7 @@ void main() {
       expect(store.documents['schema2-working'], raw);
       expect(
         jsonDecode(store.documents['working']!)['document']['schemaVersion'],
-        3,
+        4,
       );
     },
   );

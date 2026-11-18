@@ -331,6 +331,8 @@ final class LineOfSightService implements VisionEvaluator {
           : VisionEffect.none;
       final reasons = <String>[
         'nivel $level',
+        if (snapshot.terrain.isIndoor(cell))
+          'Indoor: el límite amarillo no es un muro',
         if (elevationBlocks) 'terreno elevado bloquea',
         if (rawElevation && !elevationBlocks)
           'elevación ignorada por IT Elevación',
@@ -357,6 +359,7 @@ final class LineOfSightService implements VisionEvaluator {
             '${side ? 'Lado' : 'Casilla'} ${cell.label}: ${reasons.isEmpty ? 'sin restricción' : reasons.join('; ')}.',
         rules: [
           VisionRule.center,
+          if (snapshot.terrain.isIndoor(cell)) VisionRule.environment,
           VisionRule.elevation,
           if (rawElevation && !elevationBlocks) VisionRule.improvedElevated,
           if (rawBlocking && !terrainBlocks) VisionRule.improvedBlocking,

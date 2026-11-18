@@ -117,7 +117,16 @@ final class MovementRulesService {
     CellCoordinate b,
   ) {
     final ignoresB = f.movementAbilities.contains(MovementAbility.blocking);
-    if (!ignoresB && (_blocked(w, b) || _wall(w, a, b))) {
+    final outdoor = f.movementAbilities.contains(
+      MovementAbility.outdoorBlocking,
+    );
+    final ignoresTerrain = ignoresB || (outdoor && !w.terrain.isIndoor(b));
+    // Un muro que coincide con un límite amarillo es Indoor (§15.1c).
+    final ignoresWall =
+        ignoresB ||
+        (outdoor && !w.terrain.isIndoor(a) && !w.terrain.isIndoor(b));
+    if ((!ignoresTerrain && _blocked(w, b)) ||
+        (!ignoresWall && _wall(w, a, b))) {
       return StepEvaluation(
         MovementStatus.invalid,
         _wall(w, a, b) ? 'Muro cruzado.' : 'Terreno bloqueado en ${b.label}.',
@@ -149,6 +158,8 @@ final class MovementRulesService {
           ? 'Cruza las dos casillas conectadas de transición.'
           : ignoresB && (_blocked(w, b) || _wall(w, a, b))
           ? 'IM Bloqueado ignora B/muro para pasar.'
+          : outdoor && (_blocked(w, b) || _wall(w, a, b))
+          ? 'IM Bloqueado exterior permite atravesar B/muro Outdoor.'
           : changed && f.movementAbilities.contains(MovementAbility.elevated)
           ? 'IM Elevación permite continuar al cruzar altura.'
           : occupant != null
@@ -157,6 +168,8 @@ final class MovementRulesService {
           ? 'H no añade costo de movimiento.'
           : w.terrain.at(b).type == TerrainType.water
           ? 'Agua se considera despejado: sin costo adicional.'
+          : w.terrain.isIndoor(b)
+          ? 'Paso Indoor: el límite amarillo no añade costo ni es un muro.'
           : 'Paso permitido.',
       stop
           ? '16.5a'
@@ -164,6 +177,8 @@ final class MovementRulesService {
           ? '16.7b'
           : ignoresB && (_blocked(w, b) || _wall(w, a, b))
           ? '27.5b'
+          : outdoor && (_blocked(w, b) || _wall(w, a, b))
+          ? '27.5c'
           : changed && f.movementAbilities.contains(MovementAbility.elevated)
           ? '27.5a'
           : occupant != null
@@ -176,6 +191,8 @@ final class MovementRulesService {
           ? '16.2a'
           : w.terrain.at(b).type == TerrainType.water
           ? '16.6'
+          : w.terrain.isIndoor(b)
+          ? '15.1'
           : '10.2',
       stop: stop,
     );

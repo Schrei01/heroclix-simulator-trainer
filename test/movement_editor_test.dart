@@ -29,8 +29,9 @@ void main() {
       final c = await openRules(t, data: mw());
       c.selectCharacter('figure-1');
       await press(t, 'tool-movement');
-      expect(find.text('Ensayo de movimiento'), findsOneWidget);
-      await press(t, 'movement-close');
+      expect(find.text('Ensayo de movimiento'), findsNothing);
+      await t.tapAt(cellPosition(t, c, 'A1'));
+      await t.pumpAndSettle();
       await t.tapAt(cellPosition(t, c, 'B1'));
       await t.pumpAndSettle();
       await t.tapAt(cellPosition(t, c, 'C1'));
@@ -100,7 +101,6 @@ void main() {
   ) async {
     final c = await openRules(t, data: mw());
     await press(t, 'tool-movement');
-    await press(t, 'movement-close');
     await t.tapAt(cellPosition(t, c, 'A1'));
     await t.pumpAndSettle();
     await t.tapAt(cellPosition(t, c, 'B1'));

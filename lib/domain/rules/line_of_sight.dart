@@ -20,6 +20,7 @@ enum VisionRule {
   hindering('V04', '16.2b', 39),
   blocking('V05', '16.3b', 40),
   water('W01', '16.6', 42),
+  environment('M01', '15.1', 37),
   wall('V06', '16.4b', 40),
   corner('V07', '16.8b', 44),
   elevation('V08', '16.5c', 42),

@@ -4,6 +4,8 @@ import 'edge_wall.dart';
 
 enum TerrainType { clear, hindering, blocking, water }
 
+enum MapEnvironment { outdoor, indoor }
+
 /// El 0 histórico es un alias de suelo (nivel oficial 1), nunca un nivel oficial 0.
 final class CellTerrain {
   factory CellTerrain({
@@ -28,16 +30,62 @@ final class CellTerrain {
 }
 
 final class TerrainLayer {
-  const TerrainLayer.empty() : cells = const {}, transitions = const {};
+  const TerrainLayer.empty({this.environment = MapEnvironment.outdoor})
+    : cells = const {},
+      transitions = const {},
+      indoorCells = const {};
   TerrainLayer._(
     Map<CellCoordinate, CellTerrain> values, [
     Iterable<EdgeWall> steps = const [],
+    this.environment = MapEnvironment.outdoor,
+    Iterable<CellCoordinate> inside = const [],
   ]) : cells = Map.unmodifiable(values),
-       transitions = Set.unmodifiable(steps);
+       transitions = Set.unmodifiable(steps),
+       indoorCells = Set.unmodifiable(inside);
   final Map<CellCoordinate, CellTerrain> cells;
   final Set<EdgeWall> transitions;
+  final MapEnvironment environment;
+  final Set<CellCoordinate> indoorCells;
+  bool isIndoor(CellCoordinate cell) =>
+      environment == MapEnvironment.indoor || indoorCells.contains(cell);
+  TerrainLayer _with(
+    Map<CellCoordinate, CellTerrain> values, [
+    Iterable<EdgeWall> steps = const [],
+    Iterable<CellCoordinate>? inside,
+  ]) => TerrainLayer._(values, steps, environment, inside ?? indoorCells);
+  TerrainLayer setEnvironment(MapEnvironment next) =>
+      next == environment && indoorCells.isEmpty
+      ? this
+      : TerrainLayer._(cells, transitions, next);
+  TerrainLayer paintIndoor(
+    Iterable<CellCoordinate> targets,
+    BoardDimensions dimensions, {
+    bool remove = false,
+  }) {
+    final inside = {...indoorCells};
+    for (final cell in targets) {
+      if (!dimensions.contains(cell)) {
+        throw ArgumentError('Casilla Indoor fuera del tablero.');
+      }
+      if (remove) {
+        inside.remove(cell);
+      } else if (environment == MapEnvironment.outdoor) {
+        inside.add(cell);
+      }
+    }
+    if (inside.length == indoorCells.length &&
+        inside.every(indoorCells.contains)) {
+      return this;
+    }
+    return _with(cells, transitions, inside);
+  }
+
   CellTerrain at(CellCoordinate cell) => cells[cell] ?? CellTerrain.clear;
-  bool get isEmpty => cells.isEmpty && transitions.isEmpty;
+  bool get isEmpty =>
+      cells.isEmpty &&
+      transitions.isEmpty &&
+      indoorCells.isEmpty &&
+      environment == MapEnvironment.outdoor;
   TerrainLayer paint(
     Iterable<CellCoordinate> targets,
     TerrainType type,
@@ -57,7 +105,7 @@ final class TerrainLayer {
         values[cell] = value;
       }
     }
-    return TerrainLayer._(values, transitions);
+    return _with(values, transitions);
   }
 
   TerrainLayer put(
@@ -68,7 +116,7 @@ final class TerrainLayer {
     if (!dimensions.contains(cell)) {
       throw RangeError('Terreno fuera del tablero.');
     }
-    return TerrainLayer._(
+    return _with(
       {...cells}
         ..remove(cell)
         ..addAll(terrain == CellTerrain.clear ? {} : {cell: terrain}),
@@ -98,7 +146,7 @@ final class TerrainLayer {
       }
     }
     final result = TerrainLayer._(values);
-    return TerrainLayer._(
+    return _with(
       result.cells,
       transitions.where(
         (e) =>
@@ -121,7 +169,7 @@ final class TerrainLayer {
         'Una transición de altura debe unir niveles distintos.',
       );
     }
-    return TerrainLayer._(
+    return _with(
       cells,
       {...transitions}
         ..remove(edge)
@@ -149,7 +197,7 @@ final class TerrainLayer {
       );
     }
     final result = TerrainLayer._(values);
-    return TerrainLayer._(
+    return _with(
       result.cells,
       transitions.where(
         (e) => result.at(e.firstCell).level != result.at(e.secondCell).level,
@@ -167,12 +215,13 @@ final class TerrainLayer {
         throw ArgumentError('Casilla fuera del tablero.');
       }
     }
-    return TerrainLayer._(
+    return _with(
       {...cells}..removeWhere((cell, _) => cleared.contains(cell)),
       transitions.where(
         (e) =>
             !cleared.contains(e.firstCell) && !cleared.contains(e.secondCell),
       ),
+      indoorCells.difference(cleared),
     );
   }
 }

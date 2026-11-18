@@ -2,6 +2,8 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import '../../domain/terrain/terrain.dart';
+
 import 'package:material_ui/material_ui.dart';
 
 import '../../application/board/board_session.dart';
@@ -51,6 +53,13 @@ final class BoardPngExporter {
     }
 
     if (legend) {
+      row(
+        'Mapa ${session.terrain.environment == MapEnvironment.indoor
+            ? 'Indoor'
+            : session.terrain.indoorCells.isNotEmpty
+            ? 'Outdoor / Indoor'
+            : 'Outdoor'} · Amarillo / I: Indoor (no es muro).',
+      );
       row(
         'D Despejado · H puntos: obstaculizado · B rayas: bloqueado · || muro',
       );

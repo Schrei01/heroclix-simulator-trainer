@@ -87,6 +87,11 @@ void main() {
   });
 
   for (final (name, size, dimensions) in [
+    ('indoor_entire', const Size(400, 900), null),
+    ('indoor_zones', const Size(400, 900), null),
+    ('indoor_compact', const Size(320, 320), null),
+    ('movement_trace', const Size(400, 900), null),
+    ('movement_trace_landscape', const Size(1000, 700), null),
     ('water_portrait', const Size(400, 900), null),
     ('water_landscape', const Size(1000, 700), null),
     ('water_compact', const Size(320, 568), null),
@@ -404,7 +409,9 @@ void main() {
         tester.platformDispatcher.textScaleFactorTestValue = 2;
         addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
       }
-      if (name == 'quick_palette_compact' || name == 'water_compact') {
+      if (name == 'quick_palette_compact' ||
+          name == 'water_compact' ||
+          name == 'indoor_compact') {
         tester.platformDispatcher.textScaleFactorTestValue = 3;
         addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
       }
@@ -475,6 +482,52 @@ void main() {
         await tester.pumpAndSettle();
       }
       TestGesture? brushGesture;
+      if (name.startsWith('indoor_') || name.startsWith('movement_trace')) {
+        var scene = BoardSession.initial()
+            .paintTerrain([CellCoordinate.parse('D4')], TerrainType.blocking)
+            .paintTerrain([CellCoordinate.parse('B4')], TerrainType.water)
+            .paintElevation([CellCoordinate.parse('E4')], 2)
+            .paintIndoor([
+              for (var row = 2; row < 5; row++)
+                for (var col = 2; col < 7; col++)
+                  CellCoordinate(column: col, row: row),
+            ]);
+        if (name == 'indoor_entire') {
+          scene = scene.setEnvironment(MapEnvironment.indoor);
+        }
+        scene = scene.createCharacter(
+          CharacterDraft(
+            name: 'Figura',
+            teamId: 'team-1',
+            position: CellCoordinate.parse('A1'),
+          ),
+        );
+        persistent.loadScenario(scene);
+        await tester.ensureVisible(find.text('Abrir editor'));
+        await tester.tap(find.text('Abrir editor'));
+        await tester.pumpAndSettle();
+        if (name.startsWith('indoor_')) {
+          await press(tester, 'tool-terrain');
+          await press(tester, 'terrain-indoor');
+        } else {
+          await press(tester, 'tool-movement');
+          final gesture = await tester.startGesture(
+            cellPosition(tester, persistent, 'A1'),
+          );
+          await gesture.moveTo(cellPosition(tester, persistent, 'D1'));
+          await tester.pump();
+          await gesture.moveTo(cellPosition(tester, persistent, 'D2'));
+          await tester.pump();
+          await gesture.up();
+          await tester.pumpAndSettle();
+          expect(persistent.movement.route.length, 5);
+          expect(
+            persistent.value.characters.byId('figure-1')!.position,
+            CellCoordinate.parse('A1'),
+          );
+          expect(find.text('Ensayo de movimiento'), findsNothing);
+        }
+      }
       if (name.startsWith('water_')) {
         persistent.loadScenario(
           BoardSession.initial()
@@ -851,10 +904,10 @@ void main() {
           );
           await tester.pumpAndSettle();
           await persistent.workspace!.save();
-          await tester.ensureVisible(
-            find.byKey(const ValueKey('autosave-status')),
-          );
-          await tester.tap(find.byKey(const ValueKey('autosave-status')));
+          await tester.tap(find.byKey(const ValueKey('board-view-options')));
+          await tester.pumpAndSettle();
+          await tester.ensureVisible(find.text('Información del escenario'));
+          await tester.tap(find.text('Información del escenario'));
           await tester.pumpAndSettle();
         }
         if (name.startsWith('geometria')) {
@@ -1345,7 +1398,7 @@ void main() {
         final image = await boundary.toImage();
         try {
           final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-          final output = File('build/previews/water-terrain/$name.png');
+          final output = File('build/previews/indoor-movement/$name.png');
           await output.parent.create(recursive: true);
           await output.writeAsBytes(bytes!.buffer.asUint8List());
         } finally {

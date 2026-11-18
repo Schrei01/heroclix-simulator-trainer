@@ -250,19 +250,17 @@ final class EditorController extends ValueNotifier<BoardSession> {
       value = value.clearSelection();
     }
     cancelDraft();
-    if (tool != EditorTool.movement) movement.clear();
+    if (tool != EditorTool.movement || value.tool != tool) movement.clear();
     if (tool == EditorTool.vision) vision.enabled = true;
     if (tool == EditorTool.targets) enableTargets();
     value = value.setTool(tool);
+    if (tool == EditorTool.movement && movement.sourceId == null) {
+      value = value.clearSelection();
+    }
     if (tool == EditorTool.erase) {
       value = value.configureLayers(erase: EraseLayer.all);
     }
     _showToolHelp();
-    if (tool == EditorTool.movement &&
-        movement.sourceId == null &&
-        value.selectedCharacterId != null) {
-      beginMovement(value.selectedCharacterId!);
-    }
   }
 
   void _showToolHelp() => showToolHint(switch (value.tool) {
@@ -284,7 +282,7 @@ final class EditorController extends ValueNotifier<BoardSession> {
     EditorTool.vision => 'Toca origen y destino para consultar la visión.',
     EditorTool.distance => 'Toca origen y destino para medir distancia.',
     EditorTool.targets => 'Elige una figura y consulta sus objetivos.',
-    EditorTool.movement => 'Toca casillas vecinas para ensayar una ruta.',
+    EditorTool.movement => 'Primero toca una figura · Después toca pasos o traza desde ella o desde el último paso · Dos dedos para navegar.',
     EditorTool.positionAnalysis => 'Elige una figura para comparar posiciones.',
   });
 
@@ -297,14 +295,20 @@ final class EditorController extends ValueNotifier<BoardSession> {
   }
 
   void beginMovement(String id) {
+    if (value.characters.byId(id) == null) return;
+    value = value.selectCharacter(id);
     movement.begin(value, id, rulesVersion);
     notifyListeners();
   }
 
   void movementCell(CellCoordinate cell) {
+    final figure = value.characters.at(cell);
     if (movement.sourceId == null) {
-      final f = value.characters.at(cell);
-      if (f != null) beginMovement(f.id);
+      if (figure != null) beginMovement(figure.id);
+    } else if (movement.route.length == 1 &&
+        figure != null &&
+        figure.id != movement.sourceId) {
+      beginMovement(figure.id);
     } else {
       updateMovement((m) => m.append(cell));
     }

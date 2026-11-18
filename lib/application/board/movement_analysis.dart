@@ -62,6 +62,22 @@ final class MovementAnalysis {
     _evaluate();
   }
 
+  void appendCells(Iterable<CellCoordinate> cells) {
+    if (original == null || route.isEmpty) return;
+    final next = [...route];
+    for (final cell in cells) {
+      if (next.last != cell && next.length < 102) next.add(cell);
+    }
+    replaceRoute(next);
+  }
+
+  void replaceRoute(Iterable<CellCoordinate> cells) {
+    if (original == null) return;
+    route = List.of(cells);
+    alternatives = null;
+    _evaluate();
+  }
+
   void removeLast() {
     if (route.length <= 1) return;
     route = route.sublist(0, route.length - 1);

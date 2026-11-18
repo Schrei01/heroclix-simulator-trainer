@@ -24,7 +24,7 @@ final class FileDocumentStore implements LocalDocumentStore {
     if (id != 'working' &&
         !ScenarioDocument.validId(id) &&
         !RegExp(r'^recovery-s-[a-f0-9]{32}$').hasMatch(id) &&
-        !RegExp(r'^schema[12]-(working|s-[a-f0-9]{32})$').hasMatch(id)) {
+        !RegExp(r'^schema[123]-(working|s-[a-f0-9]{32})$').hasMatch(id)) {
       throw ArgumentError('ID de almacenamiento inválido.');
     }
     final root = await _directory(),

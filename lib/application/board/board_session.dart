@@ -20,12 +20,13 @@ enum EditorTool {
   positionAnalysis,
 }
 
-enum EraseLayer { all, figures, terrain, elevation, transitions, walls }
+enum EraseLayer { all, figures, terrain, elevation, transitions, walls, indoor }
 
 enum TerrainBrush {
   blocking,
   hindering,
   water,
+  indoor,
   elevated,
   transition,
   clear;
@@ -392,6 +393,7 @@ final class BoardSession {
   BoardSession changeDimensions(BoardDimensions next) {
     if (next == dimensions) return this;
     if (terrain.cells.keys.any((cell) => !next.contains(cell)) ||
+        terrain.indoorCells.any((cell) => !next.contains(cell)) ||
         walls.edges.values.any((edge) => !edge.isInternal(next)) ||
         terrain.transitions.any((edge) => !edge.isInternal(next))) {
       throw const PlacementException(
@@ -522,6 +524,13 @@ final class BoardSession {
     return _copy(terrain: terrain.paint(targets, type, dimensions));
   }
 
+  BoardSession setEnvironment(MapEnvironment next) =>
+      _copy(terrain: terrain.setEnvironment(next));
+  BoardSession paintIndoor(
+    Iterable<CellCoordinate> cells, {
+    bool remove = false,
+  }) => _copy(terrain: terrain.paintIndoor(cells, dimensions, remove: remove));
+
   BoardSession editWalls(Iterable<EdgeWall> edges, {required bool erase}) {
     if (!erase && edges.any(terrain.transitions.contains)) {
       throw const PlacementException(
@@ -614,6 +623,7 @@ final class BoardSession {
       throw RangeError.value(minimumNextCharacter, 'minimumNextCharacter');
     }
     if (terrain.cells.keys.any((cell) => !dimensions.contains(cell)) ||
+        terrain.indoorCells.any((cell) => !dimensions.contains(cell)) ||
         walls.edges.values.any((edge) => !edge.isInternal(dimensions)) ||
         characters.all.any(
           (figure) =>

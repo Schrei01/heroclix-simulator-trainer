@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../application/board/board_session.dart';
 import '../../domain/board/board_dimensions.dart';
+import '../../domain/terrain/terrain.dart';
 import '../theme/app_theme.dart';
 import 'board_canvas.dart';
 import 'board_size_dialog.dart';
@@ -282,7 +283,7 @@ class EditorScreen extends StatelessWidget {
                     ),
                     const PopupMenuItem(
                       value: _ViewAction.details,
-                      child: Text('Escenario actual'),
+                      child: Text('Información del escenario'),
                     ),
                     const PopupMenuDivider(),
                   ],
@@ -521,26 +522,52 @@ class _ToolBar extends StatelessWidget {
         direction: vertical ? Axis.vertical : Axis.horizontal,
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (controller.workspace case final workspace?)
-            SizedBox(
-              width: 48,
+          PopupMenuButton<MapEnvironment>(
+            key: const ValueKey('map-environment'),
+            tooltip:
+                'Tipo de mapa: ${controller.value.terrain.environment.name}. Cambiar aplica a todo el mapa.',
+            onSelected: (next) =>
+                controller.attempt((s) => s.setEnvironment(next)),
+            itemBuilder: (_) => [
+              for (final type in MapEnvironment.values)
+                CheckedPopupMenuItem(
+                  key: ValueKey('map-environment-${type.name}'),
+                  value: type,
+                  checked: controller.value.terrain.environment == type,
+                  child: Text(
+                    type == MapEnvironment.indoor ? 'Indoor' : 'Outdoor',
+                  ),
+                ),
+            ],
+            child: SizedBox(
+              width: vertical ? 48 : 104,
               height: 48,
-              child: IconButton(
-                key: const ValueKey('autosave-status'),
-                tooltip: '${workspace.current.name} · ${workspace.status}',
-                onPressed: () => ScenarioActions(controller).details(context),
-                icon: workspace.loading || workspace.busy || controller.fileBusy
-                    ? const Icon(Icons.hourglass_empty)
-                    : Icon(
-                        (workspace.error != null ||
-                                workspace.autosaveError != null)
-                            ? Icons.error_outline
-                            : workspace.dirty || !workspace.saved
-                            ? Icons.info_outline
-                            : Icons.check_circle_outline,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (vertical)
+                    Icon(
+                      controller.value.terrain.environment ==
+                              MapEnvironment.indoor
+                          ? Icons.home_outlined
+                          : Icons.park_outlined,
+                    )
+                  else
+                    Flexible(
+                      child: Text(
+                        controller.value.terrain.environment ==
+                                MapEnvironment.indoor
+                            ? 'Indoor'
+                            : 'Outdoor',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
+                    ),
+                  const Icon(Icons.arrow_drop_down, size: 20),
+                ],
               ),
             ),
+          ),
           SizedBox(
             width: 48,
             height: 48,
@@ -590,10 +617,7 @@ class _ToolBar extends StatelessWidget {
                             ),
                           );
                           if (controller.value.editsLayers) return;
-                          if (id == 'movement') {
-                            showMovementReport(context, controller);
-                            return;
-                          }
+                          if (id == 'movement') return;
                           if (id == 'targets') {
                             showTargetList(context, controller);
                             return;

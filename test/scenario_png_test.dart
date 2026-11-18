@@ -12,6 +12,37 @@ import 'package:heroclix_simulator_trainer/presentation/scenarios/board_png_expo
 import 'scenario_codec_test.dart' show character, cell;
 
 void main() {
+  testWidgets('PNG conserva borde amarillo global y zona Indoor sobre agua', (
+    tester,
+  ) async {
+    for (final entire in [false, true]) {
+      var state = BoardSession.initial()
+          .changeDimensions(BoardDimensions(rows: 4, columns: 4))
+          .paintTerrain([cell('B1')], TerrainType.water);
+      state = entire
+          ? state.setEnvironment(MapEnvironment.indoor)
+          : state.paintIndoor([cell('B1')]);
+      await tester.runAsync(() async {
+        final png = await const BoardPngExporter().render(state, legend: false);
+        final codec = await ui.instantiateImageCodec(png.bytes),
+            frame = await codec.getNextFrame();
+        final pixels = (await frame.image.toByteData())!;
+        final x =
+            ((BoardGeometry.gutter +
+                        (entire ? 3 : BoardGeometry.cellExtent + 4)) *
+                    2)
+                .round();
+        final y = ((BoardGeometry.gutter + BoardGeometry.cellExtent / 2) * 2)
+            .round();
+        final offset = (y * png.width + x) * 4;
+        expect(pixels.getUint8(offset), greaterThan(200));
+        expect(pixels.getUint8(offset + 1), greaterThan(170));
+        expect(pixels.getUint8(offset + 2), lessThan(130));
+        frame.image.dispose();
+        codec.dispose();
+      });
+    }
+  });
   setUpAll(() async {
     final sdk =
         Platform.environment['FLUTTER_ROOT'] ??

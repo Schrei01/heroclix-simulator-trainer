@@ -26,6 +26,12 @@ class MovementToolbar extends StatelessWidget {
     final m = controller.movement, r = m.result;
     return Row(
       children: [
+        IconButton(
+          key: const ValueKey('movement-choose'),
+          tooltip: 'Elegir otra figura',
+          onPressed: () => controller.updateMovement((m) => m.clear()),
+          icon: const Icon(Icons.person_search_outlined),
+        ),
         Expanded(
           child: TextButton.icon(
             key: const ValueKey('movement-report'),
@@ -47,6 +53,20 @@ class MovementToolbar extends StatelessWidget {
               ? () => controller.updateMovement((m) => m.removeLast())
               : null,
           icon: const Icon(Icons.undo),
+        ),
+        IconButton(
+          key: const ValueKey('movement-apply'),
+          tooltip: 'Confirmar movimiento',
+          onPressed: r?.canConfirm == true
+              ? () {
+                  final error = controller.confirmMovement();
+                  if (error != null) {
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(SnackBar(content: Text(error)));
+                  }
+                }
+              : null,
+          icon: const Icon(Icons.check),
         ),
         IconButton(
           key: const ValueKey('movement-cancel'),
@@ -113,7 +133,7 @@ class _MovementDialogState extends State<MovementDialog> {
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
                 const Text(
-                  'La figura conserva su posición original. Toca casillas sucesivas del tablero; no se rellenan saltos. Confirmar aplica la ruta válida como una operación de historial.',
+                  'La figura conserva su posición original. Primero elígela en el mapa; toca pasos vecinos o traza desde ella o desde el último paso. El trazo incluye las casillas intermedias; los saltos por toque o coordenada no se rellenan. Confirmar aplica la ruta válida como una operación de historial.',
                 ),
                 DropdownButtonFormField<String>(
                   key: ValueKey('movement-source-${m.sourceId}'),

@@ -1,6 +1,6 @@
-# Escenarios e intercambio — esquema 3 (lectura de 1/2/3)
+# Escenarios e intercambio — esquema 4 (lectura de 1/2/3/4)
 
-Introducido en 04 y ampliado en 08–09, app 0.10.0+11. Formato UTF-8 JSON legible, máximo
+Introducido en 04 y ampliado en 08–09 y rc.11. Formato UTF-8 JSON legible, máximo
 2 MiB, profundidad máxima 16 y 20.000 contenedores antes de decodificar.
 Se rechazan campos desconocidos/incompletos, tipos incorrectos, coordenadas fuera
 del tablero, identidades duplicadas, figuras solapadas y versiones desconocidas.
@@ -11,7 +11,7 @@ con identidad nueva en biblioteca. Desde rc.3 la sesión activa es temporal.
 
 | Campo | Contenido |
 | --- | --- |
-| `schemaVersion` | Entero 3 al exportar; importa también 1/2 mediante migración compatible |
+| `schemaVersion` | Entero 4 al exportar; importa también 1/2/3 mediante migración compatible |
 | `metadata` | `id`, `name`, `rulesVersion`, `createdAt`, `modifiedAt` |
 | `board` | `rows`, `columns`: enteros independientes 2–40 |
 | `teams` | Lista de `id`, `code`, `name`, `color`, `pattern` |
@@ -19,9 +19,17 @@ con identidad nueva en biblioteca. Desde rc.3 la sesión activa es temporal.
 | `terrain` | Lista de `cell`, `type`, `elevation`; 0 histórico es alias del suelo 1 |
 | `walls` | Lista de `id`, `axis`, `column`, `row`; solo bordes internos unitarios |
 | `transitions` | Lista de `axis`, `column`, `row`, con vecinos internos de altura distinta y sin muro compartido |
+| `environment` | `outdoor` o `indoor`, tipo global del mapa; formatos 1–3 se leen como Outdoor |
+| `indoorCells` | Lista única de coordenadas canónicas dentro del mapa; debe estar vacía en Indoor global |
 | `counters` | `nextCharacter`, `nextTeam`: identidad siguiente, sin reutilización |
 
 El ID de escenario tiene forma `s-` seguida de 32 dígitos hexadecimales aleatorios.
+
+Rc.11 guarda capas versión 3 y escenarios versión 4. La marca Indoor no sustituye
+terreno/elevación y sobrevive a sus cambios. Guardar una versión anterior crea
+primero un respaldo schema1/schema2/schema3, también para working, admitido por
+el adaptador real. El original se conserva si falla la copia. Las apps anteriores
+no admiten el formato 4; no se descartan esos campos para simular compatibilidad.
 Nombre: 1–80 unidades UTF-16, recortado. Referencia reglamentaria: 1–40, por
 defecto `2026-07-01`; es metadato, no certifica reglas implementadas. Fechas UTC
 ISO 8601 canónicas, creación no posterior a modificación. Exportar no cambia fechas.

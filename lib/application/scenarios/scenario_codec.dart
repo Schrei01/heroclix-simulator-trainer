@@ -75,6 +75,8 @@ final class ScenarioCodec {
       'terrain': layers['terrain'],
       'walls': layers['walls'],
       'transitions': layers['transitions'],
+      'environment': layers['environment'],
+      'indoorCells': layers['indoorCells'],
       'counters': {
         'nextCharacter': state.nextCharacter,
         'nextTeam': state.nextTeam,
@@ -162,9 +164,10 @@ final class ScenarioCodec {
         'walls',
         'counters',
         if (version != 1) 'transitions',
+        if (version == 4) ...{'environment', 'indoorCells'},
       });
       if (root['schemaVersion'] is! int ||
-          (version != 1 && version != 2 && version != 3)) {
+          (version != 1 && version != 2 && version != 3 && version != 4)) {
         throw const FormatException(
           'Versión de escenario no compatible. El archivo se conserva sin modificar.',
         );
@@ -241,7 +244,7 @@ final class ScenarioCodec {
           'speed',
           'range',
           if (version != 1) ...['visionAbilities', 'size'],
-          if (version == 3) 'movementAbilities',
+          if (version == 3 || version == 4) 'movementAbilities',
         });
         final id = text(data['id'], 32),
             match = RegExp(r'^figure-([1-9][0-9]{0,8})$').firstMatch(id);
@@ -277,7 +280,7 @@ final class ScenarioCodec {
             throw const FormatException('Capacidad desconocida o duplicada.');
           }
         }
-        final movementData = version == 3
+        final movementData = (version == 3 || version == 4)
             ? data['movementAbilities']
             : const <Object?>[];
         if (movementData is! List ||
@@ -316,7 +319,11 @@ final class ScenarioCodec {
         characters = characters.add(figure, dimensions);
       }
       final layers = const LayerCodec().decode({
-        'layerSchemaVersion': 2,
+        'layerSchemaVersion': version == 4 ? 3 : 2,
+        if (version == 4) ...{
+          'environment': root['environment'],
+          'indoorCells': root['indoorCells'],
+        },
         'rows': dimensions.rows,
         'columns': dimensions.columns,
         'terrain': root['terrain'],

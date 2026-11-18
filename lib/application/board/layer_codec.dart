@@ -17,7 +17,10 @@ final class LayerCodec {
     final walls = session.walls.edges.values.toList()
       ..sort((a, b) => a.id.compareTo(b.id));
     return {
-      'layerSchemaVersion': 2,
+      'layerSchemaVersion': 3,
+      'environment': session.terrain.environment.name,
+      'indoorCells': (session.terrain.indoorCells.map((c) => c.label).toList()
+        ..sort()),
       'rows': session.dimensions.rows,
       'columns': session.dimensions.columns,
       'terrain': [
@@ -66,9 +69,10 @@ final class LayerCodec {
       'columns',
       'terrain',
       'walls',
-      if (version == 2) 'transitions',
+      if (version == 2 || version == 3) 'transitions',
+      if (version == 3) ...{'environment', 'indoorCells'},
     });
-    if ((version != 1 && version != 2) ||
+    if ((version != 1 && version != 2 && version != 3) ||
         root['layerSchemaVersion'] is! int ||
         root['rows'] is! int ||
         root['columns'] is! int ||
@@ -141,7 +145,7 @@ final class LayerCodec {
         dimensions,
         erase: false,
       );
-      final transitions = version == 2
+      final transitions = version != 1
           ? root['transitions']
           : const <Object?>[];
       if (transitions is! List ||
@@ -166,6 +170,37 @@ final class LayerCodec {
           throw const FormatException('Transición duplicada o sobre un muro.');
         }
         terrain = terrain.setTransition(edge, dimensions, remove: false);
+      }
+      if (version == 3) {
+        final environment = MapEnvironment.values
+            .where((v) => v.name == root['environment'])
+            .firstOrNull;
+        final inside = root['indoorCells'];
+        if (environment == null ||
+            inside is! List ||
+            inside.length > dimensions.cellCount ||
+            inside.any((c) => c is! String) ||
+            inside.toSet().length != inside.length ||
+            (environment == MapEnvironment.indoor && inside.isNotEmpty)) {
+          throw const FormatException(
+            'Tipo de mapa o casillas Indoor inválidos.',
+          );
+        }
+        final parsed = inside
+            .map((c) => CellCoordinate.parse(c as String))
+            .toList();
+        if (parsed.map((c) => c.label).toSet().length != parsed.length ||
+            List.generate(
+              parsed.length,
+              (i) => parsed[i].label == inside[i],
+            ).any((v) => !v)) {
+          throw const FormatException(
+            'Casillas Indoor no canónicas o duplicadas.',
+          );
+        }
+        terrain = terrain
+            .setEnvironment(environment)
+            .paintIndoor(parsed, dimensions);
       }
       return (terrain: terrain, walls: wallLayer);
     } on ArgumentError catch (error) {

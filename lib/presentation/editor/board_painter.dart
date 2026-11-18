@@ -270,6 +270,7 @@ final class BoardPainter extends CustomPainter {
     }
     if (state != null) {
       _elevations(canvas, state);
+      _indoorBoundaries(canvas, state.terrain);
       for (final edge in state.walls.edges.values) {
         _wall(canvas, edge, const Color(0xfff5d28b));
       }
@@ -284,6 +285,7 @@ final class BoardPainter extends CustomPainter {
     if (draft != null) {
       final incompatible =
           draft.tool == EditorTool.terrain &&
+          draft.brush.type == TerrainType.blocking &&
           state != null &&
           state.blockingConflicts(draft.cells, draft.type).isNotEmpty;
       final color =
@@ -292,6 +294,9 @@ final class BoardPainter extends CustomPainter {
           : draft.tool == EditorTool.terrain &&
                 draft.brush == TerrainBrush.water
           ? const Color(0xff79c9ff)
+          : draft.tool == EditorTool.terrain &&
+                draft.brush == TerrainBrush.indoor
+          ? const Color(0xffffde59)
           : const Color(0xff69f0ae);
       for (final cell in draft.cells) {
         final rect = _cellRect(cell).deflate(1);
@@ -356,6 +361,50 @@ final class BoardPainter extends CustomPainter {
     BoardGeometry.cellExtent,
     BoardGeometry.cellExtent,
   );
+  void _indoorBoundaries(Canvas canvas, TerrainLayer terrain) {
+    final yellow = Paint()
+      ..color = const Color(0xffffde59)
+      ..strokeWidth = 3;
+    if (terrain.environment == MapEnvironment.indoor) {
+      canvas.drawRect(
+        Rect.fromLTWH(
+          BoardGeometry.gutter,
+          BoardGeometry.gutter,
+          dimensions.columns * BoardGeometry.cellExtent,
+          dimensions.rows * BoardGeometry.cellExtent,
+        ).deflate(3),
+        yellow..style = PaintingStyle.stroke,
+      );
+      return;
+    }
+    bool inside(int col, int row) =>
+        col >= 0 &&
+        row >= 0 &&
+        col < dimensions.columns &&
+        row < dimensions.rows &&
+        terrain.isIndoor(CellCoordinate(column: col, row: row));
+    for (final cell in terrain.indoorCells) {
+      final rect = _cellRect(cell).deflate(4);
+      for (final (dx, dy, from, to) in [
+        (-1, 0, rect.topLeft, rect.bottomLeft),
+        (1, 0, rect.topRight, rect.bottomRight),
+        (0, -1, rect.topLeft, rect.topRight),
+        (0, 1, rect.bottomLeft, rect.bottomRight),
+      ]) {
+        if (!inside(cell.column + dx, cell.row + dy)) {
+          canvas.drawLine(from, to, yellow);
+        }
+      }
+      _text(
+        canvas,
+        'I',
+        Offset(rect.right - 7, rect.top + 7),
+        fontSize: 11,
+        color: yellow.color,
+      );
+    }
+  }
+
   void _waterBoundary(
     Canvas canvas,
     CellCoordinate cell,

@@ -61,6 +61,15 @@ class QuickGuideScreen extends StatelessWidget {
         'Entrenador: responde ejercicios con una copia independiente; Comprobar muestra explicación y registra el intento.',
       ),
       Text(
+        'Mapa: el desplegable Indoor/Outdoor aplica el tipo a todo el mapa y reinicia las marcas Indoor locales. Indoor completo lleva borde amarillo. En Outdoor, Terrenos → Indoor permite pintar zonas con límite amarillo y letra I sin cambiar agua, obstáculos o elevación. Despejado conserva Indoor; Borrar todo retira las marcas locales y Borrar Indoor solo esa capa. El tipo global se cambia en el desplegable.',
+      ),
+      Text(
+        'Indoor no bloquea visión ni movimiento por sí solo. El amarillo no es un muro. Un muro sobre un límite Indoor se considera interior. Improved Movement: Bloqueado exterior permite atravesar bloqueado y muros Outdoor, pero no Indoor; no permite terminar sobre bloqueado (§15.1/27.5c).',
+      ),
+      Text(
+        'Movimiento: activa la herramienta, elige una figura en el mapa y toca los pasos o arrastra desde la figura. Puedes continuar el trazo desde el último paso; se cuentan todas las casillas recorridas. Dos dedos navegan y cancelan el trazo en curso. La figura permanece en origen hasta pulsar Confirmar. Usa Elegir otra figura para cambiarla y el dictamen para abrir el informe detallado.',
+      ),
+      Text(
         'D · Despejado: sin ese obstáculo. H · Obstaculizado: permite visión con restricción. B · Bloqueado y muros: pueden impedir visión y movimiento según el perfil y las capacidades declaradas.',
       ),
       Text(

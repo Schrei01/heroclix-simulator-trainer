@@ -35,6 +35,29 @@ movimiento, ataques ni excepciones. El inicio no emite dictámenes.
 No se distribuyen el PDF, texto completo, iconografía ni ilustraciones oficiales.
 La herramienta futura será de apoyo, no una decisión oficial de torneo.
 
+## Indoor/Outdoor — revisión 2026-11-18, rc.11
+
+Se mantiene el enlace oficial 07.01.2026. Revisados §15.1a–c/15.2 (p. 37) y
+§27.5b–c (p. 86) en el PDF oficial de consulta. La página oficial sigue enlazando
+esa edición. Indoor/Outdoor son ámbitos del mapa, no sustitutos del terreno:
+por sí solos no añaden restricciones ordinarias de visión o movimiento.
+El amarillo identifica zonas Indoor en mapas mixtos y no es un muro. Un muro
+que coincide con un límite amarillo cuenta como Indoor. Los límites del tablero
+siguen impidiendo salir; no se convierten en muros para obstruir visión interna.
+
+Se implementa IM Bloqueado exterior (§27.5c): ignora bloqueado Outdoor y muros
+con ambos lados Outdoor al atravesarlos, conservando las restricciones de destino
+de §13.2. No ignora bloqueado Indoor ni un muro que toque una casilla Indoor.
+IM Bloqueado (§27.5b) ignora ambos para el paso. Las reglas de altura, esquinas,
+ocupación y poderes no implementados siguen siendo independientes.
+
+Contratos de indoor_movement_test.dart: cruzar amarillo sin muro mantiene visión
+despejada/costo ordinario; muro real bloquea; IM exterior atraviesa B/muro Outdoor
+y falla en Indoor, incluido el lado de origen de un muro. IM Bloqueado general
+sí atraviesa B Indoor, y ninguna variante permite terminar sobre bloqueado.
+Los trazos solo producen la lista ordenada de pasos: todas las reglas se evalúan
+mediante el mismo motor de movimiento, sin inferir pasos válidos por la forma del gesto.
+
 ## Agua — revisión 2026-11-18, rc.10
 
 La página oficial continúa enlazando la edición 07.01.2026. Revisado §16.6,

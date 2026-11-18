@@ -6,6 +6,7 @@ import '../theme/app_theme.dart';
 import 'board_painter.dart';
 import 'editor_controller.dart';
 import '../../application/board/board_session.dart';
+import '../../application/board/board_edit.dart';
 import '../../application/board/sight_probe.dart';
 import '../../domain/board/cell_coordinate.dart';
 import '../../domain/characters/character.dart';
@@ -52,6 +53,99 @@ class _BoardCanvasState extends State<BoardCanvas> {
   CellCoordinate? _lastSelectionTap;
   String? _lastCharacterTap;
   bool _deleteDialogOpen = false;
+  List<CellCoordinate>? _movementBeforeRoute;
+  String? _movementBeforeSource;
+  bool _movementBeforeSpecialEffects = false;
+  BoardSession? _movementBeforeScene;
+  BoardPoint? _movementLastPoint;
+  bool _movementCanTrace = false, _movementStroke = false;
+  int _movementColumnOffset = 0, _movementRowOffset = 0;
+
+  void _beginMovementGesture(Offset point) {
+    final c = widget.controller, cell = _cell(point);
+    _movementBeforeRoute = List.of(c.movement.route);
+    _movementBeforeSource = c.movement.sourceId;
+    _movementBeforeSpecialEffects = c.movement.specialEffects;
+    _movementBeforeScene = c.value;
+    _movementLastPoint = _scene(point);
+    _movementCanTrace = false;
+    _movementStroke = false;
+    _movementColumnOffset = 0;
+    _movementRowOffset = 0;
+    if (cell == null) return;
+    final f = c.value.characters.at(cell);
+    if (f != null &&
+        (c.movement.sourceId == null || f.id == c.movement.sourceId)) {
+      _movementColumnOffset = cell.column - f.position.column;
+      _movementRowOffset = cell.row - f.position.row;
+      if (c.movement.sourceId == f.id) {
+        c.updateMovement((m) => m.reset());
+      } else {
+        c.beginMovement(f.id);
+      }
+      _blockTap = true;
+      _movementCanTrace = true;
+    } else {
+      _movementCanTrace =
+          c.movement.route.isNotEmpty && cell == c.movement.route.last;
+    }
+  }
+
+  void _updateMovementGesture(Offset point) {
+    if (!_movementCanTrace ||
+        _multiTouch ||
+        _movementLastPoint == null ||
+        widget.controller.value.tool != EditorTool.movement) {
+      return;
+    }
+    if (!_movementStroke &&
+        (_pointerStart == null ||
+            (point - _pointerStart!).distance <= kTouchSlop)) {
+      return;
+    }
+    _movementStroke = true;
+    _blockTap = true;
+    final current = _scene(point), previous = _movementLastPoint!;
+    BoardPoint anchor(BoardPoint p) => BoardPoint(
+      p.x - _movementColumnOffset * BoardGeometry.cellExtent,
+      p.y - _movementRowOffset * BoardGeometry.cellExtent,
+    );
+    final cells = const EditingGeometry().cellsAlong(
+      anchor(previous),
+      anchor(current),
+      widget.controller.value.dimensions,
+    );
+    widget.controller.updateMovement((m) => m.appendCells(cells));
+    _movementLastPoint = current;
+  }
+
+  void _cancelMovementGesture() {
+    final c = widget.controller, before = _movementBeforeRoute;
+    if (before != null &&
+        _movementBeforeScene != null &&
+        c.value.tool == EditorTool.movement &&
+        BoardEdit.sameContent(_movementBeforeScene!, c.value)) {
+      if (_movementBeforeSource == null) {
+        c.updateMovement((m) => m.clear());
+      } else {
+        c.beginMovement(_movementBeforeSource!);
+        if (_movementBeforeSpecialEffects) {
+          c.updateMovement((m) => m.setEffects(true));
+        }
+        c.updateMovement((m) => m.replaceRoute(before));
+      }
+    }
+    _endMovementGesture();
+  }
+
+  void _endMovementGesture() {
+    _movementBeforeRoute = null;
+    _movementBeforeScene = null;
+    _movementBeforeSource = null;
+    _movementLastPoint = null;
+    _movementCanTrace = false;
+    _movementStroke = false;
+  }
 
   void _placeCharacter(CellCoordinate cell) {
     final controller = widget.controller;
@@ -93,7 +187,7 @@ class _BoardCanvasState extends State<BoardCanvas> {
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
                   Text(
-                    '${terrainName(draft.type)} · ${draft.cells.first.label} a ${draft.cells.last.label}. La selección se muestra en el tablero. El escenario aún no ha cambiado.',
+                    '${draft.brush == TerrainBrush.indoor ? 'Indoor' : terrainName(draft.type)} · ${draft.cells.first.label} a ${draft.cells.last.label}. La selección se muestra en el tablero. El escenario aún no ha cambiado.',
                   ),
                   Wrap(
                     alignment: WrapAlignment.end,
@@ -157,7 +251,8 @@ class _BoardCanvasState extends State<BoardCanvas> {
       rectangle:
           state.rectangleBrush &&
           state.tool == EditorTool.terrain &&
-          state.terrainBrush.type != null,
+          (state.terrainBrush.type != null ||
+              state.terrainBrush == TerrainBrush.indoor),
       eraseWalls: state.eraseWalls,
       eraseLayer: state.eraseLayer,
     );
@@ -198,7 +293,8 @@ class _BoardCanvasState extends State<BoardCanvas> {
     } else if (draft.tool == EditorTool.erase &&
         (draft.eraseLayer == EraseLayer.all ||
             draft.eraseLayer == EraseLayer.terrain ||
-            draft.eraseLayer == EraseLayer.elevation)) {
+            draft.eraseLayer == EraseLayer.elevation ||
+            draft.eraseLayer == EraseLayer.indoor)) {
       controller.draft.value = draft.update(
         cells: {
           ...draft.cells,
@@ -228,6 +324,10 @@ class _BoardCanvasState extends State<BoardCanvas> {
   }
 
   void _pointerUp(PointerUpEvent event) {
+    if (_movementBeforeRoute != null) {
+      if (_movementStroke) _updateMovementGesture(event.localPosition);
+      _endMovementGesture();
+    }
     if (_layerGesture && !_multiTouch && _pointers.length == 1) {
       _updateLayer(event.localPosition);
       final draft = widget.controller.draft.value;
@@ -390,11 +490,17 @@ class _BoardCanvasState extends State<BoardCanvas> {
     _pointers.add(event.pointer);
     if (!widget.readOnly &&
         _pointers.length == 1 &&
+        widget.controller.value.tool == EditorTool.movement) {
+      _beginMovementGesture(event.localPosition);
+    }
+    if (!widget.readOnly &&
+        _pointers.length == 1 &&
         widget.controller.value.editsLayers) {
       _blockTap = true;
       _beginLayer(event.localPosition);
     }
     if (_pointers.length > 1) {
+      _cancelMovementGesture();
       _lastCharacterTap = null;
       _lastSelectionTap = null;
       _blockTap = true;
@@ -407,6 +513,7 @@ class _BoardCanvasState extends State<BoardCanvas> {
   }
 
   void _pointerMove(PointerMoveEvent event) {
+    if (!widget.readOnly) _updateMovementGesture(event.localPosition);
     if (!widget.readOnly && widget.controller.value.editsLayers) {
       _updateLayer(event.localPosition);
     }
@@ -474,6 +581,7 @@ class _BoardCanvasState extends State<BoardCanvas> {
               onPointerMove: _pointerMove,
               onPointerUp: _pointerUp,
               onPointerCancel: (event) {
+                _cancelMovementGesture();
                 _blockTap = true;
                 _cancelDrag();
                 _layerGesture = false;
@@ -615,7 +723,8 @@ class _BoardCanvasState extends State<BoardCanvas> {
                         panEnabled:
                             _drag == null &&
                             (widget.readOnly ||
-                                !session.editsLayers ||
+                                (!session.editsLayers &&
+                                    session.tool != EditorTool.movement) ||
                                 _multiTouch),
                         scaleEnabled: _drag == null,
                         transformationController: _transform,
@@ -735,7 +844,11 @@ class _BoardCanvasState extends State<BoardCanvas> {
                                   children: [
                                     Text(
                                       'Vista previa · ${draft.tool == EditorTool.terrain
-                                          ? '${draft.cells.length} casillas · ${draft.brush == TerrainBrush.elevated ? 'Elevar +1' : terrainName(draft.type)}'
+                                          ? '${draft.cells.length} casillas · ${draft.brush == TerrainBrush.elevated
+                                                ? 'Elevar +1'
+                                                : draft.brush == TerrainBrush.indoor
+                                                ? 'Indoor'
+                                                : terrainName(draft.type)}'
                                           : draft.eraseLayer == EraseLayer.all && draft.tool == EditorTool.erase
                                           ? '${draft.cells.length} casillas · Borrado total'
                                           : draft.figureId != null

@@ -1,6 +1,6 @@
 # Preparar, compilar e instalar en Android
 
-Candidata actual: **TeamFight: GridLab 1.0.0-rc.10+23**. Inicio contiene Editor y Entrenador; las consultas
+Candidata actual: **TeamFight: GridLab 1.0.0-rc.11+24**. Inicio contiene Editor y Entrenador; las consultas
 y ensayos están en las herramientas del Editor. El recorrido vigente del Editor
 está al final de este documento. Los apartados identificados por etapa describen
 sus versiones históricas. Resultados efectivamente ejecutados: [ESTADO](ESTADO.md).
@@ -402,7 +402,7 @@ alterarse: la caducidad no es protección contra manipulación. La futura versi�
 oficial debe retirar expresamente BetaAccessGate; compilar en release por sí solo
 no elimina el vencimiento. No se incluye enlace de Play hasta disponer de la ficha.
 
-## Agua — candidata actual rc.10+23
+## Agua — candidata rc.10+23 (histórica)
 
 APK: build/releases/teamfight-gridlab-1.0.0-rc.10-debug.apk. Instalar encima con la
 misma firma; se mantiene el corte del 30/12/2026 a las 00:00 Colombia.
@@ -416,3 +416,24 @@ y texto ampliado, biblioteca/JSON/PNG, dictamen de visión y ruta sobre agua.
 
 Pruebas Flutter y capturas en Windows no sustituyen aceptación Android. Sigue la
 decisión previa del usuario de continuar sin teléfono; pruebas nativas pendientes.
+
+## Indoor y trazos de movimiento — candidata actual rc.11+24
+
+APK: build/releases/teamfight-gridlab-1.0.0-rc.11-debug.apk. Instalar encima con la
+misma firma. Mantiene vencimiento 30/12/2026 00:00 Colombia.
+
+1. Abrir biblioteca de una instalación anterior y guardar: lectura de JSON 1–3,
+   copia de migración antes de escribir JSON 4; escenarios/progreso se conservan.
+2. Elegir Indoor en el desplegable de la barra: borde amarillo del mapa completo.
+   Cambiar a Outdoor y trazar zonas con Terrenos → Indoor. Probar sobre agua,
+   bloqueado y altura; conservar capas y deshacer tipo global/local.
+3. Despejado no retira Indoor. Borrar Indoor solo retira marcas locales; Borrar
+   todo limpia todas las capas locales. El tipo global cambia con el desplegable.
+4. Movimiento no abre diálogo. Tocar figura y pasos, arrastrar desde figura/último
+   paso, base 2×2 desde otra casilla de su huella, diagonal, muro, altura y velocidad.
+   La figura permanece en origen hasta confirmar; Deshacer recupera posición.
+5. Cancelar gesto o usar dos dedos restaura la ruta previa y navega sin editar.
+   Cambiar figura y abrir informe manual. Probar giro/texto ampliado, trazos rápidos
+   y menú de siete pinceles. Verificar amarillo/IM Bloqueado exterior/JSON/PNG.
+
+El recorrido Android real sigue pendiente según la decisión de continuar sin teléfono.
