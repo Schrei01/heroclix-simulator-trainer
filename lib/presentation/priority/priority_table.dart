@@ -7,6 +7,7 @@ import '../theme/app_theme.dart';
 import 'priority_controller.dart';
 import 'priority_input.dart';
 import 'priority_table_layout.dart';
+import 'priority_player_header.dart';
 
 class PriorityTable extends StatelessWidget {
   const PriorityTable({required this.controller, super.key});
@@ -85,7 +86,7 @@ class _TableStatus extends StatelessWidget {
       PriorityPhase.actionResponse =>
         'Respuesta a ACTION · una oportunidad por jugador.',
       PriorityPhase.freeResponse => 'Respuesta a FREE · no consume acciones.',
-      PriorityPhase.paused => 'Partida pausada.',
+      PriorityPhase.paused => 'Partida pausada. Reanuda manualmente.',
       PriorityPhase.finished => 'Partida finalizada.',
       PriorityPhase.configuration => 'Preparación.',
     };
@@ -93,6 +94,13 @@ class _TableStatus extends StatelessWidget {
         .where((e) => e.type == PriorityEventType.automaticPass)
         .map((e) => match.player(e.playerId).name)
         .join(', ');
+    final exhausted =
+        match.isPaused &&
+            match.configuration.clockEnabled &&
+            match.priorityPlayerId != null &&
+            match.player(match.priorityPlayerId!).remainingTime == Duration.zero
+        ? match.player(match.priorityPlayerId!)
+        : null;
     return Semantics(
       liveRegion: true,
       child: Padding(
@@ -106,8 +114,10 @@ class _TableStatus extends StatelessWidget {
               style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
             ),
             Text(
-              'Activo: ${match.player(match.activePlayerId!).name} · '
-              'Prioridad: ${match.priorityPlayerId == null ? '—' : match.player(match.priorityPlayerId!).name}',
+              match.phase == PriorityPhase.finished
+                  ? 'Jugadores no eliminados: ${match.players.where((p) => !p.eliminated).length}'
+                  : 'Activo: ${match.player(match.activePlayerId!).name} · '
+                        'Prioridad: ${match.priorityPlayerId == null ? '—' : match.player(match.priorityPlayerId!).name}',
               key: const ValueKey('priority-status'),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -118,6 +128,13 @@ class _TableStatus extends StatelessWidget {
               key: const ValueKey('priority-response-status'),
               style: const TextStyle(fontSize: 12),
             ),
+            if (exhausted != null)
+              Text(
+                'Tiempo agotado: ${exhausted.name}. '
+                'Toca su nombre para corregir el tiempo o eliminarlo.',
+                key: const ValueKey('priority-time-expired'),
+                style: const TextStyle(fontSize: 12, color: Colors.redAccent),
+              ),
             if (automatic.isNotEmpty)
               Text(
                 'Pase automático: $automatic',
@@ -148,7 +165,10 @@ class _PlayerPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final active = match.activePlayerId == player.id;
+    final active =
+        !player.eliminated &&
+        match.phase != PriorityPhase.finished &&
+        match.activePlayerId == player.id;
     final priority = match.priorityPlayerId == player.id;
     final color = priorityPlayerColors[seat];
     final commands = active
@@ -162,7 +182,9 @@ class _PlayerPanel extends StatelessWidget {
             PriorityCommand.responseFree(player.id),
             PriorityCommand.pass(player.id),
           ];
-    final border = priority
+    final border = player.eliminated
+        ? AppTheme.muted
+        : priority
         ? const Color(0xFFFFD878)
         : active
         ? AppTheme.accent
@@ -201,124 +223,21 @@ class _PlayerPanel extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Tooltip(
-                              message: player.name,
-                              child: Text(
-                                '${seat + 1}. ${player.name}',
-                                key: ValueKey(
-                                  'priority-player-name-${player.id}',
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: color,
-                                  fontSize: 15,
-                                  height: 1.1,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            Text(
-                              active ? 'ACTIVO' : 'REACTIVO',
-                              key: active
-                                  ? ValueKey('priority-active-${player.id}')
-                                  : null,
-                              style: TextStyle(
-                                fontSize: 11,
-                                height: 1.1,
-                                color: active
-                                    ? AppTheme.accent
-                                    : AppTheme.muted,
-                              ),
-                            ),
-                            if (priority)
-                              Text(
-                                'PRIORIDAD',
-                                key: ValueKey(
-                                  'priority-has-priority-${player.id}',
-                                ),
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  height: 1.1,
-                                  color: Color(0xFFFFD878),
-                                ),
-                              ),
-                          ],
-                        ),
+                  PriorityPlayerHeader(
+                    controller: controller,
+                    match: match,
+                    player: player,
+                    seat: seat,
+                    color: color,
+                    quarterTurns: quarterTurns,
+                    editActions: () => showDialog<void>(
+                      context: context,
+                      builder: (_) => _ActionsDialog(
+                        controller: controller,
+                        playerId: player.id,
+                        quarterTurns: quarterTurns,
                       ),
-                      SizedBox(
-                        width: math.min(88, math.max(48, width * .45)),
-                        child: TextButton(
-                          key: ValueKey('priority-count-${player.id}'),
-                          onPressed:
-                              controller.can(
-                                PriorityCommand.setAdditionalActions(
-                                  player.id,
-                                  player.additionalActions,
-                                ),
-                              )
-                              ? () => showDialog<void>(
-                                  context: context,
-                                  builder: (_) => _ActionsDialog(
-                                    controller: controller,
-                                    playerId: player.id,
-                                    quarterTurns: quarterTurns,
-                                  ),
-                                )
-                              : null,
-                          style: TextButton.styleFrom(
-                            minimumSize: const Size(48, 48),
-                            padding: const EdgeInsets.symmetric(horizontal: 2),
-                          ),
-                          child: Tooltip(
-                            message:
-                                'Editar acciones de ${player.name}. '
-                                '${player.availableActions} disponibles de ${player.totalActions}. '
-                                '${player.baseActions} base, ${player.additionalActions} adicionales, '
-                                '${player.consumedActions} consumidas.',
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                FittedBox(
-                                  fit: BoxFit.scaleDown,
-                                  child: Text(
-                                    '${player.availableActions} / ${player.totalActions}',
-                                    style: const TextStyle(
-                                      fontSize: 19,
-                                      fontWeight: FontWeight.w800,
-                                    ),
-                                  ),
-                                ),
-                                const Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(Icons.edit_outlined, size: 12),
-                                    SizedBox(width: 2),
-                                    Flexible(
-                                      child: Text(
-                                        'acciones',
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          height: 1.1,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                   const SizedBox(height: 2),
                   Wrap(

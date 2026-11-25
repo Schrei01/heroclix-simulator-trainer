@@ -1,16 +1,16 @@
-# TeamFight: GridLab — 1.0.0-rc.13+26
+# TeamFight: GridLab — 1.0.0-rc.14+27
 
 Aplicación Android offline, en español, para construir escenarios, consultar reglas
 implementadas y practicar. **Versión candidata, APK debug**: faltan las comprobaciones
 nativas de aceptación y rendimiento descritas abajo. No se congela 1.0.0 estable.
 Repositorio privado: [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer),
-rama `codex/priority-ui-stage2`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
+rama `codex/priority-stage3`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
 
 Nombre e iconos de Android, Inicio y Acerca de actualizados a TeamFight: GridLab.
 La identidad técnica y firma se conservan para actualizar la instalación anterior.
 Archivos de Google Play preparados en distribution/google-play/; [detalles de identidad](docs/IDENTIDAD.md).
 
-Esta beta rc.13 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
+Esta beta rc.14 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
 (2026-12-30T05:00:00Z). Desde ese instante muestra «Versión de prueba finalizada»
 y bloquea todas las pantallas, también al reanudar o si permanece abierta. Acerca de
 muestra la fecha. No elimina biblioteca ni progreso. Usa el reloj del dispositivo:
@@ -23,7 +23,7 @@ anterior sin caducidad también queda fuera de este control local.
 El archivo generado se conserva en:
 
 ```text
-build/releases/teamfight-gridlab-1.0.0-rc.13-debug.apk
+build/releases/teamfight-gridlab-1.0.0-rc.14-debug.apk
 ```
 
 1. Android 7.0/API 24 o superior. Copiar el APK al teléfono, abrirlo en Archivos
@@ -35,7 +35,7 @@ build/releases/teamfight-gridlab-1.0.0-rc.13-debug.apk
 
 ```powershell
 adb devices -l
-adb -s ID install -r build/releases/teamfight-gridlab-1.0.0-rc.13-debug.apk
+adb -s ID install -r build/releases/teamfight-gridlab-1.0.0-rc.14-debug.apk
 adb -s ID shell am start -n com.valinor.heroclixtrainer/com.valinor.heroclix_simulator_trainer.MainActivity
 ```
 
@@ -58,8 +58,19 @@ FREE/PASS cuando están habilitados. Los jugadores pulsan después de resolver s
 acciones físicas. Toca el contador disponibles/totales para editar adicionales:
 el consumo anterior se conserva. END TURN restablece las acciones de todos.
 Volver al inicio y regresar conserva la partida mientras la app siga abierta;
-Nueva partida pide confirmación. Esta etapa no incluye cronómetros, puntuación,
-historial acumulado ni guardado. [Plan y pruebas](docs/PRIORITY_PLAN.md).
+Nueva partida pide confirmación. Activa **Cronómetros individuales** en la
+configuración y elige minutos/segundos. Solo corre el reloj de quien tiene prioridad.
+Pausa/reanuda desde la barra; salir del módulo o volver de segundo plano exige
+reanudar manualmente. Agotar tiempo pausa y avisa, sin eliminar automáticamente.
+
+Toca el nombre o los tres puntos del panel para gestionar al jugador: sumar/restar
+puntos, corregir el total, corregir tiempo o eliminar con confirmación. La corrección
+del tiempo deja la partida pausada; confirma y reanuda. La clasificación se abre
+desde la barra y conserva a los eliminados y los empates. Un superviviente finaliza
+la partida y abre la clasificación; no declara un ganador automático. Los puntos
+se pueden corregir también al finalizar, sin reabrir el juego.
+Historial, Deshacer y guardado de Priority siguen pendientes.
+[Plan y pruebas](docs/PRIORITY_PLAN.md).
 
 En la ficha, **IM Destruir bloqueado y muros** permite destruir lo que atraviesa.
 El ensayo conserva el mapa original y muestra el plan; Confirmar aplica posición,
@@ -102,7 +113,7 @@ también con archivos reales. Los archivos nuevos no se pueden abrir con apps vi
 | --- | --- |
 | Editor | Crear tablero 2–40 filas/columnas, figuras genéricas, equipos, terreno, muros y alturas; biblioteca y Deshacer |
 | Entrenador | 24 ejercicios curados más personales; responder, comprobar, recibir explicación y conservar progreso |
-| Priority | Configurar 2–6 jugadores y administrar turnos, prioridad, acciones y respuestas alrededor de una mesa |
+| Priority | Mesa para 2–6 jugadores: turnos, prioridad, acciones, relojes opcionales, puntos, clasificación y eliminación |
 | Ejemplos locales | Visión H, diagonal/vértice, muro, elevación y movimiento; previsualizar y abrir copia independiente |
 | Guía rápida / Acerca de | Ayuda breve, versión, cobertura, fuente y licencias locales |
 
@@ -167,7 +178,7 @@ usa etiquetas genéricas. Exportar la escena completa sí conserva sus nombres.
 | Función | Estado |
 | --- | --- |
 | Editor y Entrenador, biblioteca, JSON/PNG y sesión temporal | Implementado; nuevo arranque vacío, biblioteca/progreso persistentes |
-| Priority: configuración, mesa, turnos, prioridad y acciones para 2–6 jugadores | Etapas 1 y 2 implementadas; partida en memoria, cronómetros/puntuación/guardado pendientes |
+| Priority: configuración, mesa, turnos, prioridad, acciones, relojes, puntos y eliminación | Etapas 1–3 implementadas; partida en memoria, historial/Deshacer/guardado pendientes |
 | Geometría, visión, alcance, alturas, mejoras tipadas y movimiento | Perfil parcial implementado, con reglas y No evaluados explícitos |
 | Análisis de posiciones, hipótesis, ejercicios y diagnóstico TXT/PNG | Implementado; puente Android TXT corregido y compilado |
 | Catálogo de cinco ejemplos, guía y Acerca de/licencias | Implementado y probado; recursos locales |
@@ -175,7 +186,7 @@ usa etiquetas genéricas. Exportar la escena completa sí conserva sus nombres.
 | Instalación, nueva sesión tras cierre y selectores nativos | Pendiente de Android; equivalentes de archivos/controladores sí verificados |
 | Offline con radios desactivadas y rendimiento Android/FPS | Pendiente de dispositivo/emulador funcional |
 | APK release con firma del propietario | Preparado; sin claves suministradas, no generado |
-| Congelar 1.0.0 estable | Pendiente de cerrar aceptación nativa; esta entrega es 1.0.0-rc.13 |
+| Congelar 1.0.0 estable | Pendiente de cerrar aceptación nativa; esta entrega es 1.0.0-rc.14 |
 | Simular combates, dados, diales, daño y poderes de figuras | Fuera del alcance del proyecto |
 
 ## Dependencias y recompilación
@@ -186,7 +197,7 @@ No se añaden dependencias para Priority. Las licencias empaquetadas se consulta
 conexión en Acerca de → Licencias de dependencias.
 
 ```powershell
-git switch codex/priority-ui-stage2
+git switch codex/priority-stage3
 $env:Path = "$env:USERPROFILE\develop\flutter\bin;$env:Path"
 flutter --no-version-check pub get
 dart format --output=none --set-exit-if-changed lib test tool

@@ -28,6 +28,17 @@ ni circulación. Geometría/rotación de paneles, edición y protección de entr
 pertenecen a presentación. Contrato en `lib/domain/priority/README.md` y avance en
 [PRIORITY_PLAN.md](PRIORITY_PLAN.md).
 
+La etapa 3 añade puntos/estado de eliminación, tiempos restantes/consumidos y
+cola de participantes aún pendientes de turno en la ronda. `advanceTime` recibe
+duraciones explícitas y solo cobra a quien tiene prioridad. Los refrescos normales
+no generan revisiones de comando ni historial por tick; el agotamiento sí pausa
+y emite eventos. El dominio sigue independiente de Flutter y del reloj del sistema.
+`PriorityController` usa Stopwatch monotónico inyectable y refresco de 100 ms;
+liquida tiempo antes de actuar y pausa al salir del módulo o perder primer plano.
+Nunca se reanuda automáticamente al volver. Diálogos de gestión y clasificación
+solo envían comandos/leen datos derivados del motor; no calculan consumos, ciclos
+ni desempates. Los puntos pueden corregirse en estado final sin reabrir juego.
+
 `domain/board` contiene BoardDimensions, CellCoordinate, BoardGeometry,
 BoardCamera y ViewportSize. characters implementa figuras, equipos y ocupación.
 terrain implementa terrenos, muros normalizados y geometría de edición. geometry

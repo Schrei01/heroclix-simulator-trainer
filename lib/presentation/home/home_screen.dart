@@ -232,7 +232,7 @@ class _ModeCard extends StatelessWidget {
       ),
       AppMode.priority => (
         'Priority',
-        'Gestiona turnos, prioridad y acciones en una partida física de 2 a 6 jugadores.',
+        'Gestiona turnos, prioridad, acciones, tiempos y puntos en partidas físicas de 2 a 6 jugadores.',
         Icons.groups_outlined,
       ),
     };

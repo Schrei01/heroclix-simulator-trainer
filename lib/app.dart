@@ -48,6 +48,7 @@ class _HeroClixAppState extends State<HeroClixApp> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    _priorityController.setForeground(state == AppLifecycleState.resumed);
     if (state == AppLifecycleState.inactive ||
         state == AppLifecycleState.paused) {
       final workspace = _editorController.workspace;

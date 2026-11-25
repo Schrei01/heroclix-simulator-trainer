@@ -1,6 +1,6 @@
 # Preparar, compilar e instalar en Android
 
-Candidata actual: **TeamFight: GridLab 1.0.0-rc.13+26**. Inicio contiene Editor, Entrenador y Priority; las consultas
+Candidata actual: **TeamFight: GridLab 1.0.0-rc.14+27**. Inicio contiene Editor, Entrenador y Priority; las consultas
 y ensayos están en las herramientas del Editor. El recorrido vigente del Editor
 está al final de este documento. Los apartados identificados por etapa describen
 sus versiones históricas. Resultados efectivamente ejecutados: [ESTADO](ESTADO.md).
@@ -79,6 +79,17 @@ J1 ACTION → J2 RESPONSE ACTION → J3 PASS → J1 END TURN: todos recuperan 3 
 y J2 recibe turno/prioridad. Probar edición de adicionales durante respuestas,
 pase automático a cero, FREE a cero, doble toque y volver al inicio/regresar. La
 partida de esta etapa se conserva solo en memoria, no después de cerrar el proceso.
+
+Etapa 3 de Priority: activar relojes a 00:05 y comprobar que solo descuenta el
+jugador con prioridad; ACTION/respuestas/PASS/END TURN transfieren sin reiniciar
+tiempos. Salir a inicio, abrir otra app/bloquear y volver: debe quedar pausada
+hasta reanudar. A cero, verificar aviso y pausa sin eliminación automática.
+Corregir tiempo desde el nombre del panel, confirmar y reanudar manualmente.
+Registrar/restar/corregir PV, incluidos eliminados y correcciones posteriores al
+final; rechazar puntos negativos. Eliminar con confirmación al activo, reactivo
+con prioridad y un pendiente; comprobar exclusión de ciclos y conservación de PV.
+Con un superviviente se abre clasificación con empates explícitos y sin inventar
+ganador; los relojes quedan detenidos. Repetir con 6 jugadores, giro y TalkBack.
 
 Los manifiestos de esta app no solicitan INTERNET, ni siquiera en debug/profile.
 Esto limita conexiones al servicio VM de depuración/hot reload. Para comprobar

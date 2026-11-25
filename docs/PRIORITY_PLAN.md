@@ -4,7 +4,7 @@ Actualización: 2026-11-25 (America/Bogota).
 
 Referencia: contexto «Implementación del módulo HeroClix Priority», proporcionado
 por el usuario, secciones 1–19, y órdenes posteriores de implementar las etapas
-1 y 2 por separado. No había un plan específico de Priority en el repositorio; este
+1, 2 y 3 por separado. No había un plan específico de Priority en el repositorio; este
 documento registra el alcance autorizado y su seguimiento.
 
 Priority es un asistente del formato personalizado de Valinor para partidas
@@ -93,13 +93,62 @@ No se implementan cronómetros, puntuación, eliminación, historial acumulado,
 deshacer ni persistencia. El único temporizador es la protección de pulsaciones;
 no mide ni administra el tiempo de juego. La partida de esta etapa vive en memoria.
 
+## Etapa 3 — relojes, puntos y eliminación
+
+Estado: **completada y verificada**. Entregable beta `1.0.0-rc.14+27`.
+Rama `codex/priority-stage3`, sobre `8d13b43`.
+
+Revisión previa: contrato del motor, adaptador, interfaz y pruebas de etapas 1–2.
+**272/272 pruebas de Priority aprobadas antes de modificar el código.**
+
+- [x] Reloj opcional desde configuración, 30 minutos por defecto, configurable
+  en minutos/segundos. Sin activarlo se ocultan sus indicadores y controles.
+- [x] Tiempo restante/consumido por jugador en el dominio; `advanceTime` carga
+  únicamente al poseedor de prioridad y omite a quienes pasan automáticamente.
+- [x] Transferencias por ACTION/FREE/respuestas/PASS/END TURN y eliminación,
+  sin reiniciar relojes ni cobrar a otros jugadores.
+- [x] Fuente monotónica `Stopwatch` inyectable en presentación; cobra el lapso real
+  al refrescar y antes de comandos, sin acumular retrasos de ticks. Refresco 100 ms.
+- [x] Pausa/reanudación conservando fase y cola. Salir del módulo, perder foco o
+  pasar a segundo plano pausa; volver exige reanudación manual y no cobra el lapso
+  en segundo plano. Los callbacks antiguos se rechazan al agotarse el tiempo.
+- [x] Corrección manual de tiempo con confirmación; deja pausa y conserva consumo.
+  A cero pausa/avisa sin eliminar. Para reanudar hay que corregir el reloj con
+  prioridad a un valor positivo o eliminar manualmente al jugador.
+- [x] PV manuales: suma, resta y corrección total; rechazo de negativos/overflow.
+  Se conservan entre turnos/rondas y tras eliminación. También se pueden corregir
+  después de finalizar sin reabrir turnos ni poner en marcha relojes.
+- [x] Clasificación general derivada del motor, con posiciones compartidas en
+  empates. No se declara ganador mediante supervivencia o desempates inventados.
+- [x] Menú al tocar el nombre/tres puntos; eliminación con confirmación, excluye
+  turnos/prioridad/respuestas y conserva puntos/tiempos. Si era activo, cierra
+  ventana, restablece acciones y pasa turno; si era reactivo, continúa su cola.
+- [x] Rondas mediante cola de supervivientes aún pendientes en lugar del tamaño
+  inicial. Eliminar a alguien que ya jugó no vuelve a darle una oportunidad.
+- [x] Con un superviviente, finaliza y abre clasificación; relojes y controles de
+  juego detenidos. Se conservan todas las filas, incluidos los eliminados.
+- [x] Pruebas nuevas: 48 dominio, 11 controlador y 21 interfaz (**80**); más
+  **16 renders**. Ejecución focalizada final: **96/96 aprobadas**, 43 s.
+- [x] Regresión general: **885/885 aprobadas**, 5 min 20 s; análisis sin incidencias
+  y formato de 181 archivos Dart sin cambios pendientes.
+- [x] APK compilado con el script, copia/hash/paquete/versión/SDK/firma validados;
+  certificado anterior conservado y solo el último entregable en `build/releases/`.
+
+Archivos nuevos: `priority_clock.dart` (dominio), `priority_management.dart` y
+`priority_player_header.dart` (presentación), tres suites `priority_stage3_*` y
+fixtures de tiempo. Se amplían modelos/motor/controlador/configuración/mesa y
+se conecta ciclo de vida en `HeroClixApp`; no se añaden paquetes ni permisos.
+
+La revisión de reloj normal no cambia la revisión de comandos ni genera eventos;
+el agotamiento sí lo hace. Los eventos administrativos guardan valores anterior y
+nuevo (microsegundos para tiempo). No se implementa historial acumulado, Deshacer
+ni persistencia: la partida sigue viviendo en memoria hasta cerrar el proceso.
+
 ## Trabajo posterior — pendiente de nuevos prompts
 
 No se inicia automáticamente ni se fija aquí el orden de las siguientes etapas.
 
 - Sonidos/vibración, pantalla encendida y otras mejoras del modo mesa.
-- Cronómetros, ciclo de vida y agotamiento de tiempo.
-- Puntuación, eliminación y clasificación/resultados.
 - Historial acumulado, deshacer, persistencia, recuperación y consulta local.
 - Integración, pruebas de interfaz y verificación Android/APK.
 
@@ -202,3 +251,38 @@ se retiraron después de validar la copia. No se cambió el script de APK.
 
 **Cierre de etapa 2:** se detiene el trabajo aquí. Cronómetros, puntuación,
 historial/persistencia y demás funciones pendientes requieren un nuevo prompt.
+
+## Verificación de etapa 3 — 2026-11-25
+
+| Comprobación | Resultado |
+| --- | --- |
+| Pruebas anteriores Priority, antes de modificar | 272/272 aprobadas |
+| Nuevas de dominio / controlador / interfaz | 48 / 11 / 21: **80 aprobadas** |
+| Focalizadas con renders | **96/96 aprobadas**, 43 s; 16 renders revisados |
+| Suite general final | **885/885 aprobadas**, 5 min 20 s |
+| Análisis completo | Sin incidencias |
+| Formato lib/test/tool | 181 archivos, 0 cambios pendientes |
+| APK rc.14 / código 27 | Correcto, Gradle 95,6 s; copia/hash/paquete/SDK/firma v2 válidos |
+
+Casos verificados: 2–6 jugadores, carga exclusiva y transferencia de reloj,
+pausas durante ventanas, retardos de actualización, precisión de microsegundos,
+agotamiento al actuar, omisiones automáticas, correcciones manuales, segundo plano
+y navegación sin reanudar/cobrar automáticamente. Puntos negativos/desbordados,
+correcciones después de finalizar, empates y conservación tras eliminación.
+Eliminación de cada asiento en ventanas ACTION/FREE, del activo, del reactivo con
+prioridad, de pendientes y de quien ya respondió; rondas con inicial desplazado,
+supervivientes y finalización con un único jugador. Hasta 10000 comandos aleatorios
+con invariantes, además de 12 combinaciones de gestión/reloj/teclado en pantallas
+pequeñas, horizontal y texto 100/300 %. Las 805 pruebas anteriores se conservan.
+
+Evidencia local: `build/verification/priority-stage3/`, incluyendo `baseline.log`,
+`targeted-final.log`, `full-tests-final.log`, `analyze-final.log` y `previews/`.
+Instalación/segundo plano/precisión/TalkBack en Android real siguen pendientes;
+se mantiene la autorización de continuar sin teléfono.
+
+APK, tamaño, SHA-256 e identidad en [ESTADO.md](ESTADO.md). Se eliminó rc.13
+solo después de validar la copia; el informe anterior se conserva en Git.
+No se modificó el script de APK ni se utilizó flutter clean.
+
+**Cierre de etapa 3:** completada; se detiene el trabajo aquí. No se inicia
+historial, Deshacer, persistencia ni otra función posterior sin un nuevo prompt.

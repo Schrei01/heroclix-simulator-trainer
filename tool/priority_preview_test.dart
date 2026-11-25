@@ -37,17 +37,34 @@ void main() {
     ('six', 6, const Size(360, 800), false),
     ('six-landscape', 6, const Size(800, 360), false),
     ('six-small', 6, const Size(320, 568), false),
+    ('clock-two', 2, const Size(360, 800), false),
+    ('clock-six', 6, const Size(360, 800), false),
+    ('clock-landscape', 6, const Size(800, 360), false),
+    ('clock-expired', 3, const Size(360, 800), false),
+    ('player-management', 3, const Size(360, 800), false),
+    ('eliminated', 6, const Size(360, 800), false),
+    ('final-standings', 3, const Size(360, 800), false),
+    ('clock-setup', 2, const Size(360, 800), true),
   ]) {
     testWidgets('Priority $name', (t) async {
       t.view.devicePixelRatio = 1;
       t.view.physicalSize = size;
       addTearDown(t.view.resetDevicePixelRatio);
       addTearDown(t.view.resetPhysicalSize);
-      final controller = PriorityController(inputCooldown: Duration.zero);
+      var elapsed = Duration.zero;
+      final controller = PriorityController(
+        inputCooldown: Duration.zero,
+        elapsedClock: () => elapsed,
+      );
       addTearDown(controller.dispose);
       if (!setup) {
         controller.start(
           PriorityConfiguration(
+            clockEnabled:
+                name.startsWith('clock') ||
+                name == 'player-management' ||
+                name == 'eliminated' ||
+                name == 'final-standings',
             players: [
               for (var i = 1; i <= count; i++)
                 PriorityPlayerConfiguration(
@@ -69,6 +86,34 @@ void main() {
           const PriorityCommand.action('J1'),
           expectedRevision: controller.value!.revision,
         );
+        if (name.startsWith('clock') ||
+            name == 'eliminated' ||
+            name == 'final-standings') {
+          controller.dispatch(
+            const PriorityCommand.setVictoryPoints('J1', 100),
+            expectedRevision: controller.value!.revision,
+          );
+          controller.dispatch(
+            const PriorityCommand.setVictoryPoints('J2', 150),
+            expectedRevision: controller.value!.revision,
+          );
+        }
+        if (name == 'clock-expired') {
+          elapsed = const Duration(minutes: 31);
+          controller.synchronizeClock();
+        }
+        if (name == 'eliminated' || name == 'final-standings') {
+          controller.dispatch(
+            const PriorityCommand.eliminate('J3'),
+            expectedRevision: controller.value!.revision,
+          );
+        }
+        if (name == 'final-standings') {
+          controller.dispatch(
+            const PriorityCommand.eliminate('J2'),
+            expectedRevision: controller.value!.revision,
+          );
+        }
       }
       final boundaryKey = GlobalKey();
       await t.pumpWidget(
@@ -85,6 +130,18 @@ void main() {
         ),
       );
       await t.pumpAndSettle();
+      if (name == 'player-management') {
+        final player = find.byKey(const ValueKey('priority-player-menu-J2'));
+        await t.ensureVisible(player);
+        await t.tap(player);
+        await t.pumpAndSettle();
+      }
+      if (name == 'clock-setup') {
+        final toggle = find.byKey(const ValueKey('priority-clock-enabled'));
+        await t.ensureVisible(toggle);
+        await t.tap(toggle);
+        await t.pumpAndSettle();
+      }
       expect(t.takeException(), isNull);
       final boundary =
           boundaryKey.currentContext!.findRenderObject()!
@@ -93,7 +150,7 @@ void main() {
         final image = await boundary.toImage();
         final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
         final directory = Directory(
-          'build/verification/priority-stage2/previews',
+          'build/verification/priority-stage3/previews',
         );
         await directory.create(recursive: true);
         await File('${directory.path}/$name.png')

@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../domain/priority/priority.dart';
 import 'priority_controller.dart';
 import 'priority_input.dart';
+import 'priority_management.dart';
 import 'priority_table.dart';
 import 'priority_table_layout.dart';
 
@@ -22,9 +23,38 @@ class _PriorityScreenState extends State<PriorityScreen> {
   int _count = 2;
   String _first = 'J1';
   String? _error;
+  bool _clockEnabled = false;
+  final _minutes = TextEditingController(text: '30');
+  final _seconds = TextEditingController(text: '0');
+  bool _resultsShown = false;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(_checkFinished);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkFinished());
+  }
+
+  void _checkFinished() {
+    if (!mounted) return;
+    final match = widget.controller.value;
+    if (match == null) _resultsShown = false;
+    if (match?.phase == PriorityPhase.finished && !_resultsShown) {
+      _resultsShown = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && (ModalRoute.of(context)?.isCurrent ?? true)) {
+          showPriorityStandings(context, widget.controller);
+        }
+      });
+      WidgetsBinding.instance.ensureVisualUpdate();
+    }
+  }
 
   @override
   void dispose() {
+    widget.controller.removeListener(_checkFinished);
+    _minutes.dispose();
+    _seconds.dispose();
     for (final player in _players) {
       player.dispose();
     }
@@ -38,12 +68,29 @@ class _PriorityScreenState extends State<PriorityScreen> {
     }
     try {
       final players = [for (final p in _players.take(_count)) p.configuration];
+      final time = _clockEnabled
+          ? priorityDurationInput(_minutes.text, _seconds.text)
+          : const Duration(minutes: 30);
+      if (time == null) {
+        setState(
+          () => _error =
+              'Escribe un tiempo mayor que cero, con segundos de 0 a 59.',
+        );
+        return null;
+      }
       return draw
           ? PriorityConfiguration.randomStart(
               players: players,
               random: Random(),
+              clockEnabled: _clockEnabled,
+              initialTime: time,
             )
-          : PriorityConfiguration(players: players, startingPlayerId: _first);
+          : PriorityConfiguration(
+              players: players,
+              startingPlayerId: _first,
+              clockEnabled: _clockEnabled,
+              initialTime: time,
+            );
     } on ArgumentError catch (error) {
       setState(() => _error = '${error.message}');
       return null;
@@ -92,27 +139,62 @@ class _PriorityScreenState extends State<PriorityScreen> {
   @override
   Widget build(BuildContext context) => ValueListenableBuilder<PriorityMatch?>(
     valueListenable: widget.controller,
-    builder: (context, match, _) => Scaffold(
-      // Only the form uses the page keyboard. Modal editors manage their own
-      // insets; keep the table stable behind them instead of shrinking panels.
-      resizeToAvoidBottomInset: match == null,
-      appBar: AppBar(
-        title: const Text('Priority'),
-        actions: [
-          if (match != null)
-            IconButton(
-              key: const ValueKey('priority-new-game'),
-              onPressed: _newGame,
-              tooltip: 'Nueva partida',
-              icon: const Icon(Icons.add_circle_outline),
-            ),
-        ],
-      ),
-      body: SafeArea(
-        top: false,
-        child: match == null
-            ? _setup()
-            : PriorityTable(controller: widget.controller),
+    builder: (context, match, _) => PopScope(
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) widget.controller.pauseForNavigation();
+      },
+      child: Scaffold(
+        // Only the form uses the page keyboard. Modal editors manage their own
+        // insets; keep the table stable behind them instead of shrinking panels.
+        resizeToAvoidBottomInset: match == null,
+        appBar: AppBar(
+          title: const Text('Priority'),
+          actions: [
+            if (match != null) ...[
+              IconButton(
+                key: const ValueKey('priority-standings'),
+                tooltip: 'Clasificación general',
+                icon: const Icon(Icons.leaderboard_outlined),
+                onPressed: () =>
+                    showPriorityStandings(context, widget.controller),
+              ),
+              if (match.isPaused ||
+                  (match.configuration.clockEnabled &&
+                      match.phase != PriorityPhase.finished))
+                IconButton(
+                  key: const ValueKey('priority-pause-resume'),
+                  tooltip: match.isPaused ? 'Reanudar' : 'Pausar',
+                  icon: Icon(match.isPaused ? Icons.play_arrow : Icons.pause),
+                  onPressed:
+                      widget.controller.can(
+                        match.isPaused
+                            ? const PriorityCommand.resume()
+                            : const PriorityCommand.pause(),
+                      )
+                      ? () => widget.controller.dispatch(
+                          match.isPaused
+                              ? const PriorityCommand.resume()
+                              : const PriorityCommand.pause(),
+                          expectedRevision: match.revision,
+                        )
+                      : null,
+                ),
+            ],
+            if (match != null)
+              IconButton(
+                key: const ValueKey('priority-new-game'),
+                onPressed: _newGame,
+                tooltip: 'Nueva partida',
+                icon: const Icon(Icons.add_circle_outline),
+              ),
+          ],
+        ),
+        body: SafeArea(
+          top: false,
+          child: match == null
+              ? _setup()
+              : PriorityTable(controller: widget.controller),
+        ),
       ),
     ),
   );
@@ -167,6 +249,30 @@ class _PriorityScreenState extends State<PriorityScreen> {
                 },
               ),
               const SizedBox(height: 12),
+              SwitchListTile(
+                key: const ValueKey('priority-clock-enabled'),
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Cronómetros individuales'),
+                subtitle: const Text(
+                  'Solo descuenta quien tiene la prioridad.',
+                ),
+                value: _clockEnabled,
+                onChanged: (enabled) => setState(() {
+                  _clockEnabled = enabled;
+                  _error = null;
+                }),
+              ),
+              if (_clockEnabled) ...[
+                _number(
+                  _minutes,
+                  'Tiempo inicial: minutos',
+                  'priority-clock-minutes',
+                ),
+                _number(_seconds, 'Segundos (0–59)', 'priority-clock-seconds'),
+                const Text(
+                  'Al volver de segundo plano, reanuda manualmente el reloj.',
+                ),
+              ],
               for (var i = 0; i < _count; i++) _seatEditor(i),
               const SizedBox(height: 16),
               const Text('Turnos y prioridad siguen este orden:'),
@@ -256,6 +362,11 @@ class _PriorityScreenState extends State<PriorityScreen> {
               const Text(
                 'Al finalizar cualquier turno se recuperan las acciones de todos. '
                 'Puedes volver al inicio y regresar a esta partida mientras la app siga abierta.',
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'En la mesa, toca un nombre para gestionar puntos, tiempo o eliminación. '
+                'El contador de acciones permite cambiar sus adicionales.',
               ),
               if (_error != null)
                 Padding(
