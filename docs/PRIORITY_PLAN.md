@@ -367,3 +367,22 @@ SDK, firma v2, mismo certificado y copia/hash verificados, sin permiso INTERNET.
 Solo queda rc.16 en `build/releases/`; rc.15 se retiró tras validar la nueva copia.
 No cambió el flujo de APK. Se cierra este incremento; la aceptación nativa sigue
 pendiente y se conserva la decisión de continuar sin teléfono.
+
+## Márgenes de botones rc.17 — 2026-11-25
+
+Ajuste visual solicitado: margen horizontal de 8 unidades en el panel de cada
+jugador. La superficie pintada de las acciones deja aire vertical dentro de su
+objetivo táctil de al menos 48 unidades; se conserva la densidad estándar y el
+objetivo padded para no perder espacio en mesas de seis. No cambia la cabecera.
+«Aplicar puntos» incorpora separación superior de 12 e inferior de 4 unidades,
+con relleno interior de 16 horizontal y 12 vertical. No cambian comandos/reglas.
+Se reutilizan las pruebas existentes de interacción, dimensiones y teclado,
+además de los 19 renders, sin añadir pruebas que repitan valores de estilo.
+Resultados, APK y aceptación nativa en [ESTADO.md](ESTADO.md).
+
+Verificación final: **167/167 aprobadas**, 1 min 38 s (148 pruebas existentes y
+19 renders). Análisis global sin incidencias; 185 archivos con formato correcto.
+Revisión visual de márgenes de la mesa y diálogo, incluyendo seis en horizontal.
+APK rc.17/código 30 validado: paquete, versión, SDK, firma v2 y mismo certificado,
+sin INTERNET. Se conserva solo rc.17 tras validar la copia y retirar rc.16 mediante
+el script habitual; no se modificó ese flujo. Incremento cerrado.

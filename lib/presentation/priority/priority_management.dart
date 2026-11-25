@@ -282,10 +282,19 @@ class _PlayerManagementState extends State<_PlayerManagement> {
                           color: Theme.of(context).colorScheme.error,
                         ),
                       ),
-                    FilledButton(
-                      key: const ValueKey('priority-score-apply'),
-                      onPressed: () => _score(match),
-                      child: const Text('Aplicar puntos'),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12, bottom: 4),
+                      child: FilledButton(
+                        key: const ValueKey('priority-score-apply'),
+                        onPressed: () => _score(match),
+                        style: FilledButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                        ),
+                        child: const Text('Aplicar puntos'),
+                      ),
                     ),
                   ],
                 ),

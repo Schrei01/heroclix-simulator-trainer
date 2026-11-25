@@ -1,6 +1,6 @@
 # TeamFight: GridLab
 
-Aplicación Android Flutter/Dart, offline y en español. Versión **1.0.0-rc.16+29**.
+Aplicación Android Flutter/Dart, offline y en español. Versión **1.0.0-rc.17+30**.
 
 **Priority** está disponible desde inicio: configura de 2 a 6 jugadores, organiza
 los asientos en sentido antihorario y coloca el teléfono en el centro de la mesa.
@@ -18,12 +18,14 @@ Desde rc.16 los puntos de construcción se eligen una sola vez para todos y el
 reloj se configura/corrige en minutos completos. La barra del jugador incluye
 calavera con confirmación y −/+ de 5 PV. El cambio temporal se acumula por signo
 con cada toque y se difumina durante 3 segundos; los PV totales permanecen visibles.
+Rc.17 amplía el margen de los botones de acción junto al panel y separa
+«Aplicar puntos» del campo de entrada, conservando áreas táctiles de 48 unidades.
 Alcance y pruebas en [docs/PRIORITY_PLAN.md](docs/PRIORITY_PLAN.md).
 Desde rc.15, Priority usa botones rectangulares con esquinas de 6 píxeles.
 Los paneles de 3 y 4 jugadores siguen la distribución de lados opuestos de 5 y 6.
 La mesa ocupa todo el espacio bajo la barra: se retiró la franja de ronda/turno.
 El borde dorado identifica la prioridad; se mantienen ACTIVO y REACTIVO.
-La versión actual está en la rama `codex/priority-quick-controls` del repositorio privado
+La versión actual está en la rama `codex/priority-button-spacing` del repositorio privado
 [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer).
 
 Desde rc.8 la marca visible es **TeamFight: GridLab**, con los iconos Android y el
@@ -46,7 +48,7 @@ azul con ondas y letra A. Conserva alturas, admite figuras y se guarda en biblio
 JSON y PNG. La paleta reúne seis pinceles. Según §16.6 de la edición implementada,
 agua se considera despejado para visión/movimiento salvo efectos específicos.
 
-Esta beta rc.16 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
+Esta beta rc.17 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
 (2026-12-30T05:00:00Z). Desde ese instante muestra «Versión de prueba finalizada»
 y bloquea todas las pantallas, también al reanudar o si permanece abierta. Acerca de
 muestra la fecha. No elimina biblioteca ni progreso. Usa el reloj del dispositivo:
@@ -57,7 +59,7 @@ anterior sin caducidad también queda fuera de este control local.
 ```powershell
 git clone https://github.com/Schrei01/heroclix-simulator-trainer.git
 cd heroclix-simulator-trainer
-git switch codex/priority-quick-controls
+git switch codex/priority-button-spacing
 ```
 
 ## Qué existe

@@ -115,7 +115,7 @@ class _PlayerPanel extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final width = math.max(0.0, constraints.maxWidth - 8);
+            final width = math.max(0.0, constraints.maxWidth - 16);
             final scale = MediaQuery.textScalerOf(context).scale(12) / 12;
             final columns = width >= 224 * scale
                 ? 3
@@ -133,7 +133,7 @@ class _PlayerPanel extends StatelessWidget {
             );
             return SingleChildScrollView(
               key: ValueKey('priority-panel-scroll-${player.id}'),
-              padding: const EdgeInsets.all(2),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               child: ConstrainedBox(
                 constraints: BoxConstraints(
                   minHeight: math.max(0, constraints.maxHeight - 4),
@@ -177,7 +177,14 @@ class _PlayerPanel extends StatelessWidget {
                                     )
                                   : null,
                               style: FilledButton.styleFrom(
-                                minimumSize: Size(48, buttonHeight),
+                                // Leave air around the painted surface while
+                                // preserving a 48-unit target on short panels.
+                                minimumSize: Size(
+                                  48,
+                                  math.max(36, buttonHeight - 12),
+                                ),
+                                tapTargetSize: MaterialTapTargetSize.padded,
+                                visualDensity: VisualDensity.standard,
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 4,
                                   vertical: 6,

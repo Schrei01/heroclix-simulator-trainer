@@ -1,16 +1,16 @@
-# TeamFight: GridLab — 1.0.0-rc.16+29
+# TeamFight: GridLab — 1.0.0-rc.17+30
 
 Aplicación Android offline, en español, para construir escenarios, consultar reglas
 implementadas y practicar. **Versión candidata, APK debug**: faltan las comprobaciones
 nativas de aceptación y rendimiento descritas abajo. No se congela 1.0.0 estable.
 Repositorio privado: [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer),
-rama `codex/priority-quick-controls`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
+rama `codex/priority-button-spacing`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
 
 Nombre e iconos de Android, Inicio y Acerca de actualizados a TeamFight: GridLab.
 La identidad técnica y firma se conservan para actualizar la instalación anterior.
 Archivos de Google Play preparados en distribution/google-play/; [detalles de identidad](docs/IDENTIDAD.md).
 
-Esta beta rc.16 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
+Esta beta rc.17 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
 (2026-12-30T05:00:00Z). Desde ese instante muestra «Versión de prueba finalizada»
 y bloquea todas las pantallas, también al reanudar o si permanece abierta. Acerca de
 muestra la fecha. No elimina biblioteca ni progreso. Usa el reloj del dispositivo:
@@ -23,7 +23,7 @@ anterior sin caducidad también queda fuera de este control local.
 El archivo generado se conserva en:
 
 ```text
-build/releases/teamfight-gridlab-1.0.0-rc.16-debug.apk
+build/releases/teamfight-gridlab-1.0.0-rc.17-debug.apk
 ```
 
 1. Android 7.0/API 24 o superior. Copiar el APK al teléfono, abrirlo en Archivos
@@ -35,7 +35,7 @@ build/releases/teamfight-gridlab-1.0.0-rc.16-debug.apk
 
 ```powershell
 adb devices -l
-adb -s ID install -r build/releases/teamfight-gridlab-1.0.0-rc.16-debug.apk
+adb -s ID install -r build/releases/teamfight-gridlab-1.0.0-rc.17-debug.apk
 adb -s ID shell am start -n com.valinor.heroclixtrainer/com.valinor.heroclix_simulator_trainer.MainActivity
 ```
 
@@ -73,6 +73,8 @@ La barra de cada jugador tiene **−/+** para restar/sumar 5 PV por toque y una
 reinicia su difuminado de 3 segundos: +5, +10, +15… Al cambiar de signo comienza
 un nuevo acumulado. Tras 3 segundos sin tocar desaparece; el total de PV se conserva
 visible. La resta se desactiva si dejaría un total negativo. Admite pulsaciones rápidas.
+En rc.17 los botones de acción tienen más aire respecto al borde del panel y
+«Aplicar puntos» está separado del campo anterior, con mayor espacio interior.
 
 Toca el nombre o los tres puntos del panel para gestionar al jugador: sumar/restar
 puntos, corregir el total, corregir tiempo o eliminar con confirmación. La corrección
@@ -199,7 +201,7 @@ usa etiquetas genéricas. Exportar la escena completa sí conserva sus nombres.
 | Instalación, nueva sesión tras cierre y selectores nativos | Pendiente de Android; equivalentes de archivos/controladores sí verificados |
 | Offline con radios desactivadas y rendimiento Android/FPS | Pendiente de dispositivo/emulador funcional |
 | APK release con firma del propietario | Preparado; sin claves suministradas, no generado |
-| Congelar 1.0.0 estable | Pendiente de cerrar aceptación nativa; esta entrega es 1.0.0-rc.16 |
+| Congelar 1.0.0 estable | Pendiente de cerrar aceptación nativa; esta entrega es 1.0.0-rc.17 |
 | Simular combates, dados, diales, daño y poderes de figuras | Fuera del alcance del proyecto |
 
 ## Dependencias y recompilación
@@ -210,7 +212,7 @@ No se añaden dependencias para Priority. Las licencias empaquetadas se consulta
 conexión en Acerca de → Licencias de dependencias.
 
 ```powershell
-git switch codex/priority-quick-controls
+git switch codex/priority-button-spacing
 $env:Path = "$env:USERPROFILE\develop\flutter\bin;$env:Path"
 flutter --no-version-check pub get
 dart format --output=none --set-exit-if-changed lib test tool

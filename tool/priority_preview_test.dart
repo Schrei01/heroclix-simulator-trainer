@@ -161,7 +161,7 @@ void main() {
         final image = await boundary.toImage();
         final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
         final directory = Directory(
-          'build/verification/priority-quick/previews',
+          'build/verification/priority-spacing/previews',
         );
         await directory.create(recursive: true);
         await File('${directory.path}/$name.png')
