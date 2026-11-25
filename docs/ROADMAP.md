@@ -25,8 +25,13 @@ Alcance declarado y objetivos se incorporan en 07. Entrenador está disponible
 desde 10. Movimiento tiene un perfil verificado desde 09; maniobras y excepciones
 fuera de las matrices de capacidades permanecen pendientes.
 
-Fuera de alcance: partidas completas, dados, daño, turnos, puntuación completa,
+Fuera de alcance del editor: partidas completas, dados, daño, turnos, puntuación completa,
 cuentas, backend, servicios de IA externos y funciones online.
+
+Incremento Priority (2026-11-25): motor independiente del formato personalizado
+para partidas físicas, limitado a la etapa 1 autorizada. Plan, decisiones y
+resultados en [PRIORITY_PLAN.md](PRIORITY_PLAN.md). Su implementación no habilita
+una nueva sección de interfaz ni cambia las funciones del editor.
 
 Actualización posterior a 12: ajustes de edición solicitados por el usuario,
 1.0.0-rc.2+15 en `codex/editor-quick-tools`. Paleta de terreno, altura propuesta 2

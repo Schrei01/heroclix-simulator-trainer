@@ -17,6 +17,13 @@ no importa Flutter, infraestructura ni plataforma.
 | `android/` | Adaptación nativa, identidad y configuración de build |
 | `test/` | Contratos de dominio y pruebas de widgets |
 
+Desde la etapa 1 de Priority, `domain/priority` contiene un motor independiente
+para el formato personalizado de partidas físicas. Sus estados son inmutables;
+`PriorityEngine` valida comandos y devuelve partida/eventos por transición. No
+depende del tablero, Flutter, plataforma ni persistencia y todavía no se conecta
+a la navegación. Contrato en `lib/domain/priority/README.md` y avance en
+[PRIORITY_PLAN.md](PRIORITY_PLAN.md).
+
 `domain/board` contiene BoardDimensions, CellCoordinate, BoardGeometry,
 BoardCamera y ViewportSize. characters implementa figuras, equipos y ocupación.
 terrain implementa terrenos, muros normalizados y geometría de edición. geometry
