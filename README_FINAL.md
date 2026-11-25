@@ -1,16 +1,16 @@
-# TeamFight: GridLab — 1.0.0-rc.14+27
+# TeamFight: GridLab — 1.0.0-rc.15+28
 
 Aplicación Android offline, en español, para construir escenarios, consultar reglas
 implementadas y practicar. **Versión candidata, APK debug**: faltan las comprobaciones
 nativas de aceptación y rendimiento descritas abajo. No se congela 1.0.0 estable.
 Repositorio privado: [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer),
-rama `codex/priority-stage3`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
+rama `codex/priority-visual-refresh`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
 
 Nombre e iconos de Android, Inicio y Acerca de actualizados a TeamFight: GridLab.
 La identidad técnica y firma se conservan para actualizar la instalación anterior.
 Archivos de Google Play preparados en distribution/google-play/; [detalles de identidad](docs/IDENTIDAD.md).
 
-Esta beta rc.14 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
+Esta beta rc.15 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
 (2026-12-30T05:00:00Z). Desde ese instante muestra «Versión de prueba finalizada»
 y bloquea todas las pantallas, también al reanudar o si permanece abierta. Acerca de
 muestra la fecha. No elimina biblioteca ni progreso. Usa el reloj del dispositivo:
@@ -23,7 +23,7 @@ anterior sin caducidad también queda fuera de este control local.
 El archivo generado se conserva en:
 
 ```text
-build/releases/teamfight-gridlab-1.0.0-rc.14-debug.apk
+build/releases/teamfight-gridlab-1.0.0-rc.15-debug.apk
 ```
 
 1. Android 7.0/API 24 o superior. Copiar el APK al teléfono, abrirlo en Archivos
@@ -35,7 +35,7 @@ build/releases/teamfight-gridlab-1.0.0-rc.14-debug.apk
 
 ```powershell
 adb devices -l
-adb -s ID install -r build/releases/teamfight-gridlab-1.0.0-rc.14-debug.apk
+adb -s ID install -r build/releases/teamfight-gridlab-1.0.0-rc.15-debug.apk
 adb -s ID shell am start -n com.valinor.heroclixtrainer/com.valinor.heroclix_simulator_trainer.MainActivity
 ```
 
@@ -49,9 +49,11 @@ no está implementada. PNG sirve para compartir una imagen, no para recuperar da
 Desde inicio, abre **Priority** para asistir una partida física del formato de
 Valinor. Configura 2–6 jugadores, nombres, puntos y adicionales; organiza asientos
 con las flechas anterior/siguiente y elige o sortea al inicial. **Listo** abre la
-mesa con paneles orientados hacia sus respectivos jugadores. El borde dorado y
-la etiqueta PRIORIDAD identifican quién puede intervenir; ACTIVO indica a quién
-pertenece el turno, aunque otra persona tenga prioridad.
+mesa con paneles orientados hacia sus respectivos jugadores. Para 3 y 4 se usa
+el mismo esquema de lados opuestos de 5 y 6. Los botones son rectangulares, con
+esquinas de 6 píxeles. El borde dorado identifica quién puede intervenir;
+ACTIVO y REACTIVO indican el papel de cada jugador. Se retiraron el rótulo
+PRIORIDAD y la franja superior de ronda/turno para dar más espacio a la mesa.
 
 El activo usa ACTION/FREE/END TURN; los reactivos usan RESPONSE ACTION/RESPONSE
 FREE/PASS cuando están habilitados. Los jugadores pulsan después de resolver sus
@@ -61,7 +63,9 @@ Volver al inicio y regresar conserva la partida mientras la app siga abierta;
 Nueva partida pide confirmación. Activa **Cronómetros individuales** en la
 configuración y elige minutos/segundos. Solo corre el reloj de quien tiene prioridad.
 Pausa/reanuda desde la barra; salir del módulo o volver de segundo plano exige
-reanudar manualmente. Agotar tiempo pausa y avisa, sin eliminar automáticamente.
+reanudar manualmente. Agotar tiempo pausa y muestra un aviso flotante temporal,
+sin eliminar automáticamente; el reloj queda rojo a cero. **Ver** abre la gestión
+del jugador. El aviso no reduce la mesa y desaparece a los 8 segundos.
 
 Toca el nombre o los tres puntos del panel para gestionar al jugador: sumar/restar
 puntos, corregir el total, corregir tiempo o eliminar con confirmación. La corrección
@@ -186,7 +190,7 @@ usa etiquetas genéricas. Exportar la escena completa sí conserva sus nombres.
 | Instalación, nueva sesión tras cierre y selectores nativos | Pendiente de Android; equivalentes de archivos/controladores sí verificados |
 | Offline con radios desactivadas y rendimiento Android/FPS | Pendiente de dispositivo/emulador funcional |
 | APK release con firma del propietario | Preparado; sin claves suministradas, no generado |
-| Congelar 1.0.0 estable | Pendiente de cerrar aceptación nativa; esta entrega es 1.0.0-rc.14 |
+| Congelar 1.0.0 estable | Pendiente de cerrar aceptación nativa; esta entrega es 1.0.0-rc.15 |
 | Simular combates, dados, diales, daño y poderes de figuras | Fuera del alcance del proyecto |
 
 ## Dependencias y recompilación
@@ -197,7 +201,7 @@ No se añaden dependencias para Priority. Las licencias empaquetadas se consulta
 conexión en Acerca de → Licencias de dependencias.
 
 ```powershell
-git switch codex/priority-stage3
+git switch codex/priority-visual-refresh
 $env:Path = "$env:USERPROFILE\develop\flutter\bin;$env:Path"
 flutter --no-version-check pub get
 dart format --output=none --set-exit-if-changed lib test tool

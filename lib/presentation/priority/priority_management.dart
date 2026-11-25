@@ -3,16 +3,19 @@ import 'package:material_ui/material_ui.dart';
 import '../../domain/priority/priority.dart';
 import 'priority_controller.dart';
 import 'priority_input.dart';
+import 'priority_theme.dart';
 
-Widget priorityRotatedDialog(int turns, Widget child) => Dialog(
-  insetPadding: const EdgeInsets.all(12),
-  child: RotatedBox(
-    quarterTurns: turns,
-    child: SizedBox(
-      width: 360,
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: child,
+Widget priorityRotatedDialog(int turns, Widget child) => PriorityTheme(
+  child: Dialog(
+    insetPadding: const EdgeInsets.all(12),
+    child: RotatedBox(
+      quarterTurns: turns,
+      child: SizedBox(
+        width: 360,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: child,
+        ),
       ),
     ),
   ),

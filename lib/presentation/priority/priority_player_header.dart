@@ -32,7 +32,6 @@ class PriorityPlayerHeader extends StatelessWidget {
         !player.eliminated &&
         match.phase != PriorityPhase.finished &&
         match.activePlayerId == player.id;
-    final priority = match.priorityPlayerId == player.id;
     final name = Semantics(
       button: true,
       label: 'Opciones de ${player.name}',
@@ -86,18 +85,6 @@ class PriorityPlayerHeader extends StatelessWidget {
                   color: active ? AppTheme.accent : AppTheme.muted,
                 ),
               ),
-              if (priority)
-                Text(
-                  'PRIORIDAD',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  key: ValueKey('priority-has-priority-${player.id}'),
-                  style: const TextStyle(
-                    fontSize: 11,
-                    height: 1.1,
-                    color: Color(0xFFFFD878),
-                  ),
-                ),
             ],
           ),
         ),

@@ -8,6 +8,7 @@ import 'priority_input.dart';
 import 'priority_management.dart';
 import 'priority_table.dart';
 import 'priority_table_layout.dart';
+import 'priority_theme.dart';
 
 class PriorityScreen extends StatefulWidget {
   const PriorityScreen({required this.controller, super.key});
@@ -27,6 +28,8 @@ class _PriorityScreenState extends State<PriorityScreen> {
   final _minutes = TextEditingController(text: '30');
   final _seconds = TextEditingController(text: '0');
   bool _resultsShown = false;
+  String? _notifiedExpired;
+  ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? _expiryNotice;
 
   @override
   void initState() {
@@ -38,6 +41,7 @@ class _PriorityScreenState extends State<PriorityScreen> {
   void _checkFinished() {
     if (!mounted) return;
     final match = widget.controller.value;
+    _syncExpiryNotice(match);
     if (match == null) _resultsShown = false;
     if (match?.phase == PriorityPhase.finished && !_resultsShown) {
       _resultsShown = true;
@@ -48,6 +52,77 @@ class _PriorityScreenState extends State<PriorityScreen> {
       });
       WidgetsBinding.instance.ensureVisualUpdate();
     }
+  }
+
+  void _closeExpiryNotice() {
+    final notice = _expiryNotice;
+    _expiryNotice = null;
+    notice?.close();
+  }
+
+  void _syncExpiryNotice(PriorityMatch? match) {
+    final id =
+        match != null &&
+            match.isPaused &&
+            match.configuration.clockEnabled &&
+            match.priorityPlayerId != null &&
+            match.player(match.priorityPlayerId!).remainingTime == Duration.zero
+        ? match.priorityPlayerId
+        : null;
+    if (id == null) {
+      _notifiedExpired = null;
+      _closeExpiryNotice();
+      return;
+    }
+    if (_notifiedExpired == id) return;
+    _notifiedExpired = id;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !(ModalRoute.of(context)?.isActive ?? true)) return;
+      final current = widget.controller.value;
+      if (current == null ||
+          current.priorityPlayerId != id ||
+          !current.isPaused ||
+          current.player(id).remainingTime != Duration.zero) {
+        return;
+      }
+      final seats = priorityTableSeats(
+        MediaQuery.sizeOf(context),
+        current.players.length,
+        landscape: MediaQuery.orientationOf(context) == Orientation.landscape,
+      );
+      final index = current.players.indexWhere((p) => p.id == id);
+      _expiryNotice = ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 8),
+          persist: false,
+          shape: PriorityTheme.shape,
+          content: Text(
+            'Tiempo agotado: ${current.player(id).name}',
+            key: const ValueKey('priority-time-expired'),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          action: SnackBarAction(
+            label: 'Ver',
+            onPressed: () {
+              _closeExpiryNotice();
+              showPriorityPlayer(
+                context,
+                widget.controller,
+                id,
+                seats[index].quarterTurns,
+              );
+            },
+          ),
+        ),
+      );
+      final notice = _expiryNotice;
+      notice?.closed.then((_) {
+        if (identical(_expiryNotice, notice)) _expiryNotice = null;
+      });
+    });
+    WidgetsBinding.instance.ensureVisualUpdate();
   }
 
   @override
@@ -117,83 +192,90 @@ class _PriorityScreenState extends State<PriorityScreen> {
   Future<void> _newGame() async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('¿Configurar una nueva partida?'),
-        content: const Text('Se descartará la partida Priority actual.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            key: const ValueKey('priority-reset-confirm'),
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Nueva partida'),
-          ),
-        ],
+      builder: (context) => PriorityTheme(
+        child: AlertDialog(
+          title: const Text('¿Configurar una nueva partida?'),
+          content: const Text('Se descartará la partida Priority actual.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              key: const ValueKey('priority-reset-confirm'),
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Nueva partida'),
+            ),
+          ],
+        ),
       ),
     );
     if (confirmed == true && mounted) widget.controller.reset();
   }
 
   @override
-  Widget build(BuildContext context) => ValueListenableBuilder<PriorityMatch?>(
-    valueListenable: widget.controller,
-    builder: (context, match, _) => PopScope(
-      onPopInvokedWithResult: (didPop, _) {
-        if (didPop) widget.controller.pauseForNavigation();
-      },
-      child: Scaffold(
-        // Only the form uses the page keyboard. Modal editors manage their own
-        // insets; keep the table stable behind them instead of shrinking panels.
-        resizeToAvoidBottomInset: match == null,
-        appBar: AppBar(
-          title: const Text('Priority'),
-          actions: [
-            if (match != null) ...[
-              IconButton(
-                key: const ValueKey('priority-standings'),
-                tooltip: 'Clasificación general',
-                icon: const Icon(Icons.leaderboard_outlined),
-                onPressed: () =>
-                    showPriorityStandings(context, widget.controller),
-              ),
-              if (match.isPaused ||
-                  (match.configuration.clockEnabled &&
-                      match.phase != PriorityPhase.finished))
+  Widget build(BuildContext context) => PriorityTheme(
+    child: ValueListenableBuilder<PriorityMatch?>(
+      valueListenable: widget.controller,
+      builder: (context, match, _) => PopScope(
+        onPopInvokedWithResult: (didPop, _) {
+          if (didPop) {
+            _closeExpiryNotice();
+            widget.controller.pauseForNavigation();
+          }
+        },
+        child: Scaffold(
+          // Only the form uses the page keyboard. Modal editors manage their own
+          // insets; keep the table stable behind them instead of shrinking panels.
+          resizeToAvoidBottomInset: match == null,
+          appBar: AppBar(
+            title: const Text('Priority'),
+            actions: [
+              if (match != null) ...[
                 IconButton(
-                  key: const ValueKey('priority-pause-resume'),
-                  tooltip: match.isPaused ? 'Reanudar' : 'Pausar',
-                  icon: Icon(match.isPaused ? Icons.play_arrow : Icons.pause),
-                  onPressed:
-                      widget.controller.can(
-                        match.isPaused
-                            ? const PriorityCommand.resume()
-                            : const PriorityCommand.pause(),
-                      )
-                      ? () => widget.controller.dispatch(
+                  key: const ValueKey('priority-standings'),
+                  tooltip: 'Clasificación general',
+                  icon: const Icon(Icons.leaderboard_outlined),
+                  onPressed: () =>
+                      showPriorityStandings(context, widget.controller),
+                ),
+                if (match.isPaused ||
+                    (match.configuration.clockEnabled &&
+                        match.phase != PriorityPhase.finished))
+                  IconButton(
+                    key: const ValueKey('priority-pause-resume'),
+                    tooltip: match.isPaused ? 'Reanudar' : 'Pausar',
+                    icon: Icon(match.isPaused ? Icons.play_arrow : Icons.pause),
+                    onPressed:
+                        widget.controller.can(
                           match.isPaused
                               ? const PriorityCommand.resume()
                               : const PriorityCommand.pause(),
-                          expectedRevision: match.revision,
                         )
-                      : null,
+                        ? () => widget.controller.dispatch(
+                            match.isPaused
+                                ? const PriorityCommand.resume()
+                                : const PriorityCommand.pause(),
+                            expectedRevision: match.revision,
+                          )
+                        : null,
+                  ),
+              ],
+              if (match != null)
+                IconButton(
+                  key: const ValueKey('priority-new-game'),
+                  onPressed: _newGame,
+                  tooltip: 'Nueva partida',
+                  icon: const Icon(Icons.add_circle_outline),
                 ),
             ],
-            if (match != null)
-              IconButton(
-                key: const ValueKey('priority-new-game'),
-                onPressed: _newGame,
-                tooltip: 'Nueva partida',
-                icon: const Icon(Icons.add_circle_outline),
-              ),
-          ],
-        ),
-        body: SafeArea(
-          top: false,
-          child: match == null
-              ? _setup()
-              : PriorityTable(controller: widget.controller),
+          ),
+          body: SafeArea(
+            top: false,
+            child: match == null
+                ? _setup()
+                : PriorityTable(controller: widget.controller),
+          ),
         ),
       ),
     ),

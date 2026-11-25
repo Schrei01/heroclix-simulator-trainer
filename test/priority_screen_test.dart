@@ -146,7 +146,11 @@ void main() {
       expect(c.value!.player('J2').consumedActions, 1);
       expect(c.value!.player('J2').availableActions, 0);
       expect(c.value!.priorityPlayerId, 'J1');
-      expect(key('priority-automatic-pass'), findsOneWidget);
+      expect(
+        c.events.any((e) => e.type == PriorityEventType.automaticPass),
+        isTrue,
+      );
+      expect(key('priority-automatic-pass'), findsNothing);
       await press(t, 'priority-free-J1');
       expect(enabled(t, 'priority-responseFree-J2'), isTrue);
       await press(t, 'priority-responseFree-J2');

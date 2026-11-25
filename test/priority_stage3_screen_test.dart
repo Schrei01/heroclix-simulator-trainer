@@ -71,7 +71,7 @@ void main() {
       await press(t, 'priority-pass-J2');
       clock.advance(const Duration(seconds: 4));
       c.synchronizeClock();
-      await t.pump();
+      await t.pumpAndSettle();
       expect(key('priority-time-expired'), findsOneWidget);
       expect(c.value!.players.every((p) => !p.eliminated), isTrue);
       expect(

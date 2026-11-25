@@ -18,136 +18,46 @@ class PriorityTable extends StatelessWidget {
     valueListenable: controller,
     builder: (context, match, _) {
       if (match == null) return const SizedBox.shrink();
-      return LayoutBuilder(
-        builder: (context, constraints) => Column(
-          children: [
-            ConstrainedBox(
-              constraints: BoxConstraints(
-                maxHeight: constraints.maxHeight * .30,
-              ),
-              child: SingleChildScrollView(
-                child: _TableStatus(match: match, events: controller.events),
-              ),
-            ),
-            Expanded(
-              child: LayoutBuilder(
-                builder: (context, space) {
-                  final seats = priorityTableSeats(
-                    space.biggest,
-                    match.players.length,
-                    landscape:
-                        MediaQuery.orientationOf(context) ==
-                        Orientation.landscape,
-                  );
-                  return Stack(
-                    key: const ValueKey('priority-table'),
-                    children: [
-                      for (var i = 0; i < match.players.length; i++)
-                        Positioned.fromRect(
-                          rect: seats[i].bounds,
-                          child: Padding(
-                            padding: const EdgeInsets.all(2),
-                            child: RotatedBox(
-                              key: ValueKey(
-                                'priority-orientation-${match.players[i].id}',
-                              ),
-                              quarterTurns: seats[i].quarterTurns,
-                              child: _PlayerPanel(
-                                controller: controller,
-                                match: match,
-                                player: match.players[i],
-                                seat: i,
-                                quarterTurns: seats[i].quarterTurns,
-                              ),
-                            ),
-                          ),
+      return Semantics(
+        label: 'Ronda ${match.round}, turno ${match.turn}.',
+        child: LayoutBuilder(
+          builder: (context, space) {
+            final seats = priorityTableSeats(
+              space.biggest,
+              match.players.length,
+              landscape:
+                  MediaQuery.orientationOf(context) == Orientation.landscape,
+            );
+            return Stack(
+              key: const ValueKey('priority-table'),
+              children: [
+                for (var i = 0; i < match.players.length; i++)
+                  Positioned.fromRect(
+                    rect: seats[i].bounds,
+                    child: Padding(
+                      padding: const EdgeInsets.all(2),
+                      child: RotatedBox(
+                        key: ValueKey(
+                          'priority-orientation-${match.players[i].id}',
                         ),
-                    ],
-                  );
-                },
-              ),
-            ),
-          ],
+                        quarterTurns: seats[i].quarterTurns,
+                        child: _PlayerPanel(
+                          controller: controller,
+                          match: match,
+                          player: match.players[i],
+                          seat: i,
+                          quarterTurns: seats[i].quarterTurns,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
         ),
       );
     },
   );
-}
-
-class _TableStatus extends StatelessWidget {
-  const _TableStatus({required this.match, required this.events});
-  final PriorityMatch match;
-  final List<PriorityEvent> events;
-
-  @override
-  Widget build(BuildContext context) {
-    final phase = switch (match.phase) {
-      PriorityPhase.activeTurn => 'El activo puede jugar o terminar turno.',
-      PriorityPhase.actionResponse =>
-        'Respuesta a ACTION · una oportunidad por jugador.',
-      PriorityPhase.freeResponse => 'Respuesta a FREE · no consume acciones.',
-      PriorityPhase.paused => 'Partida pausada. Reanuda manualmente.',
-      PriorityPhase.finished => 'Partida finalizada.',
-      PriorityPhase.configuration => 'Preparación.',
-    };
-    final automatic = events
-        .where((e) => e.type == PriorityEventType.automaticPass)
-        .map((e) => match.player(e.playerId).name)
-        .join(', ');
-    final exhausted =
-        match.isPaused &&
-            match.configuration.clockEnabled &&
-            match.priorityPlayerId != null &&
-            match.player(match.priorityPlayerId!).remainingTime == Duration.zero
-        ? match.player(match.priorityPlayerId!)
-        : null;
-    return Semantics(
-      liveRegion: true,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Ronda ${match.round} · Turno ${match.turn} · Antihorario',
-              key: const ValueKey('priority-turn-status'),
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              match.phase == PriorityPhase.finished
-                  ? 'Jugadores no eliminados: ${match.players.where((p) => !p.eliminated).length}'
-                  : 'Activo: ${match.player(match.activePlayerId!).name} · '
-                        'Prioridad: ${match.priorityPlayerId == null ? '—' : match.player(match.priorityPlayerId!).name}',
-              key: const ValueKey('priority-status'),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 12),
-            ),
-            Text(
-              phase,
-              key: const ValueKey('priority-response-status'),
-              style: const TextStyle(fontSize: 12),
-            ),
-            if (exhausted != null)
-              Text(
-                'Tiempo agotado: ${exhausted.name}. '
-                'Toca su nombre para corregir el tiempo o eliminarlo.',
-                key: const ValueKey('priority-time-expired'),
-                style: const TextStyle(fontSize: 12, color: Colors.redAccent),
-              ),
-            if (automatic.isNotEmpty)
-              Text(
-                'Pase automático: $automatic',
-                key: const ValueKey('priority-automatic-pass'),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 12),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 class _PlayerPanel extends StatelessWidget {
@@ -189,96 +99,105 @@ class _PlayerPanel extends StatelessWidget {
         : active
         ? AppTheme.accent
         : color;
-    return Material(
-      key: ValueKey('priority-panel-${player.id}'),
-      color: priority ? const Color(0xFF293B40) : AppTheme.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: border, width: priority ? 3 : 1),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final width = math.max(0.0, constraints.maxWidth - 8);
-          final scale = MediaQuery.textScalerOf(context).scale(12) / 12;
-          final columns = width >= 240 * scale
-              ? 3
-              : width >= 128 * scale
-              ? 2
-              : 1;
-          final buttonWidth = (width - (columns - 1) * 4) / columns;
-          final rows = (commands.length / columns).ceil();
-          final buttonHeight = math.max(
-            48.0,
-            math.min(96.0, (constraints.maxHeight - 60) / rows),
-          );
-          return SingleChildScrollView(
-            key: ValueKey('priority-panel-scroll-${player.id}'),
-            padding: const EdgeInsets.all(4),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: math.max(0, constraints.maxHeight - 8),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  PriorityPlayerHeader(
-                    controller: controller,
-                    match: match,
-                    player: player,
-                    seat: seat,
-                    color: color,
-                    quarterTurns: quarterTurns,
-                    editActions: () => showDialog<void>(
-                      context: context,
-                      builder: (_) => _ActionsDialog(
-                        controller: controller,
-                        playerId: player.id,
-                        quarterTurns: quarterTurns,
+    return Semantics(
+      key: priority ? ValueKey('priority-has-priority-${player.id}') : null,
+      container: true,
+      explicitChildNodes: true,
+      liveRegion: priority,
+      label: priority ? 'Con prioridad' : null,
+      child: Material(
+        key: ValueKey('priority-panel-${player.id}'),
+        color: priority ? const Color(0xFF293B40) : AppTheme.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: border, width: priority ? 3 : 1),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final width = math.max(0.0, constraints.maxWidth - 8);
+            final scale = MediaQuery.textScalerOf(context).scale(12) / 12;
+            final columns = width >= 240 * scale
+                ? 3
+                : width >= 128 * scale
+                ? 2
+                : 1;
+            final buttonWidth = (width - (columns - 1) * 4) / columns;
+            final rows = (commands.length / columns).ceil();
+            final buttonHeight = math.max(
+              48.0,
+              math.min(96.0, (constraints.maxHeight - 60) / rows),
+            );
+            return SingleChildScrollView(
+              key: ValueKey('priority-panel-scroll-${player.id}'),
+              padding: const EdgeInsets.all(4),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: math.max(0, constraints.maxHeight - 8),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    PriorityPlayerHeader(
+                      controller: controller,
+                      match: match,
+                      player: player,
+                      seat: seat,
+                      color: color,
+                      quarterTurns: quarterTurns,
+                      editActions: () => showDialog<void>(
+                        context: context,
+                        builder: (_) => _ActionsDialog(
+                          controller: controller,
+                          playerId: player.id,
+                          quarterTurns: quarterTurns,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 2),
-                  Wrap(
-                    spacing: 4,
-                    runSpacing: 2,
-                    children: [
-                      for (final command in commands)
-                        SizedBox(
-                          width: buttonWidth,
-                          child: FilledButton(
-                            key: ValueKey(
-                              'priority-${command.operation.name}-${player.id}',
-                            ),
-                            onPressed: controller.can(command)
-                                ? () => controller.dispatch(
-                                    command,
-                                    expectedRevision: match.revision,
-                                  )
-                                : null,
-                            style: FilledButton.styleFrom(
-                              minimumSize: Size(48, buttonHeight),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 4,
-                                vertical: 6,
+                    const SizedBox(height: 2),
+                    Wrap(
+                      spacing: 4,
+                      runSpacing: 2,
+                      children: [
+                        for (final command in commands)
+                          SizedBox(
+                            width: buttonWidth,
+                            child: FilledButton(
+                              key: ValueKey(
+                                'priority-${command.operation.name}-${player.id}',
                               ),
-                              textStyle: Theme.of(context).textTheme.labelLarge!
-                                  .copyWith(fontSize: 12, height: 1.1),
-                            ),
-                            child: Text(
-                              _buttonLabel(command.operation),
-                              textAlign: TextAlign.center,
+                              onPressed: controller.can(command)
+                                  ? () => controller.dispatch(
+                                      command,
+                                      expectedRevision: match.revision,
+                                    )
+                                  : null,
+                              style: FilledButton.styleFrom(
+                                minimumSize: Size(48, buttonHeight),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                  vertical: 6,
+                                ),
+                                textStyle: Theme.of(context)
+                                    .textTheme
+                                    .labelLarge!
+                                    .copyWith(fontSize: 12, height: 1.1),
+                              ),
+                              child: Text(
+                                _buttonLabel(command.operation),
+                                textAlign: TextAlign.center,
+                              ),
                             ),
                           ),
-                        ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }

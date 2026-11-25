@@ -286,3 +286,39 @@ No se modificó el script de APK ni se utilizó flutter clean.
 
 **Cierre de etapa 3:** completada; se detiene el trabajo aquí. No se inicia
 historial, Deshacer, persistencia ni otra función posterior sin un nuevo prompt.
+
+## Incremento visual rc.15 — 2026-11-25
+
+Petición posterior a la etapa 3, limitada a la presentación de Priority:
+
+- Botones rectangulares con esquinas de radio 6 y área mínima de 48 unidades.
+  Tema local aplicado a configuración, mesa y diálogos; conserva colores de la app.
+- Para 3 y 4 se utiliza el esquema de lados opuestos de 5 y 6: en vertical,
+  paneles a izquierda/derecha girados hacia cada participante; en horizontal,
+  filas arriba/abajo. Conserva orden antihorario. No cambia la geometría de 2, 5 y 6.
+- Se retira la franja superior de ronda/turno/ventana/pases automáticos. La mesa
+  comienza debajo de la barra y aprovecha toda su altura. Ronda/turno siguen
+  disponibles en clasificación y semántica; los eventos del motor se conservan.
+- Se retira el texto PRIORIDAD. Borde dorado de 3 unidades, fondo y semántica
+  accesible identifican quién tiene prioridad. ACTIVO/REACTIVO permanecen visibles.
+- El agotamiento se anuncia mediante un aviso flotante de 8 segundos, con **Ver**
+  para abrir gestión; se conserva reloj rojo a cero y pausa. No repite el aviso
+  en cada refresco. Una corrección positiva y un nuevo agotamiento sí vuelven
+  a anunciarse. El aviso no ocupa espacio permanente en la mesa.
+
+Motor, controlador, reglas, cronómetros, puntuación y eliminación permanecen con
+la implementación de etapa 3. No se inicia etapa 4 ni se añade persistencia.
+
+Pruebas nuevas: 9, sobre orientaciones, conservación de 5/6, geometría sin franja,
+roles y accesibilidad, estilos en mesa/diálogo y agotamiento con texto 300 %,
+desaparición, corrección y nuevos episodios. Renders: 18, incluidos 3 y 4 en ambas
+orientaciones. Evidencia local en `build/verification/priority-visual/`; resultados
+finales, APK y aceptación Android pendiente en [ESTADO.md](ESTADO.md).
+
+Resultado final: **894/894 pruebas generales aprobadas**, 5 min 33 s; focalizadas
+y renders **27/27**, 10 s. Análisis completo sin incidencias y formato de 183
+archivos sin cambios pendientes. Se conservan las 885 pruebas anteriores.
+APK rc.15/código 28 generado mediante `./tool/build_apk.ps1`: paquete/versión/SDK,
+firma v2, mismo certificado y copia/hash verificados, sin permiso INTERNET.
+Solo queda rc.15 en `build/releases/`; rc.14 se retiró tras validar la nueva copia.
+No se modificó el flujo de APK. Se cierra este incremento estético.

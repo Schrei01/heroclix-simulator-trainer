@@ -1,6 +1,6 @@
 # Preparar, compilar e instalar en Android
 
-Candidata actual: **TeamFight: GridLab 1.0.0-rc.14+27**. Inicio contiene Editor, Entrenador y Priority; las consultas
+Candidata actual: **TeamFight: GridLab 1.0.0-rc.15+28**. Inicio contiene Editor, Entrenador y Priority; las consultas
 y ensayos están en las herramientas del Editor. El recorrido vigente del Editor
 está al final de este documento. Los apartados identificados por etapa describen
 sus versiones históricas. Resultados efectivamente ejecutados: [ESTADO](ESTADO.md).
@@ -72,13 +72,22 @@ ESTADO.md para saber qué se ejecutó realmente.
 7. Registrar resultados reales en ESTADO.md; las pruebas de widgets no sustituyen
    estas pruebas de dispositivo.
 
-Para Priority: configurar 2, 3 y 6 participantes, organizar asientos, probar inicial
+Para Priority: configurar de 2 a 6 participantes, organizar asientos, probar inicial
 manual/sorteado y apoyar el teléfono en el centro de una mesa. Comprobar lectura y
 pulsaciones desde cada lado, en vertical/horizontal y con texto ampliado. Ejecutar
 J1 ACTION → J2 RESPONSE ACTION → J3 PASS → J1 END TURN: todos recuperan 3 acciones
 y J2 recibe turno/prioridad. Probar edición de adicionales durante respuestas,
 pase automático a cero, FREE a cero, doble toque y volver al inicio/regresar. La
 partida de esta etapa se conserva solo en memoria, no después de cerrar el proceso.
+
+Incremento visual rc.15: comprobar botones rectangulares de esquinas suaves en
+configuración/mesa/diálogos. Para 3 y 4, verificar el esquema de lados opuestos
+como 5 y 6, en ambas orientaciones; 2, 5 y 6 conservan su distribución.
+La mesa empieza justo debajo de la barra, sin franja de ronda/turno ni texto
+PRIORIDAD. Borde dorado identifica prioridad y ACTIVO/REACTIVO siguen visibles.
+Agotar tiempo muestra un aviso flotante durante 8 s; **Ver** abre gestión.
+Comprobar que se oculta sin repetirse en cada refresco y que corregir a positivo
+y volver a agotar sí genera un aviso nuevo. Repetir con texto ampliado.
 
 Etapa 3 de Priority: activar relojes a 00:05 y comprobar que solo descuenta el
 jugador con prioridad; ACTION/respuestas/PASS/END TURN transfieren sin reiniciar

@@ -39,6 +39,14 @@ Nunca se reanuda automáticamente al volver. Diálogos de gestión y clasificaci
 solo envían comandos/leen datos derivados del motor; no calculan consumos, ciclos
 ni desempates. Los puntos pueden corregirse en estado final sin reabrir juego.
 
+El incremento visual rc.15 solo modifica presentación: `PriorityTheme` aplica
+botones rectangulares de radio 6 al módulo y sus diálogos; `priorityTableSeats`
+usa lados opuestos para 3–6 participantes y conserva la disposición de 2, 5 y 6.
+La mesa no reserva espacio a un estado superior. Ronda/turno permanecen como
+semántica accesible y en clasificación; prioridad se indica con borde y semántica,
+sin rótulo visible. El agotamiento genera un SnackBar temporal deduplicado por
+episodio y reloj rojo, sin alterar la pausa ni la lógica del motor/controlador.
+
 `domain/board` contiene BoardDimensions, CellCoordinate, BoardGeometry,
 BoardCamera y ViewportSize. characters implementa figuras, equipos y ocupación.
 terrain implementa terrenos, muros normalizados y geometría de edición. geometry
