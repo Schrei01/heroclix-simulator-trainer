@@ -1,16 +1,16 @@
-# TeamFight: GridLab — 1.0.0-rc.12+25
+# TeamFight: GridLab — 1.0.0-rc.13+26
 
 Aplicación Android offline, en español, para construir escenarios, consultar reglas
 implementadas y practicar. **Versión candidata, APK debug**: faltan las comprobaciones
 nativas de aceptación y rendimiento descritas abajo. No se congela 1.0.0 estable.
 Repositorio privado: [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer),
-rama `codex/movement-destruction`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
+rama `codex/priority-ui-stage2`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
 
 Nombre e iconos de Android, Inicio y Acerca de actualizados a TeamFight: GridLab.
 La identidad técnica y firma se conservan para actualizar la instalación anterior.
 Archivos de Google Play preparados en distribution/google-play/; [detalles de identidad](docs/IDENTIDAD.md).
 
-Esta beta rc.12 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
+Esta beta rc.13 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
 (2026-12-30T05:00:00Z). Desde ese instante muestra «Versión de prueba finalizada»
 y bloquea todas las pantallas, también al reanudar o si permanece abierta. Acerca de
 muestra la fecha. No elimina biblioteca ni progreso. Usa el reloj del dispositivo:
@@ -23,7 +23,7 @@ anterior sin caducidad también queda fuera de este control local.
 El archivo generado se conserva en:
 
 ```text
-build/releases/teamfight-gridlab-1.0.0-rc.12-debug.apk
+build/releases/teamfight-gridlab-1.0.0-rc.13-debug.apk
 ```
 
 1. Android 7.0/API 24 o superior. Copiar el APK al teléfono, abrirlo en Archivos
@@ -35,7 +35,7 @@ build/releases/teamfight-gridlab-1.0.0-rc.12-debug.apk
 
 ```powershell
 adb devices -l
-adb -s ID install -r build/releases/teamfight-gridlab-1.0.0-rc.12-debug.apk
+adb -s ID install -r build/releases/teamfight-gridlab-1.0.0-rc.13-debug.apk
 adb -s ID shell am start -n com.valinor.heroclixtrainer/com.valinor.heroclix_simulator_trainer.MainActivity
 ```
 
@@ -45,6 +45,21 @@ desinstalación elimina progreso y ejercicios personales; su exportación todav�
 no está implementada. PNG sirve para compartir una imagen, no para recuperar datos.
 
 ## Uso básico
+
+Desde inicio, abre **Priority** para asistir una partida física del formato de
+Valinor. Configura 2–6 jugadores, nombres, puntos y adicionales; organiza asientos
+con las flechas anterior/siguiente y elige o sortea al inicial. **Listo** abre la
+mesa con paneles orientados hacia sus respectivos jugadores. El borde dorado y
+la etiqueta PRIORIDAD identifican quién puede intervenir; ACTIVO indica a quién
+pertenece el turno, aunque otra persona tenga prioridad.
+
+El activo usa ACTION/FREE/END TURN; los reactivos usan RESPONSE ACTION/RESPONSE
+FREE/PASS cuando están habilitados. Los jugadores pulsan después de resolver sus
+acciones físicas. Toca el contador disponibles/totales para editar adicionales:
+el consumo anterior se conserva. END TURN restablece las acciones de todos.
+Volver al inicio y regresar conserva la partida mientras la app siga abierta;
+Nueva partida pide confirmación. Esta etapa no incluye cronómetros, puntuación,
+historial acumulado ni guardado. [Plan y pruebas](docs/PRIORITY_PLAN.md).
 
 En la ficha, **IM Destruir bloqueado y muros** permite destruir lo que atraviesa.
 El ensayo conserva el mapa original y muestra el plan; Confirmar aplica posición,
@@ -87,6 +102,7 @@ también con archivos reales. Los archivos nuevos no se pueden abrir con apps vi
 | --- | --- |
 | Editor | Crear tablero 2–40 filas/columnas, figuras genéricas, equipos, terreno, muros y alturas; biblioteca y Deshacer |
 | Entrenador | 24 ejercicios curados más personales; responder, comprobar, recibir explicación y conservar progreso |
+| Priority | Configurar 2–6 jugadores y administrar turnos, prioridad, acciones y respuestas alrededor de una mesa |
 | Ejemplos locales | Visión H, diagonal/vértice, muro, elevación y movimiento; previsualizar y abrir copia independiente |
 | Guía rápida / Acerca de | Ayuda breve, versión, cobertura, fuente y licencias locales |
 
@@ -151,6 +167,7 @@ usa etiquetas genéricas. Exportar la escena completa sí conserva sus nombres.
 | Función | Estado |
 | --- | --- |
 | Editor y Entrenador, biblioteca, JSON/PNG y sesión temporal | Implementado; nuevo arranque vacío, biblioteca/progreso persistentes |
+| Priority: configuración, mesa, turnos, prioridad y acciones para 2–6 jugadores | Etapas 1 y 2 implementadas; partida en memoria, cronómetros/puntuación/guardado pendientes |
 | Geometría, visión, alcance, alturas, mejoras tipadas y movimiento | Perfil parcial implementado, con reglas y No evaluados explícitos |
 | Análisis de posiciones, hipótesis, ejercicios y diagnóstico TXT/PNG | Implementado; puente Android TXT corregido y compilado |
 | Catálogo de cinco ejemplos, guía y Acerca de/licencias | Implementado y probado; recursos locales |
@@ -158,18 +175,18 @@ usa etiquetas genéricas. Exportar la escena completa sí conserva sus nombres.
 | Instalación, nueva sesión tras cierre y selectores nativos | Pendiente de Android; equivalentes de archivos/controladores sí verificados |
 | Offline con radios desactivadas y rendimiento Android/FPS | Pendiente de dispositivo/emulador funcional |
 | APK release con firma del propietario | Preparado; sin claves suministradas, no generado |
-| Congelar 1.0.0 estable | Pendiente de cerrar aceptación nativa; esta entrega es 1.0.0-rc.12 |
-| Partida completa, dados, diales, daño y victoria | Fuera del alcance del proyecto |
+| Congelar 1.0.0 estable | Pendiente de cerrar aceptación nativa; esta entrega es 1.0.0-rc.13 |
+| Simular combates, dados, diales, daño y poderes de figuras | Fuera del alcance del proyecto |
 
 ## Dependencias y recompilación
 
 Entorno usado: Flutter 3.50.0, Dart 3.14.0, material_ui 1.11.0; Android compile/target
 36 y mínimo 24. JBR de Android Studio, AGP/Gradle y NDK registrados en el proyecto.
-No se añaden dependencias para 12. Las licencias empaquetadas se consultan sin
+No se añaden dependencias para Priority. Las licencias empaquetadas se consultan sin
 conexión en Acerca de → Licencias de dependencias.
 
 ```powershell
-git switch codex/movement-destruction
+git switch codex/priority-ui-stage2
 $env:Path = "$env:USERPROFILE\develop\flutter\bin;$env:Path"
 flutter --no-version-check pub get
 dart format --output=none --set-exit-if-changed lib test tool

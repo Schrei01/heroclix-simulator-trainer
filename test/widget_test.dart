@@ -8,7 +8,7 @@ import 'package:heroclix_simulator_trainer/app.dart';
 import 'package:material_ui/material_ui.dart';
 
 void main() {
-  testWidgets('arranca en español: solo Editor y Entrenador disponibles', (
+  testWidgets('arranca en español: Editor, Entrenador y Priority disponibles', (
     tester,
   ) async {
     final semantics = tester.ensureSemantics();
@@ -33,7 +33,7 @@ void main() {
       );
       expect(editor.flagsCollection.isEnabled, Tristate.isTrue);
       expect(editor.getSemanticsData().hasAction(SemanticsAction.tap), isTrue);
-      for (final id in ['trainer']) {
+      for (final id in ['trainer', 'priority']) {
         final card = find.byKey(ValueKey('mode-$id'));
         await tester.ensureVisible(card);
         final node = tester.getSemantics(card);
@@ -65,7 +65,7 @@ void main() {
         addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
 
         await tester.pumpWidget(const HeroClixApp(clock: testClock));
-        for (final id in ['editor', 'trainer']) {
+        for (final id in ['editor', 'trainer', 'priority']) {
           final card = find.byKey(ValueKey('mode-$id'));
           await tester.ensureVisible(card);
           expect(tester.getRect(card).width, greaterThan(0));

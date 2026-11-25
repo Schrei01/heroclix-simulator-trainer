@@ -10,16 +10,20 @@ import '../training/training_controller.dart';
 import '../training/training_screen.dart';
 import '../help/info_screen.dart';
 import '../examples/examples_screen.dart';
+import '../priority/priority_controller.dart';
+import '../priority/priority_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({
     required this.editorController,
     required this.trainingController,
+    required this.priorityController,
     super.key,
   });
 
   final EditorController editorController;
   final TrainingController trainingController;
+  final PriorityController priorityController;
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +67,8 @@ class HomeScreen extends StatelessWidget {
                   const SizedBox(height: 8),
                   const Text(
                     'Construye tu escenario y ensaya movimiento, distancias, alcance y visión con '
-                    'explicaciones y referencias. Practica ejercicios y guarda tu progreso local.',
+                    'explicaciones y referencias. Practica ejercicios y administra turnos '
+                    'de partidas físicas con Priority.',
                   ),
                   const SizedBox(height: 32),
                   Semantics(
@@ -92,16 +97,19 @@ class HomeScreen extends StatelessWidget {
                                     ? () {
                                         Navigator.of(context).push(
                                           MaterialPageRoute<void>(
-                                            builder: (_) =>
-                                                mode == AppMode.trainer
-                                                ? TrainingScreen(
-                                                    controller:
-                                                        trainingController,
-                                                  )
-                                                : EditorScreen(
-                                                    controller:
-                                                        editorController,
-                                                  ),
+                                            builder: (_) => switch (mode) {
+                                              AppMode.editor => EditorScreen(
+                                                controller: editorController,
+                                              ),
+                                              AppMode.trainer => TrainingScreen(
+                                                controller: trainingController,
+                                              ),
+                                              AppMode.priority =>
+                                                PriorityScreen(
+                                                  controller:
+                                                      priorityController,
+                                                ),
+                                            },
                                           ),
                                         );
                                       }
@@ -222,11 +230,17 @@ class _ModeCard extends StatelessWidget {
         'Practica con ejercicios y explicaciones.',
         Icons.school_outlined,
       ),
+      AppMode.priority => (
+        'Priority',
+        'Gestiona turnos, prioridad y acciones en una partida física de 2 a 6 jugadores.',
+        Icons.groups_outlined,
+      ),
     };
 
     final openLabel = switch (mode) {
       AppMode.editor => 'Abrir editor',
       AppMode.trainer => 'Abrir entrenador',
+      AppMode.priority => 'Abrir Priority',
     };
     return Semantics(
       key: ValueKey('mode-${mode.id}'),

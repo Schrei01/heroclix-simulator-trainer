@@ -1,6 +1,6 @@
 # Preparar, compilar e instalar en Android
 
-Candidata actual: **TeamFight: GridLab 1.0.0-rc.12+25**. Inicio contiene Editor y Entrenador; las consultas
+Candidata actual: **TeamFight: GridLab 1.0.0-rc.13+26**. Inicio contiene Editor, Entrenador y Priority; las consultas
 y ensayos están en las herramientas del Editor. El recorrido vigente del Editor
 está al final de este documento. Los apartados identificados por etapa describen
 sus versiones históricas. Resultados efectivamente ejecutados: [ESTADO](ESTADO.md).
@@ -61,7 +61,7 @@ ESTADO.md para saber qué se ejecutó realmente.
 2. Ejecutar `flutter devices` y anotar ID, modelo y versión Android.
 3. Instalar con `adb -s ID install -r build/app/outputs/flutter-apk/app-debug.apk`
    y abrir la app desde el launcher.
-4. Comprobar nombre, español y las entradas Editor/Entrenador. Abrir Editor y editar
+4. Comprobar nombre, español y las entradas Editor/Entrenador/Priority. Abrir Editor y editar
    un escenario; consultar visión en sus herramientas y practicar en Entrenador.
 5. Girar vertical/horizontal y recorrer la pantalla. Repetir con texto ampliado
    en accesibilidad de Android y TalkBack; todas las entradas de modo deben abrir.
@@ -71,6 +71,14 @@ ESTADO.md para saber qué se ejecutó realmente.
    con el selector nativo; exportar PNG y abrir Compartir (cancelar para la prueba).
 7. Registrar resultados reales en ESTADO.md; las pruebas de widgets no sustituyen
    estas pruebas de dispositivo.
+
+Para Priority: configurar 2, 3 y 6 participantes, organizar asientos, probar inicial
+manual/sorteado y apoyar el teléfono en el centro de una mesa. Comprobar lectura y
+pulsaciones desde cada lado, en vertical/horizontal y con texto ampliado. Ejecutar
+J1 ACTION → J2 RESPONSE ACTION → J3 PASS → J1 END TURN: todos recuperan 3 acciones
+y J2 recibe turno/prioridad. Probar edición de adicionales durante respuestas,
+pase automático a cero, FREE a cero, doble toque y volver al inicio/regresar. La
+partida de esta etapa se conserva solo en memoria, no después de cerrar el proceso.
 
 Los manifiestos de esta app no solicitan INTERNET, ni siquiera en debug/profile.
 Esto limita conexiones al servicio VM de depuración/hot reload. Para comprobar

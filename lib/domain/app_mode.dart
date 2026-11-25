@@ -1,7 +1,8 @@
 /// Identificadores estables, independientes del idioma y de Flutter.
 enum AppMode {
   editor('editor'),
-  trainer('trainer');
+  trainer('trainer'),
+  priority('priority');
 
   const AppMode(this.id);
 

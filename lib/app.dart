@@ -8,6 +8,7 @@ import 'presentation/theme/app_theme.dart';
 import 'presentation/training/training_controller.dart';
 import 'application/training/training_repository.dart';
 import 'presentation/training/training_scope.dart';
+import 'presentation/priority/priority_controller.dart';
 
 import 'dart:async';
 
@@ -15,11 +16,13 @@ class HeroClixApp extends StatefulWidget {
   const HeroClixApp({
     this.controller,
     this.trainingController,
+    this.priorityController,
     this.clock = DateTime.now,
     super.key,
   });
   final EditorController? controller;
   final TrainingController? trainingController;
+  final PriorityController? priorityController;
   final DateTime Function() clock;
 
   @override
@@ -27,6 +30,8 @@ class HeroClixApp extends StatefulWidget {
 }
 
 class _HeroClixAppState extends State<HeroClixApp> with WidgetsBindingObserver {
+  late final _priorityController =
+      widget.priorityController ?? PriorityController();
   late final _editorController = widget.controller ?? EditorController();
   late final _trainingController =
       widget.trainingController ??
@@ -56,6 +61,7 @@ class _HeroClixAppState extends State<HeroClixApp> with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     _editorController.dispose();
     _trainingController.dispose();
+    _priorityController.dispose();
     super.dispose();
   }
 
@@ -78,6 +84,7 @@ class _HeroClixAppState extends State<HeroClixApp> with WidgetsBindingObserver {
       home: HomeScreen(
         editorController: _editorController,
         trainingController: _trainingController,
+        priorityController: _priorityController,
       ),
     );
   }

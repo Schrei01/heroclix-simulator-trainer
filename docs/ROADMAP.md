@@ -29,9 +29,10 @@ Fuera de alcance del editor: partidas completas, dados, daño, turnos, puntuaci�
 cuentas, backend, servicios de IA externos y funciones online.
 
 Incremento Priority (2026-11-25): motor independiente del formato personalizado
-para partidas físicas, limitado a la etapa 1 autorizada. Plan, decisiones y
-resultados en [PRIORITY_PLAN.md](PRIORITY_PLAN.md). Su implementación no habilita
-una nueva sección de interfaz ni cambia las funciones del editor.
+para partidas físicas. La etapa 1 entrega el motor; la etapa 2 añade acceso desde
+inicio, configuración y paneles de mesa orientados hacia 2–6 participantes, sin
+cambiar las funciones del editor. Plan, decisiones y resultados en
+[PRIORITY_PLAN.md](PRIORITY_PLAN.md). Las funciones posteriores requieren nueva orden.
 
 Actualización posterior a 12: ajustes de edición solicitados por el usuario,
 1.0.0-rc.2+15 en `codex/editor-quick-tools`. Paleta de terreno, altura propuesta 2

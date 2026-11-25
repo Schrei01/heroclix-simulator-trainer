@@ -20,8 +20,12 @@ no importa Flutter, infraestructura ni plataforma.
 Desde la etapa 1 de Priority, `domain/priority` contiene un motor independiente
 para el formato personalizado de partidas físicas. Sus estados son inmutables;
 `PriorityEngine` valida comandos y devuelve partida/eventos por transición. No
-depende del tablero, Flutter, plataforma ni persistencia y todavía no se conecta
-a la navegación. Contrato en `lib/domain/priority/README.md` y avance en
+depende del tablero, Flutter, plataforma ni persistencia. Desde la etapa 2,
+`presentation/priority` lo conecta a la navegación con un `PriorityController`
+propiedad de `HeroClixApp`, que conserva la partida en memoria al salir/volver.
+La UI envía comandos y consulta la validación del motor; no implementa consumos
+ni circulación. Geometría/rotación de paneles, edición y protección de entradas
+pertenecen a presentación. Contrato en `lib/domain/priority/README.md` y avance en
 [PRIORITY_PLAN.md](PRIORITY_PLAN.md).
 
 `domain/board` contiene BoardDimensions, CellCoordinate, BoardGeometry,
@@ -33,7 +37,7 @@ movement y training conservan documentación de alcance para etapas futuras.
 
 ## Estado y persistencia
 
-El inicio usa un catálogo inmutable con Editor y Entrenador. `BoardSession`
+El inicio usa un catálogo inmutable con Editor, Entrenador y Priority. `BoardSession`
 es la única fuente de verdad del tablero: dimensiones, selección, cámara,
 viewport, opciones de visualización, figuras, equipos, terreno y muros. Es inmutable y no importa Flutter.
 
