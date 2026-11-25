@@ -47,6 +47,15 @@ semántica accesible y en clasificación; prioridad se indica con borde y semán
 sin rótulo visible. El agotamiento genera un SnackBar temporal deduplicado por
 episodio y reloj rojo, sin alterar la pausa ni la lógica del motor/controlador.
 
+En rc.16 el formulario aplica puntos de construcción comunes a cada configuración
+de jugador y recoge tiempos en minutos completos, conservando la precisión del
+dominio. `PriorityPlayerHeader` mantiene solo el acumulado visual de PV, con
+animación de 3 segundos por jugador; cada toque envía un comando de ajuste al motor.
+El controlador exceptúa esos ajustes de la protección de doble toque, para contar
+cada pulsación intencional; conserva revisión/validación y protección de acciones.
+La calavera y el menú comparten confirmación y comando de eliminación. Los paneles
+estrechos distribuyen su cabecera en dos filas con controles de al menos 48 unidades.
+
 `domain/board` contiene BoardDimensions, CellCoordinate, BoardGeometry,
 BoardCamera y ViewportSize. characters implementa figuras, equipos y ocupación.
 terrain implementa terrenos, muros normalizados y geometría de edición. geometry

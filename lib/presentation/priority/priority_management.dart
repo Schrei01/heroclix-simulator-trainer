@@ -88,6 +88,58 @@ Future<void> showPriorityPlayer(
   ),
 );
 
+Future<bool> showPriorityElimination(
+  BuildContext context,
+  PriorityController controller,
+  String playerId,
+  int quarterTurns,
+) async {
+  final player = controller.value!.player(playerId);
+  final yes = await showDialog<bool>(
+    context: context,
+    builder: (context) => priorityRotatedDialog(
+      quarterTurns,
+      Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '¿Eliminar a ${player.name}?',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            'Dejará de recibir turnos y prioridad. Sus puntos se conservarán.',
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            children: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancelar'),
+              ),
+              FilledButton(
+                key: const ValueKey('priority-eliminate-confirm'),
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Eliminar'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    ),
+  );
+  if (!context.mounted || yes != true) return false;
+  controller.synchronizeClock();
+  final match = controller.value;
+  return match != null &&
+      controller.dispatch(
+        PriorityCommand.eliminate(playerId),
+        expectedRevision: match.revision,
+      );
+}
+
 enum _ScoreMode { add, subtract, correct }
 
 class _PlayerManagement extends StatefulWidget {
@@ -145,52 +197,13 @@ class _PlayerManagementState extends State<_PlayerManagement> {
   }
 
   Future<void> _eliminate() async {
-    final player = widget.controller.value!.player(widget.playerId);
-    final yes = await showDialog<bool>(
-      context: context,
-      builder: (context) => priorityRotatedDialog(
-        widget.quarterTurns,
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '¿Eliminar a ${player.name}?',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              'Dejará de recibir turnos y prioridad. Sus puntos se conservarán.',
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              children: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: const Text('Cancelar'),
-                ),
-                FilledButton(
-                  key: const ValueKey('priority-eliminate-confirm'),
-                  onPressed: () => Navigator.pop(context, true),
-                  child: const Text('Eliminar'),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
+    final eliminated = await showPriorityElimination(
+      context,
+      widget.controller,
+      widget.playerId,
+      widget.quarterTurns,
     );
-    if (!mounted || yes != true) return;
-    widget.controller.synchronizeClock();
-    final match = widget.controller.value;
-    if (match != null &&
-        widget.controller.dispatch(
-          PriorityCommand.eliminate(widget.playerId),
-          expectedRevision: match.revision,
-        )) {
-      Navigator.pop(context);
-    }
+    if (mounted && eliminated) Navigator.pop(context);
   }
 
   @override
@@ -337,17 +350,12 @@ class _TimeCorrection extends StatefulWidget {
 class _TimeCorrectionState extends State<_TimeCorrection> {
   late final _minutes = TextEditingController(
     text:
-        '${widget.controller.value!.player(widget.playerId).remainingTime!.inMinutes}',
-  );
-  late final _seconds = TextEditingController(
-    text:
-        '${widget.controller.value!.player(widget.playerId).remainingTime!.inSeconds % 60}',
+        '${priorityWholeMinutes(widget.controller.value!.player(widget.playerId).remainingTime!)}',
   );
   String? _error;
   @override
   void dispose() {
     _minutes.dispose();
-    _seconds.dispose();
     super.dispose();
   }
 
@@ -360,19 +368,13 @@ class _TimeCorrectionState extends State<_TimeCorrection> {
       children: [
         Text('Corregir tiempo', style: Theme.of(context).textTheme.titleLarge),
         const Text(
-          'El reloj queda pausado. Confirma el tiempo restante y reanuda después.',
+          'El reloj queda pausado. Reemplaza el tiempo restante por minutos completos y reanuda después.',
         ),
         TextField(
           key: const ValueKey('priority-time-minutes'),
           controller: _minutes,
           keyboardType: TextInputType.number,
           decoration: const InputDecoration(labelText: 'Minutos'),
-        ),
-        TextField(
-          key: const ValueKey('priority-time-seconds'),
-          controller: _seconds,
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(labelText: 'Segundos (0–59)'),
         ),
         if (_error != null)
           Text(
@@ -392,7 +394,7 @@ class _TimeCorrectionState extends State<_TimeCorrection> {
               onPressed: () {
                 final time = priorityDurationInput(
                   _minutes.text,
-                  _seconds.text,
+                  '0',
                   allowZero: true,
                 );
                 final match = widget.controller.value;
@@ -405,7 +407,8 @@ class _TimeCorrectionState extends State<_TimeCorrection> {
                   Navigator.pop(context);
                 } else {
                   setState(
-                    () => _error = 'Revisa el tiempo: no puede ser negativo; segundos de 0 a 59.',
+                    () => _error =
+                        'Escribe minutos enteros iguales o mayores que cero.',
                   );
                 }
               },

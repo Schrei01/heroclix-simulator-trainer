@@ -38,3 +38,7 @@ String priorityTimeLabel(Duration time, {bool roundUp = true}) {
       ? '${pad(seconds ~/ 3600)}:$minutes:$tail'
       : '$minutes:$tail';
 }
+
+int priorityWholeMinutes(Duration time) =>
+    time.inMinutes +
+    (time.inMicroseconds % Duration.microsecondsPerMinute == 0 ? 0 : 1);

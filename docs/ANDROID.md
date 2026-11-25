@@ -1,6 +1,6 @@
 # Preparar, compilar e instalar en Android
 
-Candidata actual: **TeamFight: GridLab 1.0.0-rc.15+28**. Inicio contiene Editor, Entrenador y Priority; las consultas
+Candidata actual: **TeamFight: GridLab 1.0.0-rc.16+29**. Inicio contiene Editor, Entrenador y Priority; las consultas
 y ensayos están en las herramientas del Editor. El recorrido vigente del Editor
 está al final de este documento. Los apartados identificados por etapa describen
 sus versiones históricas. Resultados efectivamente ejecutados: [ESTADO](ESTADO.md).
@@ -89,11 +89,21 @@ Agotar tiempo muestra un aviso flotante durante 8 s; **Ver** abre gestión.
 Comprobar que se oculta sin repetirse en cada refresco y que corregir a positivo
 y volver a agotar sí genera un aviso nuevo. Repetir con texto ampliado.
 
-Etapa 3 de Priority: activar relojes a 00:05 y comprobar que solo descuenta el
+Priority actual: elegir puntos de construcción una sola vez y comprobar que se
+aplican a todos, manteniendo adicionales individuales. Activar relojes a 1 minuto
+y comprobar que solo descuenta el
 jugador con prioridad; ACTION/respuestas/PASS/END TURN transfieren sin reiniciar
 tiempos. Salir a inicio, abrir otra app/bloquear y volver: debe quedar pausada
 hasta reanudar. A cero, verificar aviso y pausa sin eliminación automática.
 Corregir tiempo desde el nombre del panel, confirmar y reanudar manualmente.
+Configuración y corrección solo ofrecen minutos completos. Corregir sustituye el
+restante; el campo propone redondear hacia arriba. La cuenta sigue mostrando segundos.
+En la barra de cada jugador, probar la calavera: Cancelar conserva al jugador;
+Eliminar aplica exclusión/finalización como desde gestión. Probar −/+ de 5 PV,
+pulsaciones rápidas y acumulado +5/+10/+15 con difuminado: cada toque reinicia
+3 segundos, cambiar de signo empieza otra cuenta y después de 3 segundos inactivo
+desaparece. Verificar total permanente, resta sin negativos, independencia por
+jugador, giro y acceso en paneles pequeños mediante desplazamiento.
 Registrar/restar/corregir PV, incluidos eliminados y correcciones posteriores al
 final; rechazar puntos negativos. Eliminar con confirmación al activo, reactivo
 con prioridad y un pendiente; comprobar exclusión de ciclos y conservación de PV.

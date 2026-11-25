@@ -322,3 +322,48 @@ APK rc.15/código 28 generado mediante `./tool/build_apk.ps1`: paquete/versión/
 firma v2, mismo certificado y copia/hash verificados, sin permiso INTERNET.
 Solo queda rc.15 en `build/releases/`; rc.14 se retiró tras validar la nueva copia.
 No se modificó el flujo de APK. Se cierra este incremento estético.
+
+## Controles rápidos y configuración común rc.16 — 2026-11-25
+
+Incremento posterior autorizado, sin iniciar la etapa 4:
+
+- Un único campo de puntos de construcción aplica a todos los jugadores; nombres,
+  asientos y acciones adicionales siguen siendo individuales. El motor recibe
+  las configuraciones habituales y mantiene el cálculo de acciones base.
+- Configuración inicial y corrección de reloj solo recogen minutos completos.
+  La corrección reemplaza el tiempo restante y deja pausa; propone redondearlo
+  hacia arriba. Se permite corregir a cero. La cuenta conserva segundos y precisión.
+- Calavera vectorial en la cabecera del jugador: comparte confirmación y comando
+  de eliminación con gestión, conservando PV y reglas de turnos/prioridad/final.
+- Botones −/+ en la misma cabecera envían ajustes de −5/+5 PV al motor. La resta
+  se deshabilita si produciría negativos; se respeta el límite de enteros del motor.
+  Se permite editar PV de eliminados y después de finalizar, igual que en gestión.
+- Cada jugador mantiene un indicador temporal independiente (+5, +10… o −5, −10…)
+  que se difumina durante 3 s desde la última pulsación. Cada toque del mismo signo
+  acumula y reinicia la animación; cambiar de signo inicia otra cuenta. Al cumplirse
+  los 3 s se elimina el indicador, conservando el total permanente. Giro no cambia
+  de dueño el acumulado; reiniciar partida lo limpia.
+- El controlador permite todos los toques de ajuste de PV sin el bloqueo de
+  350 ms; conserva validaciones/revisiones y la protección de las acciones de juego.
+- Cabecera de una fila cuando cabe y dos filas en paneles estrechos; controles
+  táctiles de 48 unidades y desplazamiento para dimensiones/textos extremos.
+  Se ajusta el umbral de tres columnas de acciones para dejar sitio a la cabecera.
+
+Se conservan las funciones de gestión manual y edición de acciones tocando el
+contador. No cambia el dominio ni la persistencia. Pruebas nuevas: 14 casos de
+pulsaciones rápidas, acumulación/difuminado/reinicio, independencia/signos/límites,
+eliminación con confirmación para 2–6, cancelación y reactivo, corrección de minutos,
+giro/reinicio, controles con texto 300 % en 320×320 y visibilidad completa de barra/acciones para seis jugadores en ambas orientaciones. Las pruebas anteriores de
+configuración/reloj se adaptan a los nuevos campos y mantienen sus comprobaciones.
+Renders ampliados a 19 con el acumulado +15. Evidencia local en
+`build/verification/priority-quick/`; resultados y APK en [ESTADO.md](ESTADO.md).
+
+Verificación final: **908/908 pruebas generales aprobadas**, 5 min 30 s;
+controles rápidos y renders **33/33 aprobados**, 20 s (14 pruebas y 19 renders).
+Análisis completo sin incidencias; formato de 185 archivos sin cambios pendientes.
+Se conservan las 894 pruebas anteriores, con los formularios adaptados al requisito.
+APK rc.16/código 29 generado mediante `./tool/build_apk.ps1`: paquete, versión,
+SDK, firma v2, mismo certificado y copia/hash verificados, sin permiso INTERNET.
+Solo queda rc.16 en `build/releases/`; rc.15 se retiró tras validar la nueva copia.
+No cambió el flujo de APK. Se cierra este incremento; la aceptación nativa sigue
+pendiente y se conserva la decisión de continuar sin teléfono.

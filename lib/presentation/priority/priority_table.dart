@@ -117,7 +117,7 @@ class _PlayerPanel extends StatelessWidget {
           builder: (context, constraints) {
             final width = math.max(0.0, constraints.maxWidth - 8);
             final scale = MediaQuery.textScalerOf(context).scale(12) / 12;
-            final columns = width >= 240 * scale
+            final columns = width >= 224 * scale
                 ? 3
                 : width >= 128 * scale
                 ? 2
@@ -126,20 +126,24 @@ class _PlayerPanel extends StatelessWidget {
             final rows = (commands.length / columns).ceil();
             final buttonHeight = math.max(
               48.0,
-              math.min(96.0, (constraints.maxHeight - 60) / rows),
+              math.min(
+                96.0,
+                (constraints.maxHeight - (width >= 336 ? 48 : 96) - 4) / rows,
+              ),
             );
             return SingleChildScrollView(
               key: ValueKey('priority-panel-scroll-${player.id}'),
-              padding: const EdgeInsets.all(4),
+              padding: const EdgeInsets.all(2),
               child: ConstrainedBox(
                 constraints: BoxConstraints(
-                  minHeight: math.max(0, constraints.maxHeight - 8),
+                  minHeight: math.max(0, constraints.maxHeight - 4),
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     PriorityPlayerHeader(
+                      key: ValueKey('priority-header-${player.id}'),
                       controller: controller,
                       match: match,
                       player: player,
@@ -155,7 +159,6 @@ class _PlayerPanel extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 2),
                     Wrap(
                       spacing: 4,
                       runSpacing: 2,
@@ -184,10 +187,18 @@ class _PlayerPanel extends StatelessWidget {
                                     .labelLarge!
                                     .copyWith(fontSize: 12, height: 1.1),
                               ),
-                              child: Text(
-                                _buttonLabel(command.operation),
-                                textAlign: TextAlign.center,
-                              ),
+                              child: scale <= 1
+                                  ? FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Text(
+                                        _buttonLabel(command.operation),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    )
+                                  : Text(
+                                      _buttonLabel(command.operation),
+                                      textAlign: TextAlign.center,
+                                    ),
                             ),
                           ),
                       ],

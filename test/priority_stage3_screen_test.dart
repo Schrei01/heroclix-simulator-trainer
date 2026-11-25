@@ -19,6 +19,14 @@ void main() {
       '59:59',
     );
     expect(priorityTimeLabel(const Duration(hours: 25)), '25:00:00');
+    expect(priorityWholeMinutes(Duration.zero), 0);
+    expect(priorityWholeMinutes(const Duration(minutes: 1)), 1);
+    expect(priorityWholeMinutes(const Duration(seconds: 61)), 2);
+    expect(priorityWholeMinutes(const Duration(microseconds: 1)), 1);
+    expect(
+      priorityWholeMinutes(const Duration(microseconds: 0x7fffffffffffffff)),
+      0x7fffffffffffffff ~/ Duration.microsecondsPerMinute + 1,
+    );
     expect(priorityDurationInput('0', '0'), isNull);
     expect(priorityDurationInput('0', '0', allowZero: true), Duration.zero);
     for (final pair in [
@@ -47,29 +55,29 @@ void main() {
       await mount(t, c);
       expect(key('priority-clock-minutes'), findsNothing);
       await press(t, 'priority-clock-enabled');
-      await enter(t, 'priority-clock-minutes', '0');
-      await enter(t, 'priority-clock-seconds', '5');
+      await enter(t, 'priority-clock-minutes', '1');
+      expect(key('priority-clock-seconds'), findsNothing);
       await press(t, 'priority-start');
-      expect(c.value!.configuration.initialTime, const Duration(seconds: 5));
+      expect(c.value!.configuration.initialTime, const Duration(minutes: 1));
       expect(key('priority-clock-J1'), findsOneWidget);
       clock.advance(const Duration(seconds: 2));
       c.synchronizeClock();
       await t.pump();
-      expect(t.widget<Text>(key('priority-clock-J1')).data, '00:03');
-      expect(t.widget<Text>(key('priority-clock-J2')).data, '00:05');
+      expect(t.widget<Text>(key('priority-clock-J1')).data, '00:58');
+      expect(t.widget<Text>(key('priority-clock-J2')).data, '01:00');
       await press(t, 'priority-action-J1');
       clock.advance(const Duration(seconds: 1));
       c.synchronizeClock();
       await t.pump();
-      expect(t.widget<Text>(key('priority-clock-J2')).data, '00:04');
+      expect(t.widget<Text>(key('priority-clock-J2')).data, '00:59');
       await press(t, 'priority-pause-resume');
       clock.advance(const Duration(hours: 1));
       c.synchronizeClock();
       await t.pump();
-      expect(t.widget<Text>(key('priority-clock-J2')).data, '00:04');
+      expect(t.widget<Text>(key('priority-clock-J2')).data, '00:59');
       await press(t, 'priority-pause-resume');
       await press(t, 'priority-pass-J2');
-      clock.advance(const Duration(seconds: 4));
+      clock.advance(const Duration(seconds: 59));
       c.synchronizeClock();
       await t.pumpAndSettle();
       expect(key('priority-time-expired'), findsOneWidget);
@@ -80,13 +88,14 @@ void main() {
       );
       await press(t, 'priority-player-menu-J1');
       await press(t, 'priority-correct-time');
-      await enter(t, 'priority-time-seconds', '9');
+      await enter(t, 'priority-time-minutes', '2');
+      expect(key('priority-time-seconds'), findsNothing);
       await press(t, 'priority-time-apply');
       await press(t, 'priority-player-close');
       expect(c.value!.isPaused, isTrue);
-      expect(c.value!.player('J1').spentTime, const Duration(seconds: 5));
+      expect(c.value!.player('J1').spentTime, const Duration(minutes: 1));
       await press(t, 'priority-pause-resume');
-      expect(c.value!.player('J1').remainingTime, const Duration(seconds: 9));
+      expect(c.value!.player('J1').remainingTime, const Duration(minutes: 2));
       expect(c.value!.isPaused, isFalse);
       await t.pumpWidget(const SizedBox.shrink());
       c.reset();
@@ -105,11 +114,10 @@ void main() {
       await mount(t, c);
       await press(t, 'priority-clock-enabled');
       await enter(t, 'priority-clock-minutes', '0');
-      await enter(t, 'priority-clock-seconds', '0');
       await press(t, 'priority-start');
       expect(c.value, isNull);
       expect(key('priority-setup-error'), findsOneWidget);
-      await enter(t, 'priority-clock-seconds', '60');
+      await enter(t, 'priority-clock-minutes', '9223372036854775807');
       await press(t, 'priority-start');
       expect(c.value, isNull);
       await press(t, 'priority-clock-enabled');
@@ -304,11 +312,10 @@ void main() {
             expect(c.value!.player('J$count').victoryPoints, 100);
             await press(t, 'priority-correct-time');
             await enter(t, 'priority-time-minutes', '1');
-            await enter(t, 'priority-time-seconds', '7');
             await press(t, 'priority-time-apply');
             expect(
               c.value!.player('J$count').remainingTime,
-              const Duration(minutes: 1, seconds: 7),
+              const Duration(minutes: 1),
             );
             await press(t, 'priority-player-close');
             expect(c.value!.isPaused, isTrue);

@@ -26,7 +26,7 @@ class _PriorityScreenState extends State<PriorityScreen> {
   String? _error;
   bool _clockEnabled = false;
   final _minutes = TextEditingController(text: '30');
-  final _seconds = TextEditingController(text: '0');
+  final _points = TextEditingController(text: '300');
   bool _resultsShown = false;
   String? _notifiedExpired;
   ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? _expiryNotice;
@@ -129,7 +129,7 @@ class _PriorityScreenState extends State<PriorityScreen> {
   void dispose() {
     widget.controller.removeListener(_checkFinished);
     _minutes.dispose();
-    _seconds.dispose();
+    _points.dispose();
     for (final player in _players) {
       player.dispose();
     }
@@ -142,14 +142,17 @@ class _PriorityScreenState extends State<PriorityScreen> {
       return null;
     }
     try {
-      final players = [for (final p in _players.take(_count)) p.configuration];
+      final points = int.tryParse(_points.text.trim()) ?? -1;
+      final players = [
+        for (final p in _players.take(_count)) p.configuration(points),
+      ];
       final time = _clockEnabled
-          ? priorityDurationInput(_minutes.text, _seconds.text)
+          ? priorityDurationInput(_minutes.text, '0')
           : const Duration(minutes: 30);
       if (time == null) {
         setState(
-          () => _error =
-              'Escribe un tiempo mayor que cero, con segundos de 0 a 59.',
+          () =>
+              _error = 'Escribe una cantidad válida de minutos mayor que cero.',
         );
         return null;
       }
@@ -331,6 +334,11 @@ class _PriorityScreenState extends State<PriorityScreen> {
                 },
               ),
               const SizedBox(height: 12),
+              _number(
+                _points,
+                'Puntos de construcción para todos',
+                'priority-build-points',
+              ),
               SwitchListTile(
                 key: const ValueKey('priority-clock-enabled'),
                 contentPadding: EdgeInsets.zero,
@@ -350,7 +358,6 @@ class _PriorityScreenState extends State<PriorityScreen> {
                   'Tiempo inicial: minutos',
                   'priority-clock-minutes',
                 ),
-                _number(_seconds, 'Segundos (0–59)', 'priority-clock-seconds'),
                 const Text(
                   'Al volver de segundo plano, reanuda manualmente el reloj.',
                 ),
@@ -447,7 +454,8 @@ class _PriorityScreenState extends State<PriorityScreen> {
               ),
               const SizedBox(height: 8),
               const Text(
-                'En la mesa, toca un nombre para gestionar puntos, tiempo o eliminación. '
+                'En la mesa, usa −/+ para cambiar 5 PV y la calavera para eliminar. '
+                'Toca un nombre para más opciones. '
                 'El contador de acciones permite cambiar sus adicionales.',
               ),
               if (_error != null)
@@ -482,7 +490,7 @@ class _PriorityScreenState extends State<PriorityScreen> {
     final draft = _players[index];
     PriorityPlayerConfiguration? preview;
     try {
-      preview = draft.configuration;
+      preview = draft.configuration(int.tryParse(_points.text.trim()) ?? -1);
     } on ArgumentError {
       /* Invalid form input. */
     }
@@ -533,37 +541,10 @@ class _PriorityScreenState extends State<PriorityScreen> {
               onChanged: (_) => setState(() => _error = null),
             ),
             const SizedBox(height: 8),
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final fields = [
-                  _number(
-                    draft.points,
-                    'Puntos de construcción',
-                    'priority-points-${draft.id}',
-                  ),
-                  _number(
-                    draft.additional,
-                    'Acciones adicionales',
-                    'priority-additional-${draft.id}',
-                  ),
-                ];
-                return constraints.maxWidth >= 400
-                    ? Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(child: fields[0]),
-                          const SizedBox(width: 12),
-                          Expanded(child: fields[1]),
-                        ],
-                      )
-                    : Column(
-                        children: [
-                          fields[0],
-                          const SizedBox(height: 8),
-                          fields[1],
-                        ],
-                      );
-              },
+            _number(
+              draft.additional,
+              'Acciones adicionales',
+              'priority-additional-${draft.id}',
             ),
             const SizedBox(height: 8),
             Text(
@@ -594,18 +575,17 @@ final class _SeatDraft {
       name = TextEditingController(text: 'Jugador $number');
   final String id;
   final TextEditingController name;
-  final points = TextEditingController(text: '300');
   final additional = TextEditingController(text: '0');
   String get displayName => name.text.trim().isEmpty ? id : name.text.trim();
-  PriorityPlayerConfiguration get configuration => PriorityPlayerConfiguration(
-    id: id,
-    name: name.text,
-    buildPoints: int.tryParse(points.text.trim()) ?? -1,
-    additionalActions: int.tryParse(additional.text.trim()) ?? -1,
-  );
+  PriorityPlayerConfiguration configuration(int points) =>
+      PriorityPlayerConfiguration(
+        id: id,
+        name: name.text,
+        buildPoints: points,
+        additionalActions: int.tryParse(additional.text.trim()) ?? -1,
+      );
   void dispose() {
     name.dispose();
-    points.dispose();
     additional.dispose();
   }
 }

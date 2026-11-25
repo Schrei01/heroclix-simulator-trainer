@@ -7,8 +7,10 @@ import '../theme/app_theme.dart';
 import 'priority_controller.dart';
 import 'priority_input.dart';
 import 'priority_management.dart';
+import 'priority_skull_icon.dart';
+import 'priority_theme.dart';
 
-class PriorityPlayerHeader extends StatelessWidget {
+class PriorityPlayerHeader extends StatefulWidget {
   const PriorityPlayerHeader({
     required this.controller,
     required this.match,
@@ -27,7 +29,65 @@ class PriorityPlayerHeader extends StatelessWidget {
   final VoidCallback editActions;
 
   @override
+  State<PriorityPlayerHeader> createState() => _PriorityPlayerHeaderState();
+}
+
+class _PriorityPlayerHeaderState extends State<PriorityPlayerHeader>
+    with SingleTickerProviderStateMixin {
+  int _delta = 0;
+  late final _fade =
+      AnimationController(vsync: this, duration: const Duration(seconds: 3))
+        ..addStatusListener((status) {
+          if (status == AnimationStatus.completed && mounted) {
+            setState(() => _delta = 0);
+          }
+        });
+  late final _opacity = Tween<double>(
+    begin: 1,
+    end: 0,
+  ).animate(CurvedAnimation(parent: _fade, curve: Curves.easeInCubic));
+
+  void _adjust(int amount) {
+    final controller = widget.controller;
+    controller.synchronizeClock();
+    final match = controller.value;
+    if (match == null ||
+        !controller.dispatch(
+          PriorityCommand.adjustVictoryPoints(widget.player.id, amount),
+          expectedRevision: match.revision,
+        )) {
+      return;
+    }
+    setState(
+      () => _delta = _delta.sign == amount.sign ? _delta + amount : amount,
+    );
+    _fade.forward(from: 0);
+  }
+
+  @override
+  void didUpdateWidget(covariant PriorityPlayerHeader oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.player.eliminated && !oldWidget.player.eliminated) {
+      _fade.stop();
+      _delta = 0;
+    }
+  }
+
+  @override
+  void dispose() {
+    _fade.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final controller = widget.controller;
+    final match = widget.match;
+    final player = widget.player;
+    final seat = widget.seat;
+    final color = widget.color;
+    final quarterTurns = widget.quarterTurns;
+    final editActions = widget.editActions;
     final active =
         !player.eliminated &&
         match.phase != PriorityPhase.finished &&
@@ -150,21 +210,101 @@ class PriorityPlayerHeader extends StatelessWidget {
         ),
       ),
     );
-    return LayoutBuilder(
-      builder: (context, space) => space.maxWidth < 108
-          ? Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [name, counter],
-            )
-          : Row(
-              children: [
-                Expanded(child: name),
-                SizedBox(
-                  width: math.min(88, math.max(48, space.maxWidth * .45)),
-                  child: counter,
+    final quickControls = Row(
+      children: [
+        Expanded(
+          child: _delta == 0
+              ? const SizedBox.shrink()
+              : FadeTransition(
+                  key: ValueKey('priority-score-feedback-${player.id}'),
+                  opacity: _opacity,
+                  child: Text(
+                    '${_delta > 0 ? '+' : ''}$_delta',
+                    key: ValueKey('priority-score-delta-${player.id}'),
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: _delta > 0 ? AppTheme.accent : Colors.redAccent,
+                    ),
+                  ),
                 ),
-              ],
+        ),
+        for (final amount in [-5, 5])
+          IconButton(
+            key: ValueKey(
+              'priority-score-${amount > 0 ? 'plus' : 'minus'}-${player.id}',
             ),
+            tooltip: '${amount > 0 ? 'Sumar' : 'Restar'} 5 PV a ${player.name}',
+            style: IconButton.styleFrom(
+              minimumSize: const Size(48, 48),
+              shape: PriorityTheme.shape,
+            ),
+            onPressed:
+                controller.can(
+                  PriorityCommand.adjustVictoryPoints(player.id, amount),
+                )
+                ? () => _adjust(amount)
+                : null,
+            icon: Icon(amount > 0 ? Icons.add : Icons.remove),
+          ),
+        IconButton(
+          key: ValueKey('priority-skull-${player.id}'),
+          tooltip: 'Eliminar a ${player.name}',
+          style: IconButton.styleFrom(
+            minimumSize: const Size(48, 48),
+            shape: PriorityTheme.shape,
+          ),
+          onPressed: controller.can(PriorityCommand.eliminate(player.id))
+              ? () => showPriorityElimination(
+                  context,
+                  controller,
+                  player.id,
+                  quarterTurns,
+                )
+              : null,
+          icon: const PrioritySkullIcon(),
+        ),
+      ],
+    );
+    return LayoutBuilder(
+      builder: (context, space) {
+        if (space.maxWidth >= 336) {
+          return Row(
+            children: [
+              Expanded(child: name),
+              SizedBox(width: 64, child: counter),
+              SizedBox(width: 192, child: quickControls),
+            ],
+          );
+        }
+        return Column(
+          children: [
+            if (space.maxWidth < 108) ...[
+              name,
+              counter,
+            ] else
+              Row(
+                children: [
+                  Expanded(child: name),
+                  SizedBox(
+                    width: math.min(88, math.max(48, space.maxWidth * .45)),
+                    child: counter,
+                  ),
+                ],
+              ),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: SizedBox(
+                width: math.max(192, space.maxWidth),
+                child: quickControls,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

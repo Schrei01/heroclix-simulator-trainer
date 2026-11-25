@@ -47,6 +47,7 @@ void main() {
     ('eliminated', 6, const Size(360, 800), false),
     ('final-standings', 3, const Size(360, 800), false),
     ('clock-setup', 2, const Size(360, 800), true),
+    ('score-streak', 3, const Size(360, 800), false),
   ]) {
     testWidgets('Priority $name', (t) async {
       t.view.devicePixelRatio = 1;
@@ -144,6 +145,14 @@ void main() {
         await t.tap(toggle);
         await t.pumpAndSettle();
       }
+      if (name == 'score-streak') {
+        final plus = find.byKey(const ValueKey('priority-score-plus-J2'));
+        await t.ensureVisible(plus);
+        for (var i = 0; i < 3; i++) {
+          await t.tap(plus);
+          await t.pump(const Duration(milliseconds: 100));
+        }
+      }
       expect(t.takeException(), isNull);
       final boundary =
           boundaryKey.currentContext!.findRenderObject()!
@@ -152,7 +161,7 @@ void main() {
         final image = await boundary.toImage();
         final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
         final directory = Directory(
-          'build/verification/priority-visual/previews',
+          'build/verification/priority-quick/previews',
         );
         await directory.create(recursive: true);
         await File('${directory.path}/$name.png')

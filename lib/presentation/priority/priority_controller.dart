@@ -58,7 +58,9 @@ class PriorityController extends ValueNotifier<PriorityMatch?> {
     }
     final transition = _engine.apply(match, command);
     _events = transition.events;
-    if (inputCooldown > Duration.zero) {
+    // Score steppers intentionally accept every tap, unlike game actions.
+    if (inputCooldown > Duration.zero &&
+        command.operation != PriorityOperation.adjustVictoryPoints) {
       final key = (command.operation, command.playerId);
       _inputTimers[key] = Timer(inputCooldown, () {
         _inputTimers.remove(key);
