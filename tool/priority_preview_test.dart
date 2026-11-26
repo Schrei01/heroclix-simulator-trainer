@@ -49,6 +49,7 @@ void main() {
     ('clock-setup', 2, const Size(360, 800), true),
     ('score-streak', 3, const Size(360, 800), false),
     ('active-highlight', 4, const Size(360, 800), false),
+    ('score-ranking', 6, const Size(800, 360), false),
   ]) {
     testWidgets('Priority $name', (t) async {
       t.view.devicePixelRatio = 1;
@@ -118,6 +119,14 @@ void main() {
             expectedRevision: controller.value!.revision,
           );
         }
+        if (name == 'score-ranking') {
+          for (var i = 1; i <= count; i++) {
+            controller.dispatch(
+              PriorityCommand.setVictoryPoints('J$i', (count + 1 - i) * 25),
+              expectedRevision: controller.value!.revision,
+            );
+          }
+        }
       }
       final boundaryKey = GlobalKey();
       await t.pumpWidget(
@@ -167,7 +176,7 @@ void main() {
         final image = await boundary.toImage();
         final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
         final directory = Directory(
-          'build/verification/priority-active/previews',
+          'build/verification/priority-scores/previews',
         );
         await directory.create(recursive: true);
         await File('${directory.path}/$name.png')

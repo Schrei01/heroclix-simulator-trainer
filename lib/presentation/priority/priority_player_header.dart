@@ -10,6 +10,7 @@ import 'priority_management.dart';
 import 'priority_skull_icon.dart';
 import 'priority_theme.dart';
 import 'priority_active_indicator.dart';
+import 'priority_rank_badge.dart';
 
 class PriorityPlayerHeader extends StatefulWidget {
   const PriorityPlayerHeader({
@@ -183,14 +184,6 @@ class _PriorityPlayerHeaderState extends State<PriorityPlayerHeader>
                 ),
               ),
             ),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                '${player.victoryPoints} PV',
-                key: ValueKey('priority-score-${player.id}'),
-                style: const TextStyle(fontSize: 11, height: 1.1),
-              ),
-            ),
             if (match.configuration.clockEnabled)
               FittedBox(
                 fit: BoxFit.scaleDown,
@@ -210,101 +203,111 @@ class _PriorityPlayerHeaderState extends State<PriorityPlayerHeader>
         ),
       ),
     );
-    final quickControls = Row(
+    final position = match.standings
+        .firstWhere((s) => s.player.id == player.id)
+        .position;
+    final score = Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Expanded(
+        Tooltip(
+          message: '${player.victoryPoints} puntos de victoria',
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              '${player.victoryPoints} PV',
+              key: ValueKey('priority-score-${player.id}'),
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 22,
+                height: 1.1,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+        ),
+        SizedBox(
+          height: 18,
           child: _delta == 0
               ? const SizedBox.shrink()
               : FadeTransition(
                   key: ValueKey('priority-score-feedback-${player.id}'),
                   opacity: _opacity,
-                  child: Text(
-                    '${_delta > 0 ? '+' : ''}$_delta',
-                    key: ValueKey('priority-score-delta-${player.id}'),
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: _delta > 0 ? AppTheme.accent : Colors.redAccent,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      '${_delta > 0 ? '+' : ''}$_delta',
+                      key: ValueKey('priority-score-delta-${player.id}'),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: _delta > 0 ? AppTheme.accent : Colors.redAccent,
+                      ),
                     ),
                   ),
                 ),
         ),
-        for (final amount in [-5, 5])
-          IconButton(
-            key: ValueKey(
-              'priority-score-${amount > 0 ? 'plus' : 'minus'}-${player.id}',
-            ),
-            tooltip: '${amount > 0 ? 'Sumar' : 'Restar'} 5 PV a ${player.name}',
-            style: IconButton.styleFrom(
-              minimumSize: const Size(48, 48),
-              shape: PriorityTheme.shape,
-            ),
-            onPressed:
-                controller.can(
-                  PriorityCommand.adjustVictoryPoints(player.id, amount),
-                )
-                ? () => _adjust(amount)
-                : null,
-            icon: Icon(amount > 0 ? Icons.add : Icons.remove),
-          ),
-        IconButton(
-          key: ValueKey('priority-skull-${player.id}'),
-          tooltip: 'Eliminar a ${player.name}',
-          style: IconButton.styleFrom(
-            minimumSize: const Size(48, 48),
-            shape: PriorityTheme.shape,
-          ),
-          onPressed: controller.can(PriorityCommand.eliminate(player.id))
-              ? () => showPriorityElimination(
-                  context,
-                  controller,
-                  player.id,
-                  quarterTurns,
-                )
-              : null,
-          icon: const PrioritySkullIcon(),
-        ),
       ],
     );
+    Widget scoreStep(int amount) => IconButton(
+      key: ValueKey(
+        'priority-score-${amount > 0 ? 'plus' : 'minus'}-${player.id}',
+      ),
+      tooltip: '${amount > 0 ? 'Sumar' : 'Restar'} 5 PV a ${player.name}',
+      style: IconButton.styleFrom(
+        minimumSize: const Size(48, 48),
+        shape: PriorityTheme.shape,
+      ),
+      onPressed:
+          controller.can(PriorityCommand.adjustVictoryPoints(player.id, amount))
+          ? () => _adjust(amount)
+          : null,
+      icon: Icon(amount > 0 ? Icons.add : Icons.remove),
+    );
+    final skull = IconButton(
+      key: ValueKey('priority-skull-${player.id}'),
+      tooltip: 'Eliminar a ${player.name}',
+      style: IconButton.styleFrom(
+        minimumSize: const Size(48, 48),
+        shape: PriorityTheme.shape,
+      ),
+      onPressed: controller.can(PriorityCommand.eliminate(player.id))
+          ? () => showPriorityElimination(
+              context,
+              controller,
+              player.id,
+              quarterTurns,
+            )
+          : null,
+      icon: const PrioritySkullIcon(),
+    );
     return LayoutBuilder(
-      builder: (context, space) {
-        if (space.maxWidth >= 336) {
-          return Row(
+      builder: (context, space) => SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: SizedBox(
+          width: math.max(196, space.maxWidth),
+          child: Column(
             children: [
-              Expanded(child: name),
-              SizedBox(width: 64, child: counter),
-              SizedBox(width: 192, child: quickControls),
-            ],
-          );
-        }
-        return Column(
-          children: [
-            if (space.maxWidth < 108) ...[
-              name,
-              counter,
-            ] else
               Row(
                 children: [
+                  PriorityRankBadge(playerId: player.id, position: position),
+                  const SizedBox(width: 4),
                   Expanded(child: name),
-                  SizedBox(
-                    width: math.min(88, math.max(48, space.maxWidth * .45)),
-                    child: counter,
-                  ),
+                  SizedBox(width: 56, child: counter),
+                  skull,
                 ],
               ),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: SizedBox(
-                width: math.max(192, space.maxWidth),
-                child: quickControls,
+              Row(
+                key: ValueKey('priority-score-row-${player.id}'),
+                children: [
+                  scoreStep(-5),
+                  Expanded(child: score),
+                  scoreStep(5),
+                ],
               ),
-            ),
-          ],
-        );
-      },
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

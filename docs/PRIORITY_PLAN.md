@@ -411,3 +411,33 @@ APK rc.18/código 31 validado: paquete, versión, SDK, firma v2 y mismo certific
 sin INTERNET. Solo se conserva rc.18 después de validar la copia y retirar rc.17
 con el script habitual, sin modificarlo. Incremento cerrado; aceptación nativa
 pendiente, manteniendo la decisión de continuar sin teléfono.
+
+## PV centrados y posiciones rc.19 — 2026-11-25
+
+El total de PV se separa del contador de acciones y se muestra centrado entre
+−/+ a tamaño 22 (antes 11), en negrilla. Su acumulado temporal sigue apareciendo
+debajo y se conserva el comportamiento de tres segundos. La cabecera utiliza
+dos filas: posición/nombre/acciones/calavera y −/PV/+, con desplazamiento horizontal
+para paneles muy estrechos. Se reserva su altura al calcular los botones de acción.
+
+La posición aparece dentro de un círculo junto al nombre: 1 y 2 dorados por
+petición expresa, 3 bronce y del 4 en adelante el verde común de la app.
+Se lee `match.standings`, sin duplicar reglas: actualiza por PV, comparte posiciones
+en empates y conserva a eliminados. El número de asiento delante del nombre sigue
+siendo estable; el del círculo es la posición por PV. No declara un ganador por
+supervivencia ni modifica el motor.
+
+Cuatro pruebas nuevas verifican colores/forma/posiciones 1–6, actualización por
+±5/corrección/empates/eliminación, tamaño/negrilla/centrado y valores máximos con
+texto 300 %. Se reutilizan las pruebas de controles, dimensiones, estado activo,
+relojes y gestión. Renders ampliados a 21 con clasificación de los seis jugadores.
+Evidencia en `build/verification/priority-scores/`; resultados y APK en
+[ESTADO.md](ESTADO.md). No se inicia la etapa 4.
+
+Verificación final rc.19: **177/177 aprobadas**, 1 min 45 s (156 pruebas y 21
+renders). Análisis global sin incidencias; 189 archivos con formato correcto.
+PV y controles permanecen visibles con seis en ambas orientaciones a tamaño normal.
+APK rc.19/código 32 validado: paquete, versión, SDK, firma v2 y mismo certificado,
+sin INTERNET. Se conserva únicamente rc.19 tras validar la copia y retirar rc.18
+con el script habitual, sin modificarlo. Incremento cerrado; aceptación nativa
+pendiente, manteniendo la decisión de continuar sin teléfono.

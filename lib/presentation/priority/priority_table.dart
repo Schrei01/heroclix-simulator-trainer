@@ -126,10 +126,7 @@ class _PlayerPanel extends StatelessWidget {
             final rows = (commands.length / columns).ceil();
             final buttonHeight = math.max(
               48.0,
-              math.min(
-                96.0,
-                (constraints.maxHeight - (width >= 336 ? 48 : 96) - 4) / rows,
-              ),
+              math.min(96.0, (constraints.maxHeight - 100) / rows),
             );
             return SingleChildScrollView(
               key: ValueKey('priority-panel-scroll-${player.id}'),
