@@ -1,64 +1,63 @@
 # Estado actual — TeamFight: GridLab
 
-2026-11-26 (America/Bogota). **1.0.0-rc.23+36**, beta candidata debug.
-Rama `codex/priority-clockwise-layout`, base `6d924e5` (rc.22).
-Informe anterior: [ENTREGA_RC22.md](ENTREGA_RC22.md).
+2026-11-26 (America/Bogota). **1.0.0-rc.24+37**, beta candidata debug.
+Rama `codex/priority-toolbar-actions`, base `601ce6d` (rc.23).
+Informe anterior: [ENTREGA_RC23.md](ENTREGA_RC23.md).
 
-## Tres jugadores, giros del dibujo y turnos horarios
+## Deshacer y Finalizar en la barra
 
-- Mirando el celular de frente: 1 arriba izquierda orientado hacia la izquierda;
-  2 arriba derecha orientado hacia la derecha; 3 abajo, de frente y a todo el ancho.
-  Se gira cada panel completo; configuración y mesa usan los mismos giros/posiciones.
-- Turnos y prioridad recorren los asientos en sentido horario. En 4–6 se conservan
-  superficies y giros hacia cada lado, con la numeración horaria correspondiente.
-- Arrastrar un jugador cambia también el ciclo de juego según las posiciones nuevas.
-  Conserva inicial, activo/prioridad actuales y datos individuales. Reorganiza solo
-  pendientes; no hace responder de nuevo a quien ya completó su oportunidad.
-- Guardado y Deshacer incluyen el orden actual. Formato Priority 2 migra formato 1,
-  incluyendo los checkpoints, sin reiniciar la partida ni perder PV/acciones/tiempos.
-  Recuperar o deshacer mantiene los relojes pausados hasta reanudación manual.
+- Flecha curva verde para Deshacer, con acceso directo a la operación anterior.
+- X dentro de un círculo rojo para Finalizar; mantiene confirmación y guardado
+  del resumen. Cancelar conserva la partida; al finalizar el botón queda atenuado.
+- Se habilitan según el controlador y se ocultan durante la configuración. Deshacer
+  conserva la restauración completa y deja los relojes pausados.
+- Clasificación general y Nueva partida pasan al menú ⋮ para mantener objetivos
+  táctiles de 48×48 con Volver, reloj y los dos accesos nuevos, sin ampliar la barra.
+- La confirmación de finalizar usa el diálogo desplazable común, con las acciones
+  dentro del desplazamiento para pantallas pequeñas y texto al 300 %.
 
-Detalles: [PRIORITY_PLAN.md](PRIORITY_PLAN.md), [ARQUITECTURA.md](ARQUITECTURA.md)
-y contrato de dominio. El Editor y Entrenador mantienen formatos y comportamiento.
-Sin paquetes/permisos nuevos ni cambios del flujo de APK. La beta conserva el corte
-30/12/2026 00:00 Colombia según el reloj del dispositivo. No se inicia otra etapa.
+Solo cambia presentación; reutiliza los manejadores existentes. Motor, orden horario
+por posiciones, giros de tres, relojes, puntos, historial/undo y formato Priority 2
+permanecen. Sin paquetes/permisos nuevos ni cambios del flujo de APK. La beta sigue
+venciendo el 30/12/2026 a las 00:00 Colombia según el reloj del dispositivo.
+Detalles: [PRIORITY_PLAN.md](PRIORITY_PLAN.md).
 
 ## Verificación
 
 | Comprobación | Resultado |
 | --- | --- |
-| Pruebas nuevas | 27: geometría/motor, UI/arrastre, respuestas, rondas, persistencia/undo y migración |
-| Focalizadas de orden dinámico | **91/91 aprobadas**, 17 s |
-| Suite general + renders finales | **1074/1074 aprobadas**, 6 min 43 s: 1046 pruebas y 28 renders |
+| Nuevas pruebas de barra | **6/6 aprobadas** |
+| Regresión focalizada UI + renders | **183/183 aprobadas**, 1 min 33 s: 154 pruebas y 29 renders |
 | Análisis completo | Sin incidencias |
-| Formato lib/test/tool | 202 archivos Dart, 0 cambios pendientes |
-| ./tool/build_apk.ps1 | Correcto, Gradle 31,8 s; copia/hash verificados, solo rc.23 |
-| aapt / apksigner | Paquete/versión/SDK/firma v2 válidos; certificado conservado; sin INTERNET |
+| Formato lib/test/tool | 203 archivos Dart, 0 cambios pendientes |
+| ./tool/build_apk.ps1 | Correcto, Gradle 70,2 s; copia/hash verificados; 1 APK anterior eliminado |
+| aapt / apksigner | Paquete/versión/SDK/firma v2 válidos; mismo certificado; sin INTERNET |
 
-Las pruebas existentes de arrastre se adaptan a la petición de cambiar el ciclo
-al mover paneles. Los 4000 roundtrips de snapshots ahora incluyen permutaciones.
-La nueva cobertura prueba todos los pares de asientos en 2–6 y ambas ventanas;
-conserva datos, prioridad en curso, respuestas completadas, rondas parciales,
-eliminados, reinicio, reversión y migración de formato 1 con uno/dos intercambios.
-Los renders incluyen la nueva distribución de tres en vertical/horizontal y la
-vista de configuración. Las pruebas anteriores de dimensiones/texto ampliado se
-reutilizan para todos los participantes.
+Se comprueban iconos/colores, habilitación, undo real, pausa, cancelar/finalizar y
+revertir final, acceso a clasificación/nueva partida sin perder el archivo anterior,
+configuración sin botones y objetivos táctiles completos/no solapados con Volver y
+reloj en 320×320 y 800×360, texto 100 %/300 %. Se reutilizan las pruebas de mesa,
+configuración, teclado, gestión, relojes, historial, persistencia y resultados.
+Los renders se amplían a 29 con una vista de la barra con Volver/reloj en 320×568.
 
-Evidencia local: `build/verification/priority-clockwise-layout/`, con
-`full-final.log`, `reseat-final.log`, `analyze-final.log`, `format-check-final.log`,
-`apk-build.log`, `apk-identity.log` y `previews/`.
+La última regresión general completa fue rc.23: 1046 pruebas + 28 renders aprobados.
+Este cambio se limita a la interfaz y se verifica con las suites de pantalla de
+Priority, incluidos los controles de etapas anteriores, y análisis global.
+
+Evidencia local: `build/verification/priority-toolbar-actions/`:
+`toolbar-tests.log`, `targeted-final.log`, `analyze-final.log`,
+`format-check-final.log`, `apk-build.log`, `apk-identity.log` y `previews/`.
 
 ## APK entregable único
 
-- `build/releases/teamfight-gridlab-1.0.0-rc.23-debug.apk`, **159133671** bytes.
-- SHA-256: `834A477E55BE6AB616B3ABB5545AA1E1444BD6D5132CF3FE13C0FEB1B11095E2`.
-- Paquete `com.valinor.heroclixtrainer`, nombre TeamFight: GridLab, código 36;
+- `build/releases/teamfight-gridlab-1.0.0-rc.24-debug.apk`, **159135495** bytes.
+- SHA-256: `7A10FA4B4DAC3F4305F9ED3C6B6697C79473474D9BF341023A75932A243CCD20`.
+- Paquete `com.valinor.heroclixtrainer`, nombre TeamFight: GridLab, código 37;
   SDK mínimo 24 y objetivo/compilación 36.
 - Certificado SHA-256 conservado:
   `57081ee91137c216eff437a7c75ac5bb6f552bc29167e63370d85628fc82ac54`.
-- Solo queda rc.23. El script retiró rc.22 tras validar la primera copia; la
-  compilación definitiva reemplazó esa copia de rc.23 después de verificarla.
-  No se cambió el flujo de APK ni se usó flutter clean.
+- Solo queda rc.24. El script retiró rc.23 después de verificar la compilación y
+  la copia; no cambió el flujo de APK ni se utilizó flutter clean.
 
 ## Aceptación Android
 

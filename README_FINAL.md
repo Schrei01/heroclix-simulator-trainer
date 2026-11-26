@@ -1,16 +1,16 @@
-# TeamFight: GridLab — 1.0.0-rc.23+36
+# TeamFight: GridLab — 1.0.0-rc.24+37
 
 Aplicación Android offline, en español, para construir escenarios, consultar reglas
 implementadas y practicar. **Versión candidata, APK debug**: faltan las comprobaciones
 nativas de aceptación y rendimiento descritas abajo. No se congela 1.0.0 estable.
 Repositorio privado: [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer),
-rama `codex/priority-clockwise-layout`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
+rama `codex/priority-toolbar-actions`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
 
 Nombre e iconos de Android, Inicio y Acerca de actualizados a TeamFight: GridLab.
 La identidad técnica y firma se conservan para actualizar la instalación anterior.
 Archivos de Google Play preparados en distribution/google-play/; [detalles de identidad](docs/IDENTIDAD.md).
 
-Esta beta rc.23 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
+Esta beta rc.24 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
 (2026-12-30T05:00:00Z). Desde ese instante muestra «Versión de prueba finalizada»
 y bloquea todas las pantallas, también al reanudar o si permanece abierta. Acerca de
 muestra la fecha. No elimina biblioteca ni progreso. Usa el reloj del dispositivo:
@@ -23,7 +23,7 @@ anterior sin caducidad también queda fuera de este control local.
 El archivo generado se conserva en:
 
 ```text
-build/releases/teamfight-gridlab-1.0.0-rc.23-debug.apk
+build/releases/teamfight-gridlab-1.0.0-rc.24-debug.apk
 ```
 
 1. Android 7.0/API 24 o superior. Copiar el APK al teléfono, abrirlo en Archivos
@@ -35,7 +35,7 @@ build/releases/teamfight-gridlab-1.0.0-rc.23-debug.apk
 
 ```powershell
 adb devices -l
-adb -s ID install -r build/releases/teamfight-gridlab-1.0.0-rc.23-debug.apk
+adb -s ID install -r build/releases/teamfight-gridlab-1.0.0-rc.24-debug.apk
 adb -s ID shell am start -n com.valinor.heroclixtrainer/com.valinor.heroclix_simulator_trainer.MainActivity
 ```
 
@@ -105,11 +105,18 @@ puntos, corregir el total, corregir tiempo o eliminar con confirmación. La corr
 del tiempo reemplaza el restante por minutos completos y deja la partida pausada;
 confirma y reanuda. El campo propone redondear hacia arriba el tiempo restante.
 La clasificación se abre
-desde la barra y conserva a los eliminados y los empates. Un superviviente finaliza
+desde **⋮ → Clasificación general** y conserva a los eliminados y los empates. Un superviviente finaliza
 la partida y abre la clasificación; no declara un ganador automático. Los puntos
 se pueden corregir también al finalizar, sin reabrir el juego.
 En rc.22, abre **⋮ → Historial** para consultar registros cronológicos de acciones,
-respuestas, pases, turnos, prioridad, correcciones y eliminaciones. **Deshacer**
+respuestas, pases, turnos, prioridad, correcciones y eliminaciones. Desde rc.24,
+Deshacer tiene un acceso directo verde con flecha curva en la barra superior;
+Finalizar usa una X rodeada en rojo y pide confirmación. Clasificación general y
+Nueva partida se encuentran en **⋮**, dejando espacio a los nuevos botones.
+El diálogo de finalizar se puede desplazar con texto ampliado.
+
+El historial conserva los registros de acciones,
+respuestas, pases y cambios administrativos. **Deshacer**
 restaura operaciones completas consecutivamente, incluidos respuestas pendientes,
 eliminados, acciones, PV, tiempos y asientos. Los registros deshechos quedan marcados
 y se excluyen del resumen. Los relojes quedan pausados tras deshacer o recuperar:
@@ -238,7 +245,7 @@ usa etiquetas genéricas. Exportar la escena completa sí conserva sus nombres.
 | Instalación, nueva sesión tras cierre y selectores nativos | Pendiente de Android; equivalentes de archivos/controladores sí verificados |
 | Offline con radios desactivadas y rendimiento Android/FPS | Pendiente de dispositivo/emulador funcional |
 | APK release con firma del propietario | Preparado; sin claves suministradas, no generado |
-| Congelar 1.0.0 estable | Pendiente de cerrar aceptación nativa; esta entrega es 1.0.0-rc.23 |
+| Congelar 1.0.0 estable | Pendiente de cerrar aceptación nativa; esta entrega es 1.0.0-rc.24 |
 | Simular combates, dados, diales, daño y poderes de figuras | Fuera del alcance del proyecto |
 
 ## Dependencias y recompilación

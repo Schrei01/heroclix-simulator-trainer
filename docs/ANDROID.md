@@ -1,6 +1,6 @@
 # Preparar, compilar e instalar en Android
 
-Candidata actual: **TeamFight: GridLab 1.0.0-rc.23+36**. Inicio contiene Editor, Entrenador y Priority; las consultas
+Candidata actual: **TeamFight: GridLab 1.0.0-rc.24+37**. Inicio contiene Editor, Entrenador y Priority; las consultas
 y ensayos están en las herramientas del Editor. El recorrido vigente del Editor
 está al final de este documento. Los apartados identificados por etapa describen
 sus versiones históricas. Resultados efectivamente ejecutados: [ESTADO](ESTADO.md).
@@ -562,3 +562,14 @@ la prioridad. Abrir una partida guardada, deshacer y verificar estado conservado
 Al arrastrar durante la partida, los próximos turnos y respuestas siguen las nuevas posiciones; el jugador inicial se conserva. Comprobar Deshacer y recuperación también de ese orden.
 
 Este recorrido nativo sigue pendiente. Pruebas Flutter, renders y APK en ESTADO.md.
+
+## Barra de Deshacer y Finalizar (rc.24)
+
+Con una partida abierta, verificar flecha curva verde de Deshacer y X dentro de un
+círculo rojo para Finalizar, junto al control opcional del reloj. Deshacer permanece
+atenuado hasta tener operaciones; tras usarlo, comprobar la restauración y pausa.
+Finalizar debe permitir Cancelar sin cambios y Confirmar debe guardar/mostrar el
+resumen. Después queda deshabilitado; Deshacer permite restaurar la partida pausada.
+Clasificación y Nueva partida están en ⋮ y conservan su comportamiento. Repetir con
+Volver, pantalla estrecha y texto ampliado; deslizar la confirmación si no cabe.
+Pruebas y renders locales no sustituyen este recorrido físico pendiente.

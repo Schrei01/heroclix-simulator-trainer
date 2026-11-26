@@ -98,6 +98,13 @@ Undo y recuperación fuerzan pausa manual y aumentan revisión para invalidar
 callbacks antiguos. La UI ofrece historial, biblioteca y resumen; el motor sigue
 siendo el único responsable de las reglas del juego.
 
+Rc.24 añade accesos de presentación en AppBar: `undo_rounded` verde para Deshacer y
+`cancel_outlined` rojo para Finalizar. Comparten los manejadores ya existentes del
+menú, consultando `canUndo`/`can(finish)` para habilitarse. Clasificación/Nueva partida
+pasan al menú para conservar áreas táctiles de 48 sin ampliar la barra. La
+confirmación de finalizar usa el diálogo desplazable común de Priority, incluidos
+sus botones. No se modifica motor, persistencia ni formato por este ajuste.
+
 Producción usa `priority_v1/` en almacenamiento privado Android, con formato
 Priority 2 (compatible con 1), checksum de corrupción, archivo activo y copia válida anterior.
 Cada partida archivada tiene ID propio. Nueva partida o cambiar de partida

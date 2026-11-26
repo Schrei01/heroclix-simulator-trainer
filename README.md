@@ -1,6 +1,6 @@
 # TeamFight: GridLab
 
-Aplicación Android Flutter/Dart, offline y en español. Versión **1.0.0-rc.23+36**.
+Aplicación Android Flutter/Dart, offline y en español. Versión **1.0.0-rc.24+37**.
 
 **Priority** está disponible desde inicio: configura de 2 a 6 jugadores, organiza
 los asientos en sentido horario y coloca el teléfono en el centro de la mesa.
@@ -14,6 +14,9 @@ Toca el nombre para sumar/restar/corregir puntos, corregir tiempo o eliminar con
 confirmación. La clasificación conserva eliminados y empates; con un superviviente
 termina la partida. Los puntos pueden corregirse también después de finalizar.
 Desde rc.22, el menú **⋮** abre Historial, Deshacer, Partidas guardadas y Finalizar.
+Desde rc.24, la barra superior ofrece Deshacer con flecha curva verde y Finalizar
+con una X dentro de un círculo rojo, con confirmación. Clasificación general y
+Nueva partida están en **⋮**. Los accesos se deshabilitan cuando no corresponden.
 Deshacer es consecutivo y restaura el estado completo, incluida la ventana de
 respuesta. Deshacer o recuperar deja los relojes pausados hasta reanudarlos
 manualmente. Nueva partida conserva la anterior en la biblioteca local; finalizar
@@ -51,7 +54,7 @@ horario 1 → 2 → 3 → 1. Para 4–6, los asientos también se enumeran en se
 conservan sus superficies y orientación hacia los lados correspondientes.
 La mesa ocupa todo el espacio bajo la barra: se retiró la franja de ronda/turno.
 El borde dorado identifica la prioridad; se mantienen ACTIVO y REACTIVO.
-La versión actual está en la rama `codex/priority-clockwise-layout` del repositorio privado
+La versión actual está en la rama `codex/priority-toolbar-actions` del repositorio privado
 [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer).
 
 Desde rc.8 la marca visible es **TeamFight: GridLab**, con los iconos Android y el
@@ -74,7 +77,7 @@ azul con ondas y letra A. Conserva alturas, admite figuras y se guarda en biblio
 JSON y PNG. La paleta reúne seis pinceles. Según §16.6 de la edición implementada,
 agua se considera despejado para visión/movimiento salvo efectos específicos.
 
-Esta beta rc.23 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
+Esta beta rc.24 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
 (2026-12-30T05:00:00Z). Desde ese instante muestra «Versión de prueba finalizada»
 y bloquea todas las pantallas, también al reanudar o si permanece abierta. Acerca de
 muestra la fecha. No elimina biblioteca ni progreso. Usa el reloj del dispositivo:

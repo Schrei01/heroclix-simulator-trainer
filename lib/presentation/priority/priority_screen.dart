@@ -13,7 +13,7 @@ import 'priority_theme.dart';
 import 'priority_seat_drag.dart';
 import 'priority_history.dart';
 
-enum _PriorityMenu { history, undo, saved, finish }
+enum _PriorityMenu { history, undo, saved, finish, standings, newGame }
 
 class PriorityScreen extends StatefulWidget {
   const PriorityScreen({required this.controller, super.key});
@@ -248,6 +248,10 @@ class _PriorityScreenState extends State<PriorityScreen> {
 
   Future<void> _more(_PriorityMenu choice) async {
     switch (choice) {
+      case _PriorityMenu.standings:
+        await showPriorityStandings(context, widget.controller);
+      case _PriorityMenu.newGame:
+        await _newGame();
       case _PriorityMenu.history:
         await openPriorityHistory(context, controller: widget.controller);
       case _PriorityMenu.undo:
@@ -267,21 +271,35 @@ class _PriorityScreenState extends State<PriorityScreen> {
       case _PriorityMenu.finish:
         final confirmed = await showDialog<bool>(
           context: context,
-          builder: (context) => PriorityTheme(
-            child: AlertDialog(
-              title: const Text('¿Finalizar la partida?'),
-              content: const Text(
-                'Se detendrán los relojes y se guardará el resumen de resultados.',
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: const Text('Cancelar'),
+          builder: (context) => priorityRotatedDialog(
+            0,
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '¿Finalizar la partida?',
+                  style: Theme.of(context).textTheme.titleLarge,
                 ),
-                FilledButton(
-                  key: const ValueKey('priority-finish-confirm'),
-                  onPressed: () => Navigator.pop(context, true),
-                  child: const Text('Finalizar'),
+                const SizedBox(height: 12),
+                const Text(
+                  'Se detendrán los relojes y se guardará el resumen de resultados.',
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text('Cancelar'),
+                    ),
+                    FilledButton(
+                      key: const ValueKey('priority-finish-confirm'),
+                      onPressed: () => Navigator.pop(context, true),
+                      child: const Text('Finalizar'),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -376,11 +394,14 @@ class _PriorityScreenState extends State<PriorityScreen> {
             actions: [
               if (match != null) ...[
                 IconButton(
-                  key: const ValueKey('priority-standings'),
-                  tooltip: 'Clasificación general',
-                  icon: const Icon(Icons.leaderboard_outlined),
-                  onPressed: () =>
-                      showPriorityStandings(context, widget.controller),
+                  key: const ValueKey('priority-toolbar-undo'),
+                  tooltip: 'Deshacer última operación',
+                  color: const Color(0xFF69DB8C),
+                  disabledColor: const Color(0xFF69DB8C).withValues(alpha: .35),
+                  icon: const Icon(Icons.undo_rounded),
+                  onPressed: widget.controller.canUndo
+                      ? () => _more(_PriorityMenu.undo)
+                      : null,
                 ),
                 if (match.isPaused ||
                     (match.configuration.clockEnabled &&
@@ -403,20 +424,35 @@ class _PriorityScreenState extends State<PriorityScreen> {
                           )
                         : null,
                   ),
-              ],
-              if (match != null)
                 IconButton(
-                  key: const ValueKey('priority-new-game'),
-                  onPressed: widget.controller.busy ? null : _newGame,
-                  tooltip: 'Nueva partida',
-                  icon: const Icon(Icons.add_circle_outline),
+                  key: const ValueKey('priority-toolbar-finish'),
+                  tooltip: 'Finalizar partida',
+                  color: const Color(0xFFFF7070),
+                  disabledColor: const Color(0xFFFF7070).withValues(alpha: .35),
+                  icon: const Icon(Icons.cancel_outlined),
+                  onPressed:
+                      widget.controller.can(const PriorityCommand.finish())
+                      ? () => _more(_PriorityMenu.finish)
+                      : null,
                 ),
+              ],
               PopupMenuButton<_PriorityMenu>(
                 key: const ValueKey('priority-more'),
-                tooltip: 'Historial y partidas',
+                tooltip: 'Más opciones',
                 onSelected: _more,
                 itemBuilder: (context) => [
                   if (match != null) ...[
+                    const PopupMenuItem(
+                      value: _PriorityMenu.standings,
+                      key: ValueKey('priority-standings'),
+                      child: Text('Clasificación general'),
+                    ),
+                    PopupMenuItem(
+                      value: _PriorityMenu.newGame,
+                      key: const ValueKey('priority-new-game'),
+                      enabled: !widget.controller.busy,
+                      child: const Text('Nueva partida'),
+                    ),
                     const PopupMenuItem(
                       value: _PriorityMenu.history,
                       key: ValueKey('priority-menu-history'),

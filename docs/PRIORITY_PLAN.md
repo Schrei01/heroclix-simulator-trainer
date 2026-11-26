@@ -602,3 +602,35 @@ Incremento completado. Se detiene el trabajo sin iniciar funciones posteriores.
 Evidencia en `build/verification/priority-clockwise-layout/`; resultados definitivos
 sobre el alcance completo y APK en [ESTADO.md](ESTADO.md). La aceptación Android
 sigue pendiente conforme a la decisión de continuar sin teléfono.
+
+## Accesos superiores de Deshacer/Finalizar rc.24 — 2026-11-26
+
+Rama `codex/priority-toolbar-actions`, base `601ce6d` (rc.23). La barra de Priority
+incorpora una flecha curva verde para Deshacer y una X rodeada en rojo para finalizar.
+Se reutilizan los mismos manejadores que el menú, sin duplicar reglas. Deshacer
+consulta `canUndo`; finalizar consulta `can(finish)` y conserva la confirmación.
+Los botones se muestran con partida abierta y se atenúan cuando están deshabilitados.
+Clasificación y Nueva partida pasan al menú ⋮ para mantener espacio y objetivos
+48×48 con Volver, reloj y las dos acciones. Se mantienen las opciones anteriores
+al alcance del menú y del historial. La confirmación de finalizar utiliza el
+diálogo desplazable común, con título, texto y acciones dentro del desplazamiento.
+
+- [x] Accesos verde/rojo en la barra, estados habilitados y finalización confirmada.
+- [x] Clasificación y Nueva partida accesibles desde ⋮, sin perder archivo de partida.
+- [x] Seis pruebas nuevas de UI: iconos/colores y operaciones reales, cancelación,
+  final/undo, menús, ausencia en configuración y objetivos táctiles sin solapamiento
+  con Volver/reloj en 320×320/800×360 y texto 100 %/300 %.
+- [x] Nuevas pruebas de barra: **6/6 aprobadas**; sin cambios de negocio o guardado.
+- [x] Regresión focalizada de interfaz y renders: **183/183 aprobadas**, 1 min 33 s
+  (154 pruebas y 29 renders). Análisis completo sin incidencias; 203 archivos Dart
+  con formato correcto. Revisión visual de ambos accesos, incluida una nueva vista
+  de la barra con Volver/reloj en 320×568.
+- [x] APK rc.24/código 37 generado mediante `./tool/build_apk.ps1`, Gradle 70,2 s;
+  paquete/versión/SDK, firma v2, certificado anterior y copia/hash verificados,
+  sin INTERNET. Solo queda rc.24 tras retirar rc.23 con el script habitual.
+
+Se conservan orientación y orden horario, incluida reorganización por arrastre,
+relojes, PV, historial, recuperación y Deshacer de las etapas anteriores.
+No se cambia el flujo de APK ni se inicia una etapa nueva. La validación física
+continúa pendiente conforme a la decisión de seguir sin teléfono.
+Resultados definitivos y APK: [ESTADO.md](ESTADO.md).

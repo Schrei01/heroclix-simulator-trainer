@@ -33,6 +33,7 @@ void main() {
     ('setup', 6, const Size(360, 800), true),
     ('two', 2, const Size(360, 800), false),
     ('three', 3, const Size(360, 800), false),
+    ('toolbar-back', 3, const Size(320, 568), false),
     ('three-setup', 3, const Size(360, 800), true),
     ('four', 4, const Size(360, 800), false),
     ('three-landscape', 3, const Size(800, 360), false),
@@ -75,6 +76,7 @@ void main() {
           PriorityConfiguration(
             clockEnabled:
                 name.startsWith('clock') ||
+                name == 'toolbar-back' ||
                 name == 'player-management' ||
                 name == 'undo-paused' ||
                 name == 'eliminated' ||
@@ -158,6 +160,15 @@ void main() {
         await t.pumpAndSettle();
       }
       TestGesture? seatGesture;
+      if (name == 'toolbar-back') {
+        Navigator.push<void>(
+          t.element(find.byType(PriorityScreen)),
+          MaterialPageRoute(
+            builder: (_) => PriorityScreen(controller: controller),
+          ),
+        );
+        await t.pumpAndSettle();
+      }
       if (name == 'three-setup') {
         await t.tap(find.byKey(const ValueKey('priority-player-count')));
         await t.pumpAndSettle();
@@ -256,7 +267,7 @@ void main() {
         final image = await boundary.toImage();
         final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
         final directory = Directory(
-          'build/verification/priority-clockwise-layout/previews',
+          'build/verification/priority-toolbar-actions/previews',
         );
         await directory.create(recursive: true);
         await File('${directory.path}/$name.png')

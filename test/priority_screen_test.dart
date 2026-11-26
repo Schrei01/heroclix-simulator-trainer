@@ -11,6 +11,11 @@ import 'support/test_clock.dart';
 
 Finder key(String key) => find.byKey(ValueKey(key));
 Future<void> press(WidgetTester t, String id) async {
+  if ((id == 'priority-standings' || id == 'priority-new-game') &&
+      key(id).evaluate().isEmpty) {
+    await t.tap(key('priority-more'));
+    await t.pumpAndSettle();
+  }
   await t.ensureVisible(key(id));
   await t.tap(key(id));
   await t.pumpAndSettle();
