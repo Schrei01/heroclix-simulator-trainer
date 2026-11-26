@@ -1,6 +1,6 @@
 # Preparar, compilar e instalar en Android
 
-Candidata actual: **TeamFight: GridLab 1.0.0-rc.13+26**. Inicio contiene Editor, Entrenador y Priority; las consultas
+Candidata actual: **TeamFight: GridLab 1.0.0-rc.22+35**. Inicio contiene Editor, Entrenador y Priority; las consultas
 y ensayos están en las herramientas del Editor. El recorrido vigente del Editor
 está al final de este documento. Los apartados identificados por etapa describen
 sus versiones históricas. Resultados efectivamente ejecutados: [ESTADO](ESTADO.md).
@@ -72,13 +72,69 @@ ESTADO.md para saber qué se ejecutó realmente.
 7. Registrar resultados reales en ESTADO.md; las pruebas de widgets no sustituyen
    estas pruebas de dispositivo.
 
-Para Priority: configurar 2, 3 y 6 participantes, organizar asientos, probar inicial
+Para Priority: configurar de 2 a 6 participantes, organizar asientos, probar inicial
 manual/sorteado y apoyar el teléfono en el centro de una mesa. Comprobar lectura y
 pulsaciones desde cada lado, en vertical/horizontal y con texto ampliado. Ejecutar
 J1 ACTION → J2 RESPONSE ACTION → J3 PASS → J1 END TURN: todos recuperan 3 acciones
 y J2 recibe turno/prioridad. Probar edición de adicionales durante respuestas,
 pase automático a cero, FREE a cero, doble toque y volver al inicio/regresar. La
-partida de esta etapa se conserva solo en memoria, no después de cerrar el proceso.
+partida se guarda localmente y puede recuperarse después de cerrar el proceso,
+con los relojes pausados. El recorrido específico de etapa 4 está al final.
+
+Incremento visual rc.15: comprobar botones rectangulares de esquinas suaves en
+configuración/mesa/diálogos. Para 3 y 4, verificar el esquema de lados opuestos
+como 5 y 6, en ambas orientaciones; 2, 5 y 6 conservan su distribución.
+La mesa empieza justo debajo de la barra, sin franja de ronda/turno ni texto
+PRIORIDAD. Borde dorado identifica prioridad y ACTIVO/REACTIVO siguen visibles.
+Agotar tiempo muestra un aviso flotante durante 8 s; **Ver** abre gestión.
+Comprobar que se oculta sin repetirse en cada refresco y que corregir a positivo
+y volver a agotar sí genera un aviso nuevo. Repetir con texto ampliado.
+
+Priority actual: elegir puntos de construcción una sola vez y comprobar que se
+aplican a todos, manteniendo adicionales individuales. Activar relojes a 1 minuto
+y comprobar que solo descuenta el
+jugador con prioridad; ACTION/respuestas/PASS/END TURN transfieren sin reiniciar
+tiempos. Salir a inicio, abrir otra app/bloquear y volver: debe quedar pausada
+hasta reanudar. A cero, verificar aviso y pausa sin eliminación automática.
+Corregir tiempo desde el nombre del panel, confirmar y reanudar manualmente.
+Configuración y corrección solo ofrecen minutos completos. Corregir sustituye el
+restante; el campo propone redondear hacia arriba. La cuenta sigue mostrando segundos.
+En la barra de cada jugador, probar la calavera: Cancelar conserva al jugador;
+Eliminar aplica exclusión/finalización como desde gestión. Probar −/+ de 5 PV,
+pulsaciones rápidas y acumulado +5/+10/+15 con difuminado: cada toque reinicia
+3 segundos, cambiar de signo empieza otra cuenta y después de 3 segundos inactivo
+desaparece. Verificar total permanente, resta sin negativos, independencia por
+jugador, giro y acceso en paneles pequeños mediante desplazamiento.
+Rc.17: comprobar que ACTION y demás acciones no se pegan al borde del panel,
+incluidos seis jugadores en horizontal, y que conservan un área táctil mínima
+de 48 unidades. «Aplicar puntos» debe separarse del campo anterior y tener margen
+interior cómodo. Repetir con teclado y texto ampliado.
+Rc.18: ACTIVO debe verse en negrilla y con fondo/punto del color del jugador.
+Al comenzar cada turno, comprobar dos pulsos suaves de luz durante 3,2 s y luego
+resaltado fijo. ACTION pasa la prioridad, pero el indicador sigue en el dueño del
+turno; END TURN lo traslada al siguiente. Al eliminar/finalizar debe actualizarse.
+Activar la opción del sistema de reducir animaciones: debe conservar el resaltado
+fijo sin pulsos. Revisar 2–6 jugadores, giro, texto ampliado y márgenes de rc.17.
+Rc.19: PV grandes (22), en negrilla y centrados entre −/+, separados de acciones.
+Comprobar posiciones en círculo: 1 y 2 dorados, 3 bronce y 4–6 verdes. Ajustar
+PV y provocar empates: las posiciones deben coincidir con clasificación, incluidos
+eliminados. Revisar los seis círculos y todos los controles con seis en horizontal,
+además de texto 300 %, valores largos y cambio de orientación.
+Rc.20: comprobar que −/+ están próximos a los PV. Antes de iniciar, seleccionar
+un inicial distinto del primer asiento y arrastrar su celda sobre otra en la vista
+de asientos. INICIA y el selector deben conservar al mismo jugador; al empezar
+debe quedar activo/con prioridad. En la mesa, mantener el nombre y arrastrar a
+otro panel: se intercambian posiciones, no el orden de juego ni los datos.
+Verificar color, PV, acciones, relojes, ventanas de respuesta, giro y salir/volver.
+Soltar fuera cancela. Un toque corto en el nombre sigue abriendo gestión.
+Rc.21: comprobar que − y + quedan a la misma altura que el total de PV, también
+en paneles girados. Pulsar repetidamente: +5/+10… aparece debajo, sin superponerse
+ni desplazar el total; al desaparecer la alineación debe mantenerse.
+Registrar/restar/corregir PV, incluidos eliminados y correcciones posteriores al
+final; rechazar puntos negativos. Eliminar con confirmación al activo, reactivo
+con prioridad y un pendiente; comprobar exclusión de ciclos y conservación de PV.
+Con un superviviente se abre clasificación con empates explícitos y sin inventar
+ganador; los relojes quedan detenidos. Repetir con 6 jugadores, giro y TalkBack.
 
 Los manifiestos de esta app no solicitan INTERNET, ni siquiera en debug/profile.
 Esto limita conexiones al servicio VM de depuración/hot reload. Para comprobar
@@ -465,3 +521,30 @@ desinstalar; conserva firma, datos y vencimiento 30/12/2026 00:00 Colombia.
    biblioteca rc.11, datos de entrenador, giro/texto ampliado y consultas de visión.
 
 Pruebas en Android real pendientes; se mantiene la decisión de continuar sin teléfono.
+
+## Priority etapa 4 (rc.22): recuperación y resultados
+
+Recorrido todavía pendiente en Android real; la decisión de continuar sin teléfono
+se mantiene. Las pruebas Flutter/archivos y renders se registran en ESTADO.md.
+
+1. Sin Wi-Fi/datos, configurar tres jugadores/reloj y realizar J1 ACTION → J2
+   RESPONSE ACTION, dejando prioridad J3. Cambiar PV, adicionales y corregir tiempo;
+   mover asientos. En ⋮ → Historial comprobar actores, ronda/turno y prioridad.
+2. Ir al inicio, bloquear/desbloquear y volver: conservar ventana y relojes pausados.
+   Forzar cierre del proceso y abrir: activo J1, prioridad J3, acciones/tiempos/PV
+   y asientos conservados, sin descontar el lapso de ausencia. Reanudar manualmente;
+   J3 PASS devuelve prioridad a J1 y END TURN restablece acciones para todos.
+3. Deshacer varias veces desde Historial. Comprobar respuesta parcial, eliminación,
+   finalización y correcciones de PV/tiempo/adicionales, con relojes siempre pausados.
+   Reabrir la app y continuar deshaciendo; los registros anulados siguen marcados.
+4. Nueva partida: Cancelar conserva; Confirmar archiva la anterior. Crear otra y
+   usar Partidas guardadas para consultar/retomar la primera. La segunda permanece
+   guardada. Descartar una guardada exige confirmación; la abierta no ofrece borrado.
+5. Finalizar desde ⋮: Cancelar conserva, Confirmar detiene juego y guarda resumen.
+   Revisar PV/empates/eliminados y seis contadores de operación, tiempos/ronda/turno.
+   Cerrar/abrir y consultarlo desde Partidas guardadas, sin reabrir el juego.
+6. Repetir historial, biblioteca y resumen en ambas orientaciones, texto ampliado y
+   TalkBack. Probar presión rápida de PV y cambio entre módulos sin pérdida.
+
+Instalar encima con la misma firma preserva los archivos privados. Desinstalar o
+borrar datos elimina las partidas Priority; no se incluye su exportación en etapa 4.

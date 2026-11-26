@@ -1,16 +1,16 @@
-# TeamFight: GridLab — 1.0.0-rc.13+26
+# TeamFight: GridLab — 1.0.0-rc.22+35
 
 Aplicación Android offline, en español, para construir escenarios, consultar reglas
 implementadas y practicar. **Versión candidata, APK debug**: faltan las comprobaciones
 nativas de aceptación y rendimiento descritas abajo. No se congela 1.0.0 estable.
 Repositorio privado: [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer),
-rama `codex/priority-ui-stage2`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
+rama `codex/priority-stage4`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
 
 Nombre e iconos de Android, Inicio y Acerca de actualizados a TeamFight: GridLab.
 La identidad técnica y firma se conservan para actualizar la instalación anterior.
 Archivos de Google Play preparados en distribution/google-play/; [detalles de identidad](docs/IDENTIDAD.md).
 
-Esta beta rc.13 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
+Esta beta rc.22 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
 (2026-12-30T05:00:00Z). Desde ese instante muestra «Versión de prueba finalizada»
 y bloquea todas las pantallas, también al reanudar o si permanece abierta. Acerca de
 muestra la fecha. No elimina biblioteca ni progreso. Usa el reloj del dispositivo:
@@ -23,7 +23,7 @@ anterior sin caducidad también queda fuera de este control local.
 El archivo generado se conserva en:
 
 ```text
-build/releases/teamfight-gridlab-1.0.0-rc.13-debug.apk
+build/releases/teamfight-gridlab-1.0.0-rc.22-debug.apk
 ```
 
 1. Android 7.0/API 24 o superior. Copiar el APK al teléfono, abrirlo en Archivos
@@ -35,31 +35,88 @@ build/releases/teamfight-gridlab-1.0.0-rc.13-debug.apk
 
 ```powershell
 adb devices -l
-adb -s ID install -r build/releases/teamfight-gridlab-1.0.0-rc.13-debug.apk
+adb -s ID install -r build/releases/teamfight-gridlab-1.0.0-rc.22-debug.apk
 adb -s ID shell am start -n com.valinor.heroclixtrainer/com.valinor.heroclix_simulator_trainer.MainActivity
 ```
 
 La firma debug coincide con 00–11; instalación de esta candidata todavía no
 verificada en Android. Antes de desinstalar, exportar escenas como JSON. La
-desinstalación elimina progreso y ejercicios personales; su exportación todavía
+desinstalación elimina partidas Priority, progreso y ejercicios personales; su exportación todavía
 no está implementada. PNG sirve para compartir una imagen, no para recuperar datos.
 
 ## Uso básico
 
 Desde inicio, abre **Priority** para asistir una partida física del formato de
-Valinor. Configura 2–6 jugadores, nombres, puntos y adicionales; organiza asientos
+Valinor. Configura 2–6 jugadores, nombres, puntos de construcción comunes y
+adicionales individuales; organiza asientos
 con las flechas anterior/siguiente y elige o sortea al inicial. **Listo** abre la
-mesa con paneles orientados hacia sus respectivos jugadores. El borde dorado y
-la etiqueta PRIORIDAD identifican quién puede intervenir; ACTIVO indica a quién
-pertenece el turno, aunque otra persona tenga prioridad.
+mesa con paneles orientados hacia sus respectivos jugadores. Para 3 y 4 se usa
+el mismo esquema de lados opuestos de 5 y 6. Los botones son rectangulares, con
+esquinas de 6 píxeles. El borde dorado identifica quién puede intervenir;
+ACTIVO y REACTIVO indican el papel de cada jugador. Se retiraron el rótulo
+PRIORIDAD y la franja superior de ronda/turno para dar más espacio a la mesa.
+ACTIVO aparece en negrilla, con punto y fondo del color del jugador. La luz sube
+y baja dos veces al iniciar el turno (3,2 s) y queda fija después. Con animaciones
+reducidas es fija desde el inicio. El borde dorado sigue indicando prioridad;
+el indicador ACTIVO permanece en el dueño del turno durante las respuestas.
 
 El activo usa ACTION/FREE/END TURN; los reactivos usan RESPONSE ACTION/RESPONSE
 FREE/PASS cuando están habilitados. Los jugadores pulsan después de resolver sus
 acciones físicas. Toca el contador disponibles/totales para editar adicionales:
 el consumo anterior se conserva. END TURN restablece las acciones de todos.
-Volver al inicio y regresar conserva la partida mientras la app siga abierta;
-Nueva partida pide confirmación. Esta etapa no incluye cronómetros, puntuación,
-historial acumulado ni guardado. [Plan y pruebas](docs/PRIORITY_PLAN.md).
+Volver al inicio y regresar conserva la partida; también se recupera después de
+cerrar el proceso. Nueva partida pide confirmación y guarda la anterior.
+Activa **Cronómetros individuales** en la
+configuración y elige minutos completos. Solo corre el reloj de quien tiene prioridad.
+Pausa/reanuda desde la barra; salir del módulo o volver de segundo plano exige
+reanudar manualmente. Agotar tiempo pausa y muestra un aviso flotante temporal,
+sin eliminar automáticamente; el reloj queda rojo a cero. **Ver** abre la gestión
+del jugador. El aviso no reduce la mesa y desaparece a los 8 segundos.
+
+La barra de cada jugador tiene **−/+** para restar/sumar 5 PV por toque y una
+**calavera** para eliminar con confirmación. Cada toque muestra el cambio y
+reinicia su difuminado de 3 segundos: +5, +10, +15… Al cambiar de signo comienza
+un nuevo acumulado. Tras 3 segundos sin tocar desaparece; el total de PV se conserva
+visible. La resta se desactiva si dejaría un total negativo. Admite pulsaciones rápidas.
+En rc.19 los PV salen del contador de acciones y se centran entre −/+ al doble
+de tamaño (22), en negrilla. Junto al nombre aparece la posición dentro de un
+círculo: 1 y 2 dorados, 3 bronce y del 4 en adelante verde. La clasificación se
+actualiza con cada ajuste y comparte posición en empates; conserva eliminados.
+En rc.20 los botones −/+ quedan próximos al total. Para cambiar asientos, mantén
+pulsado un asiento en la vista de configuración y suéltalo sobre otro: la marca
+INICIA sigue al seleccionado y ese jugador empieza aunque cambie de lugar.
+Durante la partida, hazlo desde el nombre hacia otro panel. Este intercambio
+mueve las vistas y conserva el inicial y el orden de juego ya establecido,
+incluidas respuestas pendientes, colores, PV, acciones y relojes. Soltar fuera
+cancela. Las posiciones también se conservan al recuperar una partida.
+Rc.21 corrige la alineación: −, total de PV y + comparten centro vertical;
+el cambio temporal queda debajo sin mover el total ni superponerse.
+En rc.17 los botones de acción tienen más aire respecto al borde del panel y
+«Aplicar puntos» está separado del campo anterior, con mayor espacio interior.
+
+Toca el nombre o los tres puntos del panel para gestionar al jugador: sumar/restar
+puntos, corregir el total, corregir tiempo o eliminar con confirmación. La corrección
+del tiempo reemplaza el restante por minutos completos y deja la partida pausada;
+confirma y reanuda. El campo propone redondear hacia arriba el tiempo restante.
+La clasificación se abre
+desde la barra y conserva a los eliminados y los empates. Un superviviente finaliza
+la partida y abre la clasificación; no declara un ganador automático. Los puntos
+se pueden corregir también al finalizar, sin reabrir el juego.
+En rc.22, abre **⋮ → Historial** para consultar registros cronológicos de acciones,
+respuestas, pases, turnos, prioridad, correcciones y eliminaciones. **Deshacer**
+restaura operaciones completas consecutivamente, incluidos respuestas pendientes,
+eliminados, acciones, PV, tiempos y asientos. Los registros deshechos quedan marcados
+y se excluyen del resumen. Los relojes quedan pausados tras deshacer o recuperar:
+usa Reanudar para continuar.
+
+El guardado es automático y local, sin conexión. **Partidas guardadas** permite
+consultar resultados/historial y continuar partidas interrumpidas; cambiar de
+partida conserva la actual. Descartar una guardada exige confirmación y la abierta
+no se puede borrar. **Finalizar partida** pide confirmación y guarda clasificación,
+estado individual, seis tipos de operación, tiempo consumido, rondas e historial.
+Un error de lectura no sobrescribe archivos; un error de escritura conserva la
+partida abierta y ofrece Reintentar. No hay sincronización ni exportación de Priority.
+[Plan y pruebas](docs/PRIORITY_PLAN.md).
 
 En la ficha, **IM Destruir bloqueado y muros** permite destruir lo que atraviesa.
 El ensayo conserva el mapa original y muestra el plan; Confirmar aplica posición,
@@ -102,7 +159,7 @@ también con archivos reales. Los archivos nuevos no se pueden abrir con apps vi
 | --- | --- |
 | Editor | Crear tablero 2–40 filas/columnas, figuras genéricas, equipos, terreno, muros y alturas; biblioteca y Deshacer |
 | Entrenador | 24 ejercicios curados más personales; responder, comprobar, recibir explicación y conservar progreso |
-| Priority | Configurar 2–6 jugadores y administrar turnos, prioridad, acciones y respuestas alrededor de una mesa |
+| Priority | Mesa para 2–6 jugadores: turnos, prioridad, acciones, relojes, PV, eliminación, historial, Deshacer, guardado y resultados locales |
 | Ejemplos locales | Visión H, diagonal/vértice, muro, elevación y movimiento; previsualizar y abrir copia independiente |
 | Guía rápida / Acerca de | Ayuda breve, versión, cobertura, fuente y licencias locales |
 
@@ -167,7 +224,7 @@ usa etiquetas genéricas. Exportar la escena completa sí conserva sus nombres.
 | Función | Estado |
 | --- | --- |
 | Editor y Entrenador, biblioteca, JSON/PNG y sesión temporal | Implementado; nuevo arranque vacío, biblioteca/progreso persistentes |
-| Priority: configuración, mesa, turnos, prioridad y acciones para 2–6 jugadores | Etapas 1 y 2 implementadas; partida en memoria, cronómetros/puntuación/guardado pendientes |
+| Priority: configuración, mesa, turnos, prioridad, acciones, relojes, puntos, eliminación, historial, Deshacer y guardado | Etapas 1–4 implementadas; recuperación pausada y consulta local de resultados |
 | Geometría, visión, alcance, alturas, mejoras tipadas y movimiento | Perfil parcial implementado, con reglas y No evaluados explícitos |
 | Análisis de posiciones, hipótesis, ejercicios y diagnóstico TXT/PNG | Implementado; puente Android TXT corregido y compilado |
 | Catálogo de cinco ejemplos, guía y Acerca de/licencias | Implementado y probado; recursos locales |
@@ -175,7 +232,7 @@ usa etiquetas genéricas. Exportar la escena completa sí conserva sus nombres.
 | Instalación, nueva sesión tras cierre y selectores nativos | Pendiente de Android; equivalentes de archivos/controladores sí verificados |
 | Offline con radios desactivadas y rendimiento Android/FPS | Pendiente de dispositivo/emulador funcional |
 | APK release con firma del propietario | Preparado; sin claves suministradas, no generado |
-| Congelar 1.0.0 estable | Pendiente de cerrar aceptación nativa; esta entrega es 1.0.0-rc.13 |
+| Congelar 1.0.0 estable | Pendiente de cerrar aceptación nativa; esta entrega es 1.0.0-rc.22 |
 | Simular combates, dados, diales, daño y poderes de figuras | Fuera del alcance del proyecto |
 
 ## Dependencias y recompilación
@@ -186,7 +243,7 @@ No se añaden dependencias para Priority. Las licencias empaquetadas se consulta
 conexión en Acerca de → Licencias de dependencias.
 
 ```powershell
-git switch codex/priority-ui-stage2
+git switch codex/priority-score-alignment
 $env:Path = "$env:USERPROFILE\develop\flutter\bin;$env:Path"
 flutter --no-version-check pub get
 dart format --output=none --set-exit-if-changed lib test tool

@@ -31,39 +31,19 @@ List<PrioritySeatLayout> priorityTableSeats(
         ? [seat(0, 0, .5, 1, 1), seat(.5, 0, .5, 1, 3)]
         : [seat(0, .5, 1, .5, 0), seat(0, 0, 1, .5, 2)];
   }
-  if (count == 3) {
-    return wide
-        ? [
-            seat(0, 0, .5, 1, 1),
-            seat(.5, .5, .5, .5, 3),
-            seat(.5, 0, .5, .5, 3),
-          ]
-        : [
-            seat(0, .5, 1, .5, 0),
-            seat(.5, 0, .5, .5, 2),
-            seat(0, 0, .5, .5, 2),
-          ];
-  }
-  if (count == 4) {
-    return [
-      seat(0, .5, .5, .5, 0),
-      seat(.5, .5, .5, .5, 0),
-      seat(.5, 0, .5, .5, 2),
-      seat(0, 0, .5, .5, 2),
-    ];
-  }
+  final near = (count + 1) ~/ 2;
+  final far = count - near;
   if (wide) {
     return [
-      for (var i = 0; i < 3; i++) seat(i / 3, .5, 1 / 3, .5, 0),
-      for (var i = 0; i < count - 3; i++)
-        seat(1 - (i + 1) / (count - 3), 0, 1 / (count - 3), .5, 2),
+      for (var i = 0; i < near; i++) seat(i / near, .5, 1 / near, .5, 0),
+      for (var i = 0; i < far; i++) seat(1 - (i + 1) / far, 0, 1 / far, .5, 2),
     ];
   }
   return [
-    seat(0, 1 - 1 / (count - 3), .5, 1 / (count - 3), 1),
-    for (var i = 0; i < 3; i++) seat(.5, 1 - (i + 1) / 3, .5, 1 / 3, 3),
-    for (var i = 0; i < count - 4; i++)
-      seat(0, i / (count - 3), .5, 1 / (count - 3), 1),
+    seat(0, 1 - 1 / far, .5, 1 / far, 1),
+    for (var i = 0; i < near; i++)
+      seat(.5, 1 - (i + 1) / near, .5, 1 / near, 3),
+    for (var i = 0; i < far - 1; i++) seat(0, i / far, .5, 1 / far, 1),
   ];
 }
 

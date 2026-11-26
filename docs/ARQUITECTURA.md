@@ -23,10 +23,67 @@ para el formato personalizado de partidas físicas. Sus estados son inmutables;
 depende del tablero, Flutter, plataforma ni persistencia. Desde la etapa 2,
 `presentation/priority` lo conecta a la navegación con un `PriorityController`
 propiedad de `HeroClixApp`, que conserva la partida en memoria al salir/volver.
+Desde la etapa 4 también se guarda/recupera localmente mediante un repositorio
+inyectado en `main`, separado de los archivos del Editor y Entrenador.
 La UI envía comandos y consulta la validación del motor; no implementa consumos
 ni circulación. Geometría/rotación de paneles, edición y protección de entradas
 pertenecen a presentación. Contrato en `lib/domain/priority/README.md` y avance en
 [PRIORITY_PLAN.md](PRIORITY_PLAN.md).
+
+La etapa 3 añade puntos/estado de eliminación, tiempos restantes/consumidos y
+cola de participantes aún pendientes de turno en la ronda. `advanceTime` recibe
+duraciones explícitas y solo cobra a quien tiene prioridad. Los refrescos normales
+no generan revisiones de comando ni historial por tick; el agotamiento sí pausa
+y emite eventos. El dominio sigue independiente de Flutter y del reloj del sistema.
+`PriorityController` usa Stopwatch monotónico inyectable y refresco de 100 ms;
+liquida tiempo antes de actuar y pausa al salir del módulo o perder primer plano.
+Nunca se reanuda automáticamente al volver. Diálogos de gestión y clasificación
+solo envían comandos/leen datos derivados del motor; no calculan consumos, ciclos
+ni desempates. Los puntos pueden corregirse en estado final sin reabrir juego.
+
+El incremento visual rc.15 solo modifica presentación: `PriorityTheme` aplica
+botones rectangulares de radio 6 al módulo y sus diálogos; `priorityTableSeats`
+usa lados opuestos para 3–6 participantes y conserva la disposición de 2, 5 y 6.
+La mesa no reserva espacio a un estado superior. Ronda/turno permanecen como
+semántica accesible y en clasificación; prioridad se indica con borde y semántica,
+sin rótulo visible. El agotamiento genera un SnackBar temporal deduplicado por
+episodio y reloj rojo, sin alterar la pausa ni la lógica del motor/controlador.
+
+En rc.16 el formulario aplica puntos de construcción comunes a cada configuración
+de jugador y recoge tiempos en minutos completos, conservando la precisión del
+dominio. `PriorityPlayerHeader` mantiene solo el acumulado visual de PV, con
+animación de 3 segundos por jugador; cada toque envía un comando de ajuste al motor.
+El controlador exceptúa esos ajustes de la protección de doble toque, para contar
+cada pulsación intencional; conserva revisión/validación y protección de acciones.
+La calavera y el menú comparten confirmación y comando de eliminación. Los paneles
+estrechos distribuyen su cabecera en dos filas con controles de al menos 48 unidades.
+
+En rc.20 `PriorityController.visualSeatOrder` conserva una permutación de IDs
+exclusivamente visual. Desde rc.22 también forma parte del guardado y Deshacer.
+`swapVisualSeats` valida sesión/IDs/primer plano,
+notifica sin modificar el snapshot ni la revisión/eventos del motor y se limpia
+al reiniciar. La mesa posiciona/rota por esa permutación y conserva la identidad
+de widgets/colores por jugador. El arrastre de configuración intercambia borradores
+sin cambiar el ID del inicial; la disposición resultante se usa al crear la partida.
+Los datos de arrastre incluyen la identidad de su grupo para rechazar otras sesiones.
+
+La etapa 4 añade `application/priority`: sesión inmutable, historial cronológico,
+checkpoints completos y repositorio sobre `LocalDocumentStore`. El codec puro de
+dominio restaura snapshots validados, sin reconstruir turnos a partir de la vista.
+El controlador registra operaciones completas y serializa/coalesce guardados;
+los ticks actualizan el checkpoint del reloj cada segundo sin añadir historial.
+Undo y recuperación fuerzan pausa manual y aumentan revisión para invalidar
+callbacks antiguos. La UI ofrece historial, biblioteca y resumen; el motor sigue
+siendo el único responsable de las reglas del juego.
+
+Producción usa `priority_v1/` en almacenamiento privado Android, con formato
+Priority 1, checksum de corrupción, archivo activo y copia válida anterior.
+Cada partida archivada tiene ID propio. Nueva partida o cambiar de partida
+archiva la actual antes de sustituirla; un fallo de escritura bloquea ese cambio.
+No se modifican los formatos/archivos de escenario ni progreso. El límite de
+32 MiB/10000 archivos se configura solo para Priority; `FileDocumentStore` mantiene
+los límites anteriores por defecto para los otros módulos. Véase
+[PRIORITY_STAGE4.md](PRIORITY_STAGE4.md).
 
 `domain/board` contiene BoardDimensions, CellCoordinate, BoardGeometry,
 BoardCamera y ViewportSize. characters implementa figuras, equipos y ocupación.

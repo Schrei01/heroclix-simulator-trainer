@@ -63,17 +63,17 @@ void main() {
       addTearDown(c.dispose);
       await mount(t, c);
       await selectCount(t, count);
+      await enter(t, 'priority-build-points', '400');
       for (var i = 1; i <= count; i++) {
         await enter(t, 'priority-name-J$i', 'Nombre $i');
-        await enter(t, 'priority-points-J$i', '${i * 100}');
         await enter(t, 'priority-additional-J$i', '$i');
       }
       await press(t, 'priority-start');
       expect(c.value!.players.length, count);
       for (var i = 1; i <= count; i++) {
         expect(c.value!.player('J$i').name, 'Nombre $i');
-        expect(c.value!.player('J$i').baseActions, i);
-        expect(c.value!.player('J$i').totalActions, i * 2);
+        expect(c.value!.player('J$i').baseActions, 4);
+        expect(c.value!.player('J$i').totalActions, 4 + i);
         expect(key('priority-panel-J$i'), findsOneWidget);
       }
       expect(enabled(t, 'priority-action-J1'), isTrue);
@@ -146,7 +146,11 @@ void main() {
       expect(c.value!.player('J2').consumedActions, 1);
       expect(c.value!.player('J2').availableActions, 0);
       expect(c.value!.priorityPlayerId, 'J1');
-      expect(key('priority-automatic-pass'), findsOneWidget);
+      expect(
+        c.events.any((e) => e.type == PriorityEventType.automaticPass),
+        isTrue,
+      );
+      expect(key('priority-automatic-pass'), findsNothing);
       await press(t, 'priority-free-J1');
       expect(enabled(t, 'priority-responseFree-J2'), isTrue);
       await press(t, 'priority-responseFree-J2');
@@ -207,7 +211,7 @@ void main() {
       addTearDown(c.dispose);
       await mount(t, c);
       await enter(t, 'priority-name-J1', ' ');
-      await enter(t, 'priority-points-J1', '-1');
+      await enter(t, 'priority-build-points', '-1');
       await enter(t, 'priority-additional-J2', 'abc');
       await press(t, 'priority-start');
       expect(c.value, isNull);
@@ -217,7 +221,7 @@ void main() {
         findsNWidgets(2),
       );
       await enter(t, 'priority-name-J1', 'Ana');
-      await enter(t, 'priority-points-J1', '300');
+      await enter(t, 'priority-build-points', '300');
       await enter(t, 'priority-additional-J2', '9223372036854775807');
       await press(t, 'priority-start');
       expect(c.value, isNull);

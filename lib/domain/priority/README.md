@@ -1,9 +1,10 @@
-# Priority — motor, etapa 1
+# Priority — motor y restauración, etapas 1–4
 
 Formato personalizado de Valinor, independiente del tablero y de las reglas de
 figuras. Entrada pública: `priority.dart`. `priority_engine.dart` es una parte de
 esa biblioteca para mantener privados los constructores de estados válidos.
-Solo se importa `dart:math`; no hay Flutter, archivos, plataforma ni reloj.
+Solo se importa `dart:math`; no hay Flutter, archivos ni acceso al reloj del sistema.
+`priority_clock.dart` interpreta duraciones explícitas recibidas desde fuera.
 
 ## Contrato
 
@@ -37,18 +38,74 @@ Solo se importa `dart:math`; no hay Flutter, archivos, plataforma ni reloj.
   pasa automáticamente en esa misma transición. Un pendiente futuro puede
   recuperar acciones antes de su oportunidad. Recuperarlas después del pase no
   permite volver a responder en la ventana actual.
-- END TURN restablece el consumo de **todos** a cero y conserva sus adicionales.
+- END TURN restablece el consumo de **todos los no eliminados** a cero y conserva
+  adicionales, puntuación y tiempos. `roundPending` conserva los asientos aún
+  pendientes de jugar la ronda, incluido el activo primero; eliminar participantes
+  no hace que la ronda dependa del tamaño inicial de la partida.
 - Pausar preserva la fase subyacente, prioridad y pendientes; solo se permite
-  reanudar o finalizar mientras está pausada. Finalizar cierra la ventana, retira
-  la prioridad y deja el estado terminal; no calcula puntuaciones/resultados.
+  reanudar o finalizar el juego mientras está pausado; también admite operaciones
+  administrativas de puntos, corrección del tiempo y eliminación. Finalizar cierra
+  la ventana, retira prioridad y congela relojes. Los puntos pueden corregirse
+  después, sin reabrir turnos ni reanudar la partida.
 - Cada comando válido incrementa `revision` una vez, incluidos sus pases
   automáticos. Es un dato para futuros consumidores, no un mecanismo de
-  deduplicación: una futura capa de aplicación deberá serializar comandos y
-  proteger los toques repetidos. Repetir ACTION en un turno que ya recuperó
+  deduplicación: `PriorityController` serializa entradas síncronas y protege los
+  toques repetidos. Repetir ACTION en un turno que ya recuperó
   prioridad puede ser una segunda acción legítima.
 - Los eventos llevan jugador, turno y ronda; cambios de adicionales también
-  incluyen valor anterior y nuevo. Se entregan por operación, sin mantener todavía
-  historial acumulado, deshacer ni persistencia. No incluyen marcas de tiempo.
+  incluyen valor anterior y nuevo. Se entregan por operación, sin marcas de tiempo;
+  la capa de aplicación acumula el historial y los puntos de restauración.
+
+## Relojes, puntos y eliminación
+
+- `clockEnabled` es opcional y se fija al configurar; `initialTime` es positivo,
+  por defecto 30 minutos. Cada jugador conserva `remainingTime` y `spentTime`.
+  Los tiempos no se reinician al cambiar de turno/ronda; corregir el restante
+  tampoco borra el tiempo consumido. Sin relojes, `remainingTime` es null.
+- `advanceTime(match, elapsed)` carga únicamente al jugador con prioridad si el
+  juego está en marcha. No cobra más que su tiempo restante. Un pase automático
+  nunca le otorga prioridad al omitido y no activa su reloj.
+- Actualizar tiempo normalmente no incrementa `revision` ni emite eventos. Así,
+  un callback de acción no caduca por un tick visual. Llegar a cero sí incrementa
+  revisión, emite `timeExpired`/`paused` y conserva la fase de respuesta. No elimina
+  a nadie. Recibir prioridad con reloj a cero también pausa la partida.
+- `setRemainingTime` admite cero y pausa para permitir la corrección consciente;
+  reanudar requiere tiempo positivo en el jugador con prioridad. El adaptador
+  cobra el lapso previo a cada comando, evitando actuar después del vencimiento.
+- El adaptador usa `Stopwatch` monotónico e inyectable, con ticks de refresco de
+  100 ms. Cobra el tiempo real aunque se retrase el refresco. Al salir del módulo
+  o pasar a segundo plano, pausa y rebasa el ancla; volver exige reanudar manualmente.
+- `adjustVictoryPoints` suma/resta; `setVictoryPoints` corrige el total. Se rechazan
+  negativos y desbordamientos. Se permite corregir jugadores eliminados y una
+  partida finalizada. `standings` ordena por puntos con posición compartida en los
+  empates; el orden de asientos solo estabiliza la presentación, no desempata.
+- `eliminate` conserva puntos/tiempos y excluye de prioridad, respuestas y turnos.
+  Si se elimina al activo, termina su turno y restablece acciones para los demás;
+  si era un reactivo, continúa con los pendientes. Con un superviviente, finaliza.
+  No declara un ganador ni sustituye una puntuación por supervivencia.
+- La confirmación de eliminación pertenece a UI. La etapa 4 permite restaurarla
+  con Deshacer junto con el estado completo de la partida.
+
+## Snapshots y etapa 4
+
+`PrioritySnapshotCodec` es una frontera pura, sin Flutter ni archivos. Codifica y
+valida configuración/estado/eventos, incluidos fase subyacente, ambos órdenes
+pendientes, activo, prioridad, acciones, adicionales, eliminados, PV y relojes.
+Rechaza IDs/colas incompatibles, fases imposibles, negativos y desbordamientos.
+`restorePaused` conserva esos datos, incrementa la revisión y deja pausado todo
+reloj de una partida en curso; una partida finalizada sigue finalizada.
+
+`application/priority` contiene sesión, historial, checkpoints, formato versionado
+y repositorio. El controlador agrupa cada comando aceptado con todos sus eventos
+automáticos en una sola operación deshacible. No registra ticks. Deshacer preserva
+el registro original marcado y descuenta sus eventos del resumen; pausa/reanudación
+y eventos de reloj no consumen pasos de Deshacer. Se puede deshacer una finalización
+o eliminación y continuar la partida tras reanudar manualmente.
+
+El repositorio usa archivos privados locales, una copia anterior válida y escritura
+atómica por archivo; nunca requiere Internet. Recuperar conserva la ventana de
+respuesta y se realiza pausado, sin cobrar tiempo transcurrido fuera de la app.
+Contrato completo y límites en [PRIORITY_STAGE4.md](../../../docs/PRIORITY_STAGE4.md).
 
 ## Uso mínimo
 
@@ -65,5 +122,5 @@ final transition = engine.apply(match, const PriorityCommand.action('J1'));
 match = transition.match; // J1 activo; J2 con prioridad para responder o pasar.
 ```
 
-Pruebas: `flutter test test/domain/priority_test.dart`.
+Pruebas: `flutter test test/domain/priority_test.dart test/domain/priority_stage3_test.dart`.
 Alcance y resultados: [plan de Priority](../../../docs/PRIORITY_PLAN.md).

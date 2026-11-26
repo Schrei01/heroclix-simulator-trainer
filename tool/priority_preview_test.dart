@@ -10,6 +10,7 @@ import 'package:heroclix_simulator_trainer/domain/priority/priority.dart';
 import 'package:heroclix_simulator_trainer/presentation/priority/priority_controller.dart';
 import 'package:heroclix_simulator_trainer/presentation/priority/priority_screen.dart';
 import 'package:heroclix_simulator_trainer/presentation/theme/app_theme.dart';
+import 'package:heroclix_simulator_trainer/presentation/priority/priority_history.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -33,21 +34,50 @@ void main() {
     ('two', 2, const Size(360, 800), false),
     ('three', 3, const Size(360, 800), false),
     ('four', 4, const Size(360, 800), false),
+    ('three-landscape', 3, const Size(800, 360), false),
+    ('four-landscape', 4, const Size(800, 360), false),
     ('five', 5, const Size(360, 800), false),
     ('six', 6, const Size(360, 800), false),
     ('six-landscape', 6, const Size(800, 360), false),
     ('six-small', 6, const Size(320, 568), false),
+    ('clock-two', 2, const Size(360, 800), false),
+    ('clock-six', 6, const Size(360, 800), false),
+    ('clock-landscape', 6, const Size(800, 360), false),
+    ('clock-expired', 3, const Size(360, 800), false),
+    ('player-management', 3, const Size(360, 800), false),
+    ('eliminated', 6, const Size(360, 800), false),
+    ('final-standings', 3, const Size(360, 800), false),
+    ('clock-setup', 2, const Size(360, 800), true),
+    ('score-streak', 3, const Size(360, 800), false),
+    ('active-highlight', 4, const Size(360, 800), false),
+    ('score-ranking', 6, const Size(800, 360), false),
+    ('seat-swap', 3, const Size(360, 800), false),
+    ('seat-drag', 3, const Size(360, 800), false),
+    ('history', 3, const Size(360, 800), false),
+    ('undo-paused', 3, const Size(360, 800), false),
+    ('saved-games', 3, const Size(360, 800), false),
+    ('saved-results', 3, const Size(360, 800), false),
   ]) {
     testWidgets('Priority $name', (t) async {
       t.view.devicePixelRatio = 1;
       t.view.physicalSize = size;
       addTearDown(t.view.resetDevicePixelRatio);
       addTearDown(t.view.resetPhysicalSize);
-      final controller = PriorityController(inputCooldown: Duration.zero);
+      var elapsed = Duration.zero;
+      final controller = PriorityController(
+        inputCooldown: Duration.zero,
+        elapsedClock: () => elapsed,
+      );
       addTearDown(controller.dispose);
       if (!setup) {
         controller.start(
           PriorityConfiguration(
+            clockEnabled:
+                name.startsWith('clock') ||
+                name == 'player-management' ||
+                name == 'undo-paused' ||
+                name == 'eliminated' ||
+                name == 'final-standings',
             players: [
               for (var i = 1; i <= count; i++)
                 PriorityPlayerConfiguration(
@@ -69,6 +99,42 @@ void main() {
           const PriorityCommand.action('J1'),
           expectedRevision: controller.value!.revision,
         );
+        if (name.startsWith('clock') ||
+            name == 'eliminated' ||
+            name == 'final-standings') {
+          controller.dispatch(
+            const PriorityCommand.setVictoryPoints('J1', 100),
+            expectedRevision: controller.value!.revision,
+          );
+          controller.dispatch(
+            const PriorityCommand.setVictoryPoints('J2', 150),
+            expectedRevision: controller.value!.revision,
+          );
+        }
+        if (name == 'clock-expired') {
+          elapsed = const Duration(minutes: 31);
+          controller.synchronizeClock();
+        }
+        if (name == 'eliminated' || name == 'final-standings') {
+          controller.dispatch(
+            const PriorityCommand.eliminate('J3'),
+            expectedRevision: controller.value!.revision,
+          );
+        }
+        if (name == 'final-standings') {
+          controller.dispatch(
+            const PriorityCommand.eliminate('J2'),
+            expectedRevision: controller.value!.revision,
+          );
+        }
+        if (name == 'score-ranking') {
+          for (var i = 1; i <= count; i++) {
+            controller.dispatch(
+              PriorityCommand.setVictoryPoints('J$i', (count + 1 - i) * 25),
+              expectedRevision: controller.value!.revision,
+            );
+          }
+        }
       }
       final boundaryKey = GlobalKey();
       await t.pumpWidget(
@@ -84,7 +150,93 @@ void main() {
           ),
         ),
       );
-      await t.pumpAndSettle();
+      if (name == 'active-highlight') {
+        await t.pump();
+        await t.pump(const Duration(milliseconds: 800));
+      } else {
+        await t.pumpAndSettle();
+      }
+      TestGesture? seatGesture;
+      if (name == 'history') {
+        controller.dispatch(
+          const PriorityCommand.responseAction('J2'),
+          expectedRevision: controller.value!.revision,
+        );
+        controller.undo();
+        openPriorityHistory(
+          t.element(find.byType(PriorityScreen)),
+          controller: controller,
+        );
+        await t.pumpAndSettle();
+      }
+      if (name == 'undo-paused') {
+        controller.undo();
+        await t.pumpAndSettle();
+      }
+      if (name == 'saved-games' || name == 'saved-results') {
+        final id = controller.session!.id;
+        controller.dispatch(
+          const PriorityCommand.setVictoryPoints('J1', 175),
+          expectedRevision: controller.value!.revision,
+        );
+        controller.dispatch(
+          const PriorityCommand.finish(),
+          expectedRevision: controller.value!.revision,
+        );
+        await controller.parkAndReset();
+        await t.pumpAndSettle();
+        if (name == 'saved-games') {
+          openPriorityLibrary(
+            t.element(find.byType(PriorityScreen)),
+            controller,
+          );
+        } else {
+          final session = await controller.readSaved(id);
+          Navigator.push<void>(
+            t.element(find.byType(PriorityScreen)),
+            MaterialPageRoute(
+              builder: (_) => PrioritySavedResultsScreen(session: session),
+            ),
+          );
+        }
+        await t.pumpAndSettle();
+      }
+      if (name == 'seat-swap') {
+        controller.swapVisualSeats(
+          'J1',
+          'J3',
+          configuration: controller.value!.configuration,
+        );
+        await t.pumpAndSettle();
+      }
+      if (name == 'seat-drag') {
+        final source = find.byKey(const ValueKey('priority-drag-J1'));
+        final target = find.byKey(const ValueKey('priority-drop-J3'));
+        seatGesture = await t.startGesture(t.getCenter(source));
+        await t.pump(const Duration(milliseconds: 600));
+        await seatGesture.moveTo(t.getCenter(target));
+        await t.pump(const Duration(milliseconds: 50));
+      }
+      if (name == 'player-management') {
+        final player = find.byKey(const ValueKey('priority-player-menu-J2'));
+        await t.ensureVisible(player);
+        await t.tap(player);
+        await t.pumpAndSettle();
+      }
+      if (name == 'clock-setup') {
+        final toggle = find.byKey(const ValueKey('priority-clock-enabled'));
+        await t.ensureVisible(toggle);
+        await t.tap(toggle);
+        await t.pumpAndSettle();
+      }
+      if (name == 'score-streak') {
+        final plus = find.byKey(const ValueKey('priority-score-plus-J2'));
+        await t.ensureVisible(plus);
+        for (var i = 0; i < 3; i++) {
+          await t.tap(plus);
+          await t.pump(const Duration(milliseconds: 100));
+        }
+      }
       expect(t.takeException(), isNull);
       final boundary =
           boundaryKey.currentContext!.findRenderObject()!
@@ -93,13 +245,17 @@ void main() {
         final image = await boundary.toImage();
         final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
         final directory = Directory(
-          'build/verification/priority-stage2/previews',
+          'build/verification/priority-stage4/previews',
         );
         await directory.create(recursive: true);
         await File('${directory.path}/$name.png')
             .writeAsBytes(bytes!.buffer.asUint8List());
         image.dispose();
       });
+      if (seatGesture != null) {
+        await seatGesture.up();
+        await t.pumpAndSettle();
+      }
     });
   }
 }

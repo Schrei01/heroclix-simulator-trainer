@@ -1,6 +1,8 @@
 import 'dart:math';
 
 part 'priority_engine.dart';
+part 'priority_clock.dart';
+part 'priority_snapshot.dart';
 
 /// The list order in [PriorityConfiguration] is the physical anticlockwise
 /// seating order. IDs identify players; names need not be unique.
@@ -35,6 +37,8 @@ final class PriorityConfiguration {
   factory PriorityConfiguration({
     required Iterable<PriorityPlayerConfiguration> players,
     String? startingPlayerId,
+    bool clockEnabled = false,
+    Duration initialTime = const Duration(minutes: 30),
   }) {
     final seats = List<PriorityPlayerConfiguration>.unmodifiable(players);
     if (seats.length < 2 || seats.length > 6) {
@@ -51,7 +55,10 @@ final class PriorityConfiguration {
         'Jugador inexistente.',
       );
     }
-    return PriorityConfiguration._(seats, first);
+    if (initialTime <= Duration.zero) {
+      throw ArgumentError('El tiempo inicial debe ser mayor que cero.');
+    }
+    return PriorityConfiguration._(seats, first, clockEnabled, initialTime);
   }
 
   /// Randomness belongs to setup, never to a game transition. Inject a seeded
@@ -59,19 +66,36 @@ final class PriorityConfiguration {
   factory PriorityConfiguration.randomStart({
     required Iterable<PriorityPlayerConfiguration> players,
     required Random random,
+    bool clockEnabled = false,
+    Duration initialTime = const Duration(minutes: 30),
   }) {
-    final checked = PriorityConfiguration(players: players);
+    final checked = PriorityConfiguration(
+      players: players,
+      clockEnabled: clockEnabled,
+      initialTime: initialTime,
+    );
     return PriorityConfiguration(
       players: checked.players,
       startingPlayerId:
           checked.players[random.nextInt(checked.players.length)].id,
+      clockEnabled: clockEnabled,
+      initialTime: initialTime,
     );
   }
 
-  const PriorityConfiguration._(this.players, this.startingPlayerId);
+  const PriorityConfiguration._(
+    this.players,
+    this.startingPlayerId,
+    this.clockEnabled,
+    this.initialTime,
+  );
   final List<PriorityPlayerConfiguration> players;
   final String startingPlayerId;
+  final bool clockEnabled;
+  final Duration initialTime;
 }
+
+enum PriorityPauseReason { manual, background, timeExpired }
 
 enum PriorityPhase {
   configuration,
@@ -94,6 +118,10 @@ enum PriorityOperation {
   pause,
   resume,
   finish,
+  adjustVictoryPoints,
+  setVictoryPoints,
+  setRemainingTime,
+  eliminate,
 }
 
 /// Explicit commands keep invalid UI button states from bypassing engine rules.
@@ -117,33 +145,87 @@ final class PriorityCommand {
         playerId: playerId,
         additionalActions: value,
       );
-  const PriorityCommand.pause() : this._(PriorityOperation.pause);
+  const PriorityCommand.pause({
+    PriorityPauseReason reason = PriorityPauseReason.manual,
+  }) : this._(PriorityOperation.pause, pauseReason: reason);
   const PriorityCommand.resume() : this._(PriorityOperation.resume);
   const PriorityCommand.finish() : this._(PriorityOperation.finish);
+  const PriorityCommand.adjustVictoryPoints(String playerId, int delta)
+    : this._(
+        PriorityOperation.adjustVictoryPoints,
+        playerId: playerId,
+        points: delta,
+      );
+  const PriorityCommand.setVictoryPoints(String playerId, int points)
+    : this._(
+        PriorityOperation.setVictoryPoints,
+        playerId: playerId,
+        points: points,
+      );
+  const PriorityCommand.setRemainingTime(String playerId, Duration time)
+    : this._(
+        PriorityOperation.setRemainingTime,
+        playerId: playerId,
+        remainingTime: time,
+      );
+  const PriorityCommand.eliminate(String playerId)
+    : this._(PriorityOperation.eliminate, playerId: playerId);
 
   const PriorityCommand._(
     this.operation, {
     this.playerId,
     this.additionalActions,
+    this.points,
+    this.remainingTime,
+    this.pauseReason,
   });
   final PriorityOperation operation;
   final String? playerId;
   final int? additionalActions;
+  final int? points;
+  final Duration? remainingTime;
+  final PriorityPauseReason? pauseReason;
 }
 
 final class PriorityPlayer {
   const PriorityPlayer._(
     this.configuration,
     this.additionalActions,
-    this.consumedActions,
-  );
+    this.consumedActions, {
+    this.victoryPoints = 0,
+    this.eliminated = false,
+    this.remainingTime,
+    this.spentTime = Duration.zero,
+  });
   final PriorityPlayerConfiguration configuration;
   final int additionalActions, consumedActions;
+  final int victoryPoints;
+  final bool eliminated;
+  final Duration? remainingTime;
+  final Duration spentTime;
   String get id => configuration.id;
   String get name => configuration.name;
   int get baseActions => configuration.baseActions;
   int get totalActions => baseActions + additionalActions;
-  int get availableActions => max(0, totalActions - consumedActions);
+  int get availableActions =>
+      eliminated ? 0 : max(0, totalActions - consumedActions);
+
+  PriorityPlayer _copy({
+    int? additionalActions,
+    int? consumedActions,
+    int? victoryPoints,
+    bool? eliminated,
+    Duration? remainingTime,
+    Duration? spentTime,
+  }) => PriorityPlayer._(
+    configuration,
+    additionalActions ?? this.additionalActions,
+    consumedActions ?? this.consumedActions,
+    victoryPoints: victoryPoints ?? this.victoryPoints,
+    eliminated: eliminated ?? this.eliminated,
+    remainingTime: remainingTime ?? this.remainingTime,
+    spentTime: spentTime ?? this.spentTime,
+  );
 }
 
 /// Immutable snapshot. Only the engine can construct a match, so pending
@@ -160,17 +242,26 @@ final class PriorityMatch {
     required this.turn,
     required this.round,
     required this.revision,
+    required Iterable<String> roundPending,
+    this.pauseReason,
+    this.timedOutPlayerId,
   }) : players = List.unmodifiable(players),
-       pendingResponders = List.unmodifiable(pendingResponders);
+       pendingResponders = List.unmodifiable(pendingResponders),
+       roundPending = List.unmodifiable(roundPending);
 
   final PriorityConfiguration configuration;
   final List<PriorityPlayer> players;
   final PriorityPhase underlyingPhase;
   final bool isPaused;
+  final PriorityPauseReason? pauseReason;
+  final String? timedOutPlayerId;
   final String? activePlayerId, priorityPlayerId;
 
   /// Includes the current priority holder first, followed by later responders.
   final List<String> pendingResponders;
+
+  /// Players still due a turn this round; active first while the game is live.
+  final List<String> roundPending;
   final int turn, round, revision;
   PriorityPhase get phase => isPaused ? PriorityPhase.paused : underlyingPhase;
   bool get hasResponseWindow =>
@@ -181,6 +272,32 @@ final class PriorityMatch {
     (p) => p.id == id,
     orElse: () => throw ArgumentError.value(id, 'id', 'Jugador inexistente.'),
   );
+
+  List<PriorityStanding> get standings {
+    final sorted = players.toList()
+      ..sort((a, b) {
+        final points = b.victoryPoints.compareTo(a.victoryPoints);
+        return points != 0
+            ? points
+            : players.indexOf(a).compareTo(players.indexOf(b));
+      });
+    var position = 1;
+    return List.unmodifiable([
+      for (var i = 0; i < sorted.length; i++)
+        PriorityStanding._(
+          i > 0 && sorted[i].victoryPoints == sorted[i - 1].victoryPoints
+              ? position
+              : position = i + 1,
+          sorted[i],
+        ),
+    ]);
+  }
+}
+
+final class PriorityStanding {
+  const PriorityStanding._(this.position, this.player);
+  final int position;
+  final PriorityPlayer player;
 }
 
 enum PriorityEventType {
@@ -198,6 +315,10 @@ enum PriorityEventType {
   paused,
   resumed,
   finished,
+  victoryPointsChanged,
+  timeCorrected,
+  timeExpired,
+  eliminated,
 }
 
 /// Operation events, without timestamps or a stored history. Future consumers
@@ -231,6 +352,10 @@ enum PriorityError {
   notActivePlayer,
   noActions,
   invalidAdditionalActions,
+  eliminatedPlayer,
+  invalidPoints,
+  invalidTime,
+  timeExhausted,
 }
 
 final class PriorityException implements Exception {

@@ -32,7 +32,9 @@ Incremento Priority (2026-11-25): motor independiente del formato personalizado
 para partidas físicas. La etapa 1 entrega el motor; la etapa 2 añade acceso desde
 inicio, configuración y paneles de mesa orientados hacia 2–6 participantes, sin
 cambiar las funciones del editor. Plan, decisiones y resultados en
-[PRIORITY_PLAN.md](PRIORITY_PLAN.md). Las funciones posteriores requieren nueva orden.
+[PRIORITY_PLAN.md](PRIORITY_PLAN.md). La etapa 3 incorpora relojes individuales,
+ciclo de vida, puntos/clasificación y eliminación. Historial/Deshacer/persistencia
+y las demás funciones posteriores requieren nueva orden.
 
 Actualización posterior a 12: ajustes de edición solicitados por el usuario,
 1.0.0-rc.2+15 en `codex/editor-quick-tools`. Paleta de terreno, altura propuesta 2

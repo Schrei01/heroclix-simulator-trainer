@@ -1,7 +1,7 @@
 part of 'priority.dart';
 
-/// Pure deterministic state machine: no Flutter, IO, clocks or implicit random
-/// draws. A rejected command throws and leaves the original snapshot untouched.
+/// Pure deterministic state machine: no Flutter, IO or implicit time/random
+/// sources. A rejected command leaves the original snapshot untouched.
 final class PriorityEngine {
   const PriorityEngine();
 
@@ -10,7 +10,14 @@ final class PriorityEngine {
         configuration: configuration,
         players: [
           for (final p in configuration.players)
-            PriorityPlayer._(p, p.additionalActions, 0),
+            PriorityPlayer._(
+              p,
+              p.additionalActions,
+              0,
+              remainingTime: configuration.clockEnabled
+                  ? configuration.initialTime
+                  : null,
+            ),
         ],
         underlyingPhase: PriorityPhase.configuration,
         isPaused: false,
@@ -20,7 +27,13 @@ final class PriorityEngine {
         turn: 0,
         round: 0,
         revision: 0,
+        roundPending: const [],
       );
+
+  /// Explicit elapsed duration from an external monotonic source. Regular clock
+  /// updates do not change the command revision or create per-tick events.
+  PriorityTransition advanceTime(PriorityMatch match, Duration elapsed) =>
+      _advancePriorityClock(match, elapsed);
 
   /// Allows a future UI to use the same validation as [apply].
   PriorityError? rejection(PriorityMatch match, PriorityCommand command) {
@@ -35,7 +48,12 @@ final class PriorityEngine {
           : PriorityError.invalidPhase;
     }
     if (op == PriorityOperation.resume) {
-      return match.isPaused ? null : PriorityError.invalidPhase;
+      if (!match.isPaused) return PriorityError.invalidPhase;
+      return match.configuration.clockEnabled &&
+              match.player(match.priorityPlayerId!).remainingTime ==
+                  Duration.zero
+          ? PriorityError.timeExhausted
+          : null;
     }
     if (op == PriorityOperation.finish) {
       return match.underlyingPhase == PriorityPhase.configuration ||
@@ -43,12 +61,53 @@ final class PriorityEngine {
           ? PriorityError.invalidPhase
           : null;
     }
+    if (op == PriorityOperation.adjustVictoryPoints ||
+        op == PriorityOperation.setVictoryPoints ||
+        op == PriorityOperation.eliminate ||
+        op == PriorityOperation.setRemainingTime) {
+      if (match.underlyingPhase == PriorityPhase.configuration) {
+        return PriorityError.invalidPhase;
+      }
+      final player = match.player(command.playerId!);
+      if (op == PriorityOperation.adjustVictoryPoints ||
+          op == PriorityOperation.setVictoryPoints) {
+        final number = command.points!;
+        final result = op == PriorityOperation.setVictoryPoints
+            ? number
+            : player.victoryPoints + number;
+        return result < 0 ||
+                (op == PriorityOperation.adjustVictoryPoints &&
+                    number > 0 &&
+                    result < player.victoryPoints)
+            ? PriorityError.invalidPoints
+            : null;
+      }
+      if (match.underlyingPhase == PriorityPhase.finished) {
+        return PriorityError.invalidPhase;
+      }
+      if (player.eliminated) return PriorityError.eliminatedPlayer;
+      if (op == PriorityOperation.setRemainingTime) {
+        return !match.configuration.clockEnabled ||
+                command.remainingTime! < Duration.zero
+            ? PriorityError.invalidTime
+            : null;
+      }
+      return null;
+    }
     if (match.phase != PriorityPhase.activeTurn &&
         match.phase != PriorityPhase.actionResponse &&
         match.phase != PriorityPhase.freeResponse) {
       return PriorityError.invalidPhase;
     }
-    if (op == PriorityOperation.pause) return null;
+    if (op == PriorityOperation.pause) {
+      return command.pauseReason == PriorityPauseReason.timeExpired
+          ? PriorityError.invalidPhase
+          : null;
+    }
+    if (command.playerId != null &&
+        match.player(command.playerId!).eliminated) {
+      return PriorityError.eliminatedPlayer;
+    }
     if (op == PriorityOperation.setAdditionalActions) {
       final base = match.player(command.playerId!).baseActions;
       final additional = command.additionalActions!;
@@ -95,6 +154,12 @@ final class PriorityEngine {
           'La operación requiere al jugador activo.',
         PriorityError.noActions => 'El jugador no tiene acciones disponibles.',
         PriorityError.invalidAdditionalActions => 'Las acciones adicionales deben ser no negativas y su total no debe desbordarse.',
+        PriorityError.eliminatedPlayer => 'El jugador está eliminado.',
+        PriorityError.invalidPoints =>
+          'La puntuación debe ser no negativa y no debe desbordarse.',
+        PriorityError.invalidTime => 'El cronómetro debe estar habilitado y el tiempo no puede ser negativo.',
+        PriorityError.timeExhausted =>
+          'Corrige el tiempo agotado o elimina al jugador antes de reanudar.',
       });
     }
     final draft = _PriorityDraft(match);
@@ -105,6 +170,7 @@ final class PriorityEngine {
           ..active = match.configuration.startingPlayerId
           ..turn = 1
           ..round = 1
+          ..roundPending.addAll(draft.seatingFrom(draft.active!))
           ..emit(PriorityEventType.started)
           ..emit(PriorityEventType.turnStarted)
           ..grantPriority(draft.active!);
@@ -134,29 +200,12 @@ final class PriorityEngine {
           ..pending.removeAt(0)
           ..advanceResponse();
       case PriorityOperation.endTurn:
-        draft.emit(PriorityEventType.turnEnded);
-        for (var i = 0; i < draft.players.length; i++) {
-          final p = draft.players[i];
-          draft.players[i] = PriorityPlayer._(
-            p.configuration,
-            p.additionalActions,
-            0,
-          );
-        }
-        final index = draft.players.indexWhere((p) => p.id == draft.active);
-        draft.active = draft.players[(index + 1) % draft.players.length].id;
-        draft.turn++;
-        draft.round = 1 + (draft.turn - 1) ~/ draft.players.length;
-        draft
-          ..emit(PriorityEventType.turnStarted)
-          ..grantPriority(draft.active!);
+        draft.endTurn();
       case PriorityOperation.setAdditionalActions:
         final index = draft.players.indexWhere((p) => p.id == command.playerId);
         final p = draft.players[index];
-        draft.players[index] = PriorityPlayer._(
-          p.configuration,
-          command.additionalActions!,
-          p.consumedActions,
+        draft.players[index] = p._copy(
+          additionalActions: command.additionalActions!,
         );
         draft.emit(
           PriorityEventType.additionalActionsChanged,
@@ -170,18 +219,56 @@ final class PriorityEngine {
       case PriorityOperation.pause:
         draft
           ..paused = true
+          ..pauseReason = command.pauseReason
           ..emit(PriorityEventType.paused, playerId: draft.priority);
       case PriorityOperation.resume:
         draft
           ..paused = false
+          ..pauseReason = null
+          ..timedOut = null
           ..emit(PriorityEventType.resumed, playerId: draft.priority);
       case PriorityOperation.finish:
+        draft.finish();
+      case PriorityOperation.adjustVictoryPoints:
+      case PriorityOperation.setVictoryPoints:
+        final index = draft.players.indexWhere((p) => p.id == command.playerId);
+        final player = draft.players[index];
+        final points = command.operation == PriorityOperation.setVictoryPoints
+            ? command.points!
+            : player.victoryPoints + command.points!;
+        draft.players[index] = player._copy(victoryPoints: points);
+        draft.emit(
+          PriorityEventType.victoryPointsChanged,
+          playerId: player.id,
+          previousValue: player.victoryPoints,
+          value: points,
+        );
+      case PriorityOperation.setRemainingTime:
+        final index = draft.players.indexWhere((p) => p.id == command.playerId);
+        final player = draft.players[index];
+        draft.players[index] = player._copy(
+          remainingTime: command.remainingTime,
+        );
+        draft.emit(
+          PriorityEventType.timeCorrected,
+          playerId: player.id,
+          previousValue: player.remainingTime!.inMicroseconds,
+          value: command.remainingTime!.inMicroseconds,
+        );
         draft
-          ..emit(PriorityEventType.finished)
-          ..phase = PriorityPhase.finished
-          ..paused = false
-          ..priority = null
-          ..pending.clear();
+          ..paused = true
+          ..pauseReason = PriorityPauseReason.manual;
+        if (command.remainingTime == Duration.zero &&
+            player.id == draft.priority) {
+          draft.timedOut = player.id;
+          draft.pauseReason = PriorityPauseReason.timeExpired;
+          if (player.remainingTime != Duration.zero) {
+            draft.emit(PriorityEventType.timeExpired, playerId: player.id);
+          }
+        }
+        draft.emit(PriorityEventType.paused, playerId: draft.priority);
+      case PriorityOperation.eliminate:
+        draft.eliminate(command.playerId!);
     }
     return PriorityTransition._(draft.build(), draft.events);
   }
@@ -193,18 +280,24 @@ final class _PriorityDraft {
     : players = original.players.toList(),
       phase = original.underlyingPhase,
       paused = original.isPaused,
+      pauseReason = original.pauseReason,
+      timedOut = original.timedOutPlayerId,
       active = original.activePlayerId,
       priority = original.priorityPlayerId,
       pending = original.pendingResponders.toList(),
+      roundPending = original.roundPending.toList(),
       turn = original.turn,
       round = original.round;
 
   final PriorityMatch original;
   final List<PriorityPlayer> players;
   final List<String> pending;
+  final List<String> roundPending;
   final events = <PriorityEvent>[];
   PriorityPhase phase;
   bool paused;
+  PriorityPauseReason? pauseReason;
+  String? timedOut;
   String? active, priority;
   int turn, round;
 
@@ -228,16 +321,13 @@ final class _PriorityDraft {
     if (priority == id) return;
     priority = id;
     emit(PriorityEventType.priorityChanged, playerId: id);
+    checkPriorityTime();
   }
 
   void consume(String id) {
     final index = players.indexWhere((p) => p.id == id);
     final p = players[index];
-    players[index] = PriorityPlayer._(
-      p.configuration,
-      p.additionalActions,
-      p.consumedActions + 1,
-    );
+    players[index] = p._copy(consumedActions: p.consumedActions + 1);
   }
 
   void openWindow(PriorityPhase responsePhase) {
@@ -245,7 +335,8 @@ final class _PriorityDraft {
     final index = players.indexWhere((p) => p.id == active);
     pending.addAll([
       for (var offset = 1; offset < players.length; offset++)
-        players[(index + offset) % players.length].id,
+        if (!players[(index + offset) % players.length].eliminated)
+          players[(index + offset) % players.length].id,
     ]);
     advanceResponse();
   }
@@ -267,16 +358,94 @@ final class _PriorityDraft {
     }
   }
 
-  PriorityMatch build() => PriorityMatch._(
+  Iterable<String> seatingFrom(String first) sync* {
+    final index = players.indexWhere((p) => p.id == first);
+    for (var offset = 0; offset < players.length; offset++) {
+      final p = players[(index + offset) % players.length];
+      if (!p.eliminated) yield p.id;
+    }
+  }
+
+  void endTurn() {
+    emit(PriorityEventType.turnEnded);
+    final previous = active!;
+    pending.clear();
+    phase = PriorityPhase.activeTurn;
+    roundPending.remove(previous);
+    for (var i = 0; i < players.length; i++) {
+      if (!players[i].eliminated) {
+        players[i] = players[i]._copy(consumedActions: 0);
+      }
+    }
+    final index = players.indexWhere((p) => p.id == previous);
+    active = [
+      for (var n = 1; n <= players.length; n++)
+        if (!players[(index + n) % players.length].eliminated)
+          players[(index + n) % players.length].id,
+    ].first;
+    turn++;
+    if (roundPending.isEmpty) {
+      round++;
+      roundPending.addAll(seatingFrom(active!));
+    }
+    emit(PriorityEventType.turnStarted);
+    grantPriority(active!);
+  }
+
+  void eliminate(String id) {
+    final index = players.indexWhere((p) => p.id == id);
+    players[index] = players[index]._copy(eliminated: true);
+    if (timedOut == id) timedOut = null;
+    pending.remove(id);
+    roundPending.remove(id);
+    emit(PriorityEventType.eliminated, playerId: id);
+    if (players.where((p) => !p.eliminated).length == 1) {
+      finish();
+    } else if (id == active) {
+      endTurn();
+    } else if (phase == PriorityPhase.actionResponse ||
+        phase == PriorityPhase.freeResponse) {
+      advanceResponse();
+    }
+  }
+
+  void finish() {
+    emit(PriorityEventType.finished);
+    phase = PriorityPhase.finished;
+    paused = false;
+    pauseReason = null;
+    timedOut = null;
+    priority = null;
+    pending.clear();
+  }
+
+  void checkPriorityTime() {
+    if (!original.configuration.clockEnabled || paused || priority == null) {
+      return;
+    }
+    if (players.firstWhere((p) => p.id == priority).remainingTime ==
+        Duration.zero) {
+      paused = true;
+      pauseReason = PriorityPauseReason.timeExpired;
+      timedOut = priority;
+      emit(PriorityEventType.timeExpired, playerId: priority);
+      emit(PriorityEventType.paused, playerId: priority);
+    }
+  }
+
+  PriorityMatch build({int? revision}) => PriorityMatch._(
     configuration: original.configuration,
     players: players,
     underlyingPhase: phase,
     isPaused: paused,
+    pauseReason: pauseReason,
+    timedOutPlayerId: timedOut,
     activePlayerId: active,
     priorityPlayerId: priority,
     pendingResponders: pending,
+    roundPending: roundPending,
     turn: turn,
     round: round,
-    revision: original.revision + 1,
+    revision: revision ?? original.revision + 1,
   );
 }

@@ -44,15 +44,18 @@ class _HeroClixAppState extends State<HeroClixApp> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     unawaited(_trainingController.initialize());
+    unawaited(_priorityController.initialize());
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    _priorityController.setForeground(state == AppLifecycleState.resumed);
     if (state == AppLifecycleState.inactive ||
         state == AppLifecycleState.paused) {
       final workspace = _editorController.workspace;
       if (workspace != null) unawaited(workspace.flush());
       unawaited(_trainingController.flush());
+      unawaited(_priorityController.flush());
     }
   }
 
