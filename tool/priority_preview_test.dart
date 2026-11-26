@@ -1,5 +1,6 @@
 // Explicit Flutter renders; not a native Android device test.
 import 'dart:io';
+import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/rendering.dart';
@@ -35,6 +36,9 @@ void main() {
     ('three', 3, const Size(360, 800), false),
     ('toolbar-back', 3, const Size(320, 568), false),
     ('three-setup', 3, const Size(360, 800), true),
+    ('three-help', 3, const Size(360, 800), true),
+    ('three-draw', 3, const Size(360, 800), true),
+    ('three-picked', 3, const Size(360, 800), true),
     ('four', 4, const Size(360, 800), false),
     ('three-landscape', 3, const Size(800, 360), false),
     ('four-landscape', 4, const Size(800, 360), false),
@@ -149,7 +153,7 @@ void main() {
             locale: const Locale('es'),
             localizationsDelegates: GlobalMaterialLocalizations.delegates,
             supportedLocales: const [Locale('es')],
-            home: PriorityScreen(controller: controller),
+            home: PriorityScreen(controller: controller, random: Random(8)),
           ),
         ),
       );
@@ -169,7 +173,10 @@ void main() {
         );
         await t.pumpAndSettle();
       }
-      if (name == 'three-setup') {
+      if (name == 'three-setup' ||
+          name == 'three-help' ||
+          name == 'three-draw' ||
+          name == 'three-picked') {
         await t.tap(find.byKey(const ValueKey('priority-player-count')));
         await t.pumpAndSettle();
         await t.tap(find.text('3 jugadores').last);
@@ -178,6 +185,21 @@ void main() {
           find.byKey(const ValueKey('priority-setup-seats')),
         );
         await t.pumpAndSettle();
+      }
+      if (name == 'three-help') {
+        await t.tap(find.byKey(const ValueKey('priority-setup-help')));
+        await t.pumpAndSettle();
+      }
+      if (name == 'three-draw' || name == 'three-picked') {
+        await t.tap(find.byKey(const ValueKey('priority-setup-select-J3')));
+        await t.pumpAndSettle();
+        await t.tap(find.byKey(const ValueKey('priority-draw')));
+        await t.pump();
+        if (name == 'three-draw') {
+          await t.pump(const Duration(milliseconds: 400));
+        } else {
+          await t.pumpAndSettle();
+        }
       }
       if (name == 'history') {
         controller.dispatch(
@@ -267,7 +289,7 @@ void main() {
         final image = await boundary.toImage();
         final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
         final directory = Directory(
-          'build/verification/priority-toolbar-actions/previews',
+          'build/verification/priority-setup-selector/previews',
         );
         await directory.create(recursive: true);
         await File('${directory.path}/$name.png')

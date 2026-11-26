@@ -1,16 +1,16 @@
-# TeamFight: GridLab — 1.0.0-rc.24+37
+# TeamFight: GridLab — 1.0.0-rc.25+38
 
 Aplicación Android offline, en español, para construir escenarios, consultar reglas
 implementadas y practicar. **Versión candidata, APK debug**: faltan las comprobaciones
 nativas de aceptación y rendimiento descritas abajo. No se congela 1.0.0 estable.
 Repositorio privado: [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer),
-rama `codex/priority-toolbar-actions`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
+rama `codex/priority-setup-selector`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
 
 Nombre e iconos de Android, Inicio y Acerca de actualizados a TeamFight: GridLab.
 La identidad técnica y firma se conservan para actualizar la instalación anterior.
 Archivos de Google Play preparados en distribution/google-play/; [detalles de identidad](docs/IDENTIDAD.md).
 
-Esta beta rc.24 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
+Esta beta rc.25 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
 (2026-12-30T05:00:00Z). Desde ese instante muestra «Versión de prueba finalizada»
 y bloquea todas las pantallas, también al reanudar o si permanece abierta. Acerca de
 muestra la fecha. No elimina biblioteca ni progreso. Usa el reloj del dispositivo:
@@ -23,7 +23,7 @@ anterior sin caducidad también queda fuera de este control local.
 El archivo generado se conserva en:
 
 ```text
-build/releases/teamfight-gridlab-1.0.0-rc.24-debug.apk
+build/releases/teamfight-gridlab-1.0.0-rc.25-debug.apk
 ```
 
 1. Android 7.0/API 24 o superior. Copiar el APK al teléfono, abrirlo en Archivos
@@ -35,7 +35,7 @@ build/releases/teamfight-gridlab-1.0.0-rc.24-debug.apk
 
 ```powershell
 adb devices -l
-adb -s ID install -r build/releases/teamfight-gridlab-1.0.0-rc.24-debug.apk
+adb -s ID install -r build/releases/teamfight-gridlab-1.0.0-rc.25-debug.apk
 adb -s ID shell am start -n com.valinor.heroclixtrainer/com.valinor.heroclix_simulator_trainer.MainActivity
 ```
 
@@ -49,7 +49,13 @@ no está implementada. PNG sirve para compartir una imagen, no para recuperar da
 Desde inicio, abre **Priority** para asistir una partida física del formato de
 Valinor. Configura 2–6 jugadores, nombres, puntos de construcción comunes y
 adicionales individuales; organiza asientos
-con las flechas anterior/siguiente y elige o sortea al inicial. **Listo** abre la
+con las flechas anterior/siguiente o el arrastre. Desde rc.25, toca al inicial
+directamente en el diagrama: el borde y **INICIA** identifican la elección. El dado
+a su lado recorre visualmente los jugadores y se detiene en uno aleatorio; espera
+a que termine y pulsa **Listo** para empezar. El sorteo no inicia la partida.
+Las explicaciones están reunidas en **ⓘ**, arriba; etiquetas, totales de acciones
+y errores de los campos siguen en el formulario. Con movimiento reducido la elección
+aleatoria es inmediata. **Listo** abre la
 mesa con paneles orientados hacia sus respectivos jugadores. Desde rc.23, tres
 jugadores se distribuyen, mirando el celular de frente: 1 arriba izquierda girado
 hacia la izquierda, 2 arriba derecha girado hacia la derecha y 3 abajo ocupando
@@ -245,7 +251,7 @@ usa etiquetas genéricas. Exportar la escena completa sí conserva sus nombres.
 | Instalación, nueva sesión tras cierre y selectores nativos | Pendiente de Android; equivalentes de archivos/controladores sí verificados |
 | Offline con radios desactivadas y rendimiento Android/FPS | Pendiente de dispositivo/emulador funcional |
 | APK release con firma del propietario | Preparado; sin claves suministradas, no generado |
-| Congelar 1.0.0 estable | Pendiente de cerrar aceptación nativa; esta entrega es 1.0.0-rc.24 |
+| Congelar 1.0.0 estable | Pendiente de cerrar aceptación nativa; esta entrega es 1.0.0-rc.25 |
 | Simular combates, dados, diales, daño y poderes de figuras | Fuera del alcance del proyecto |
 
 ## Dependencias y recompilación

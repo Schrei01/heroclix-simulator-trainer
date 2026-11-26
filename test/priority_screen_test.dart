@@ -179,14 +179,7 @@ void main() {
         t.getTopLeft(key('priority-seat-J2')).dy,
         lessThan(t.getTopLeft(key('priority-seat-J1')).dy),
       );
-      final initial = find.byWidgetPredicate(
-        (w) => w is DropdownButtonFormField<String>,
-      );
-      await t.ensureVisible(initial);
-      await t.tap(initial);
-      await t.pumpAndSettle();
-      await t.tap(find.text('3. Jugador 3').last);
-      await t.pumpAndSettle();
+      await press(t, 'priority-setup-select-J3');
       await press(t, 'priority-start');
       expect(c.value!.activePlayerId, 'J3');
       expect(c.value!.players.map((p) => p.id), ['J2', 'J1', 'J3']);

@@ -1,6 +1,6 @@
 # Preparar, compilar e instalar en Android
 
-Candidata actual: **TeamFight: GridLab 1.0.0-rc.24+37**. Inicio contiene Editor, Entrenador y Priority; las consultas
+Candidata actual: **TeamFight: GridLab 1.0.0-rc.25+38**. Inicio contiene Editor, Entrenador y Priority; las consultas
 y ensayos están en las herramientas del Editor. El recorrido vigente del Editor
 está al final de este documento. Los apartados identificados por etapa describen
 sus versiones históricas. Resultados efectivamente ejecutados: [ESTADO](ESTADO.md).
@@ -573,3 +573,18 @@ resumen. Después queda deshabilitado; Deshacer permite restaurar la partida pau
 Clasificación y Nueva partida están en ⋮ y conservan su comportamiento. Repetir con
 Volver, pantalla estrecha y texto ampliado; deslizar la confirmación si no cabe.
 Pruebas y renders locales no sustituyen este recorrido físico pendiente.
+
+## Preparar mesa y sorteo visual (rc.25)
+
+Comprobar que las explicaciones están en ⓘ arriba y no se repiten en el formulario.
+Los campos conservan etiquetas, totales y errores. Tocar un jugador del diagrama
+marca INICIA; mantenerlo pulsado permite moverlo sin elegirlo por accidente.
+El dado está al lado del diagrama: tocarlo debe hacer girar el icono y recorrer los
+jugadores en sentido horario, desacelerar y detenerse en uno. No comienza la partida
+hasta pulsar Listo. Repetir con 2–6 y después de mover los asientos.
+
+Mientras gira, probar toque manual, editar cantidad/datos, arrastre, ayuda/menú,
+segundo plano y navegación: el efecto se cancela y no cambia el inicial después.
+Con animaciones reducidas no debe animar, conservando una elección aleatoria.
+Repetir ayuda, toque y dado en ambas orientaciones, texto ampliado y TalkBack.
+Este recorrido físico sigue pendiente; resultados Flutter/renders en ESTADO.md.

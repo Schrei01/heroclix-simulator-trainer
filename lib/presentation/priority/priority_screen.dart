@@ -10,24 +10,32 @@ import 'priority_management.dart';
 import 'priority_table.dart';
 import 'priority_table_layout.dart';
 import 'priority_theme.dart';
-import 'priority_seat_drag.dart';
 import 'priority_history.dart';
+import 'priority_setup_diagram.dart';
 
 enum _PriorityMenu { history, undo, saved, finish, standings, newGame }
 
 class PriorityScreen extends StatefulWidget {
-  const PriorityScreen({required this.controller, super.key});
+  const PriorityScreen({required this.controller, this.random, super.key});
   final PriorityController controller;
+  final Random? random;
 
   @override
   State<PriorityScreen> createState() => _PriorityScreenState();
 }
 
-class _PriorityScreenState extends State<PriorityScreen> {
+class _PriorityScreenState extends State<PriorityScreen>
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   final _form = GlobalKey<FormState>();
   final _players = [for (var i = 1; i <= 6; i++) _SeatDraft(i)];
   int _count = 2;
   String _first = 'J1';
+  late final Random _random = widget.random ?? Random();
+  late final AnimationController _drawController;
+  String? _drawTarget, _drawPreview;
+  List<String> _drawIds = const [];
+  int _drawStart = 0, _drawSteps = 0;
+  bool get _drawing => _drawTarget != null;
   String? _error;
   bool _clockEnabled = false;
   final _minutes = TextEditingController(text: '30');
@@ -39,6 +47,16 @@ class _PriorityScreenState extends State<PriorityScreen> {
   @override
   void initState() {
     super.initState();
+    _drawController =
+        AnimationController(
+            vsync: this,
+            duration: const Duration(milliseconds: 2200),
+          )
+          ..addListener(_drawTick)
+          ..addStatusListener((status) {
+            if (status == AnimationStatus.completed) _finishDraw();
+          });
+    WidgetsBinding.instance.addObserver(this);
     widget.controller.addListener(_checkFinished);
     unawaited(widget.controller.initialize());
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkFinished());
@@ -47,6 +65,7 @@ class _PriorityScreenState extends State<PriorityScreen> {
   void _checkFinished() {
     if (!mounted) return;
     final match = widget.controller.value;
+    if (match != null) _cancelDraw();
     _syncExpiryNotice(match);
     if (match?.phase != PriorityPhase.finished) _resultsShown = false;
     final notice = widget.controller.takeNotice();
@@ -153,6 +172,8 @@ class _PriorityScreenState extends State<PriorityScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _drawController.dispose();
     widget.controller.removeListener(_checkFinished);
     widget.controller.pauseForNavigation();
     unawaited(widget.controller.flush());
@@ -187,7 +208,7 @@ class _PriorityScreenState extends State<PriorityScreen> {
       return draw
           ? PriorityConfiguration.randomStart(
               players: players,
-              random: Random(),
+              random: _random,
               clockEnabled: _clockEnabled,
               initialTime: time,
             )
@@ -204,6 +225,7 @@ class _PriorityScreenState extends State<PriorityScreen> {
   }
 
   void _start() {
+    if (_drawing) return;
     final configuration = _configuration();
     if (configuration == null) return;
     FocusScope.of(context).unfocus();
@@ -211,13 +233,94 @@ class _PriorityScreenState extends State<PriorityScreen> {
   }
 
   void _draw() {
+    if (_drawing) return;
     final configuration = _configuration(draw: true);
     if (configuration != null) {
+      FocusScope.of(context).unfocus();
+      final target = configuration.startingPlayerId;
+      if (MediaQuery.disableAnimationsOf(context)) {
+        _selectFirst(target);
+        return;
+      }
+      final ids = configuration.players.map((p) => p.id).toList();
+      final start = ids.indexOf(_first), destination = ids.indexOf(target);
       setState(() {
-        _first = configuration.startingPlayerId;
+        _drawIds = ids;
+        _drawStart = start;
+        _drawSteps =
+            2 * ids.length + (destination - start + ids.length) % ids.length;
+        _drawTarget = target;
+        _drawPreview = _first;
         _error = null;
       });
+      _drawController.forward(from: 0);
     }
+  }
+
+  void _drawTick() {
+    if (!_drawing || !mounted) return;
+    final step =
+        (Curves.easeOutCubic.transform(_drawController.value) * _drawSteps)
+            .floor();
+    final id = _drawIds[(_drawStart + step) % _drawIds.length];
+    if (_drawPreview != id) setState(() => _drawPreview = id);
+  }
+
+  void _finishDraw() {
+    final target = _drawTarget;
+    if (!mounted || target == null) return;
+    if (_players.take(_count).any((p) => p.id == target)) {
+      setState(() {
+        _first = target;
+        _drawTarget = null;
+        _drawPreview = null;
+      });
+      _drawController.value = 1;
+    } else {
+      _cancelDraw();
+    }
+  }
+
+  void _cancelDraw() {
+    if (!_drawing) return;
+    _drawController.stop();
+    if (mounted) {
+      setState(() {
+        _drawTarget = null;
+        _drawPreview = null;
+      });
+    }
+    _drawController.reset();
+  }
+
+  void _selectFirst(String id) {
+    if (!_players.take(_count).any((p) => p.id == id)) return;
+    _cancelDraw();
+    FocusScope.of(context).unfocus();
+    setState(() {
+      _first = id;
+      _error = null;
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (MediaQuery.disableAnimationsOf(context) && _drawing) {
+      _drawController.stop();
+      _finishDraw();
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) _cancelDraw();
+  }
+
+  Future<void> _setupHelp() async {
+    _cancelDraw();
+    FocusScope.of(context).unfocus();
+    await showPrioritySetupHelp(context);
   }
 
   Future<void> _newGame() async {
@@ -247,6 +350,7 @@ class _PriorityScreenState extends State<PriorityScreen> {
   }
 
   Future<void> _more(_PriorityMenu choice) async {
+    _cancelDraw();
     switch (choice) {
       case _PriorityMenu.standings:
         await showPriorityStandings(context, widget.controller);
@@ -381,6 +485,7 @@ class _PriorityScreenState extends State<PriorityScreen> {
       builder: (context, match, _) => PopScope(
         onPopInvokedWithResult: (didPop, _) {
           if (didPop) {
+            _cancelDraw();
             _closeExpiryNotice();
             widget.controller.pauseForNavigation();
           }
@@ -392,6 +497,13 @@ class _PriorityScreenState extends State<PriorityScreen> {
           appBar: AppBar(
             title: const Text('Priority'),
             actions: [
+              if (match == null && widget.controller.ready)
+                IconButton(
+                  key: const ValueKey('priority-setup-help'),
+                  tooltip: 'Cómo preparar la mesa',
+                  onPressed: _setupHelp,
+                  icon: const Icon(Icons.info_outline),
+                ),
               if (match != null) ...[
                 IconButton(
                   key: const ValueKey('priority-toolbar-undo'),
@@ -439,6 +551,7 @@ class _PriorityScreenState extends State<PriorityScreen> {
               PopupMenuButton<_PriorityMenu>(
                 key: const ValueKey('priority-more'),
                 tooltip: 'Más opciones',
+                onOpened: _cancelDraw,
                 onSelected: _more,
                 itemBuilder: (context) => [
                   if (match != null) ...[
@@ -503,14 +616,10 @@ class _PriorityScreenState extends State<PriorityScreen> {
                 'Prepara la mesa',
                 style: Theme.of(context).textTheme.titleLarge,
               ),
-              const SizedBox(height: 8),
-              const Text(
-                'Ordena los asientos en sentido horario. '
-                'Los números y colores te ayudarán a ubicar a cada jugador.',
-              ),
               const SizedBox(height: 16),
               DropdownButtonFormField<int>(
                 key: const ValueKey('priority-player-count'),
+                onTap: _cancelDraw,
                 initialValue: _count,
                 isExpanded: true,
                 itemHeight: null,
@@ -528,6 +637,7 @@ class _PriorityScreenState extends State<PriorityScreen> {
                 ],
                 onChanged: (count) {
                   if (count == null) return;
+                  _cancelDraw();
                   setState(() {
                     _count = count;
                     if (!_players.take(_count).any((p) => p.id == _first)) {
@@ -547,14 +657,14 @@ class _PriorityScreenState extends State<PriorityScreen> {
                 key: const ValueKey('priority-clock-enabled'),
                 contentPadding: EdgeInsets.zero,
                 title: const Text('Cronómetros individuales'),
-                subtitle: const Text(
-                  'Solo descuenta quien tiene la prioridad.',
-                ),
                 value: _clockEnabled,
-                onChanged: (enabled) => setState(() {
-                  _clockEnabled = enabled;
-                  _error = null;
-                }),
+                onChanged: (enabled) {
+                  _cancelDraw();
+                  setState(() {
+                    _clockEnabled = enabled;
+                    _error = null;
+                  });
+                },
               ),
               if (_clockEnabled) ...[
                 _number(
@@ -562,157 +672,51 @@ class _PriorityScreenState extends State<PriorityScreen> {
                   'Tiempo inicial: minutos',
                   'priority-clock-minutes',
                 ),
-                const Text(
-                  'Al volver de segundo plano, reanuda manualmente el reloj.',
-                ),
               ],
               for (var i = 0; i < _count; i++) _seatEditor(i),
               const SizedBox(height: 16),
-              const Text('Turnos y prioridad siguen este orden:'),
-              Text(
-                '${_players.take(_count).map((p) => p.displayName).join(' → ')} → ${_players.first.displayName}',
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                'Ubicación de los asientos con el teléfono en la mesa:',
-              ),
-              const Text(
-                'Mantén pulsado un asiento y arrástralo sobre otro para intercambiarlos. '
-                'El jugador inicial se conserva y el orden horario sigue las posiciones.',
-              ),
-              SizedBox(
-                key: const ValueKey('priority-setup-seats'),
-                height: 180,
-                child: Center(
-                  child: AspectRatio(
-                    aspectRatio:
-                        MediaQuery.orientationOf(context) ==
-                            Orientation.portrait
-                        ? .75
-                        : 1.8,
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        final seats = priorityTableSeats(
-                          constraints.biggest,
-                          _count,
-                        );
-                        return Stack(
-                          children: [
+              Semantics(
+                container: true,
+                liveRegion: true,
+                label: _drawing
+                    ? 'Sorteando jugador inicial'
+                    : 'Empieza ${_players.firstWhere((p) => p.id == _first).displayName}',
+                child: SizedBox(
+                  key: const ValueKey('priority-setup-seats'),
+                  height: 180,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: PrioritySetupDiagram(
+                          group: _form,
+                          seats: [
                             for (var i = 0; i < _count; i++)
-                              Positioned.fromRect(
-                                key: ValueKey(
-                                  'priority-setup-view-${_players[i].id}',
-                                ),
-                                rect: seats[i].bounds,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(2),
-                                  child: RotatedBox(
-                                    quarterTurns: seats[i].quarterTurns,
-                                    child: PrioritySeatDropZone(
-                                      group: _form,
-                                      playerId: _players[i].id,
-                                      onSwap: _swapSetupSeats,
-                                      child: PrioritySeatDragSource(
-                                        group: _form,
-                                        playerId: _players[i].id,
-                                        name: _players[i].displayName,
-                                        color: priorityPlayerColors[i],
-                                        quarterTurns: seats[i].quarterTurns,
-                                        child: ColoredBox(
-                                          color: priorityPlayerColors[i]
-                                              .withValues(alpha: .18),
-                                          child: Center(
-                                            child: FittedBox(
-                                              fit: BoxFit.scaleDown,
-                                              child: SizedBox(
-                                                width: 64,
-                                                child: Column(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children: [
-                                                    Text(
-                                                      '${i + 1}. ${_players[i].displayName}',
-                                                      maxLines: 2,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                      textAlign:
-                                                          TextAlign.center,
-                                                      style: TextStyle(
-                                                        fontSize: 11,
-                                                        color:
-                                                            priorityPlayerColors[i],
-                                                      ),
-                                                    ),
-                                                    if (_players[i].id ==
-                                                        _first)
-                                                      const Text(
-                                                        'INICIA',
-                                                        maxLines: 1,
-                                                        style: TextStyle(
-                                                          fontSize: 10,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color: Color(
-                                                            0xFFFFD878,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
+                              (
+                                id: _players[i].id,
+                                name: _players[i].displayName,
+                                color: priorityPlayerColors[i],
                               ),
                           ],
-                        );
-                      },
-                    ),
+                          first: _first,
+                          preview: _drawPreview,
+                          onDragStarted: _cancelDraw,
+                          onSelect: _selectFirst,
+                          onSwap: _swapSetupSeats,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      IconButton(
+                        key: const ValueKey('priority-draw'),
+                        tooltip: 'Sortear jugador inicial',
+                        onPressed: _drawing ? null : _draw,
+                        icon: RotationTransition(
+                          turns: _drawController,
+                          child: const Icon(Icons.casino_outlined, size: 30),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                key: ValueKey('priority-initial-$_first-$_count'),
-                initialValue: _first,
-                isExpanded: true,
-                itemHeight: null,
-                decoration: const InputDecoration(labelText: 'Jugador inicial'),
-                items: [
-                  for (var i = 0; i < _count; i++)
-                    DropdownMenuItem(
-                      value: _players[i].id,
-                      child: Text(
-                        '${i + 1}. ${_players[i].displayName}',
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                ],
-                onChanged: (id) {
-                  if (id != null) setState(() => _first = id);
-                },
-              ),
-              const SizedBox(height: 8),
-              OutlinedButton.icon(
-                key: const ValueKey('priority-draw'),
-                onPressed: _draw,
-                icon: const Icon(Icons.casino_outlined),
-                label: const Text('Sortear jugador inicial'),
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                'Al finalizar cualquier turno se recuperan las acciones de todos. '
-                'La partida se guarda en este dispositivo para retomarla después.',
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'En la mesa, usa −/+ para cambiar 5 PV y la calavera para eliminar. '
-                'Toca un nombre para más opciones. '
-                'El contador de acciones permite cambiar sus adicionales.',
               ),
               if (_error != null)
                 Padding(
@@ -728,7 +732,7 @@ class _PriorityScreenState extends State<PriorityScreen> {
               const SizedBox(height: 16),
               FilledButton.icon(
                 key: const ValueKey('priority-start'),
-                onPressed: _start,
+                onPressed: _drawing ? null : _start,
                 icon: const Icon(Icons.play_arrow),
                 label: const Padding(
                   padding: EdgeInsets.all(12),
@@ -748,6 +752,7 @@ class _PriorityScreenState extends State<PriorityScreen> {
     final from = selected.indexWhere((p) => p.id == source);
     final to = selected.indexWhere((p) => p.id == destination);
     if (from < 0 || to < 0 || from == to) return;
+    _cancelDraw();
     setState(() {
       final moving = _players[from];
       _players[from] = _players[to];
@@ -764,11 +769,15 @@ class _PriorityScreenState extends State<PriorityScreen> {
     } on ArgumentError {
       /* Invalid form input. */
     }
-    void move(int offset) => setState(() {
-      final other = _players[index + offset];
-      _players[index + offset] = draft;
-      _players[index] = other;
-    });
+    void move(int offset) {
+      _cancelDraw();
+      setState(() {
+        final other = _players[index + offset];
+        _players[index + offset] = draft;
+        _players[index] = other;
+      });
+    }
+
     return Card(
       key: ValueKey('priority-seat-${draft.id}'),
       margin: const EdgeInsets.symmetric(vertical: 6),
@@ -802,6 +811,7 @@ class _PriorityScreenState extends State<PriorityScreen> {
             ),
             TextFormField(
               key: ValueKey('priority-name-${draft.id}'),
+              onTap: _cancelDraw,
               controller: draft.name,
               maxLength: 40,
               decoration: const InputDecoration(labelText: 'Nombre'),
@@ -820,7 +830,7 @@ class _PriorityScreenState extends State<PriorityScreen> {
             Text(
               preview == null
                   ? 'Revisa los datos del jugador.'
-                  : '${preview.baseActions} base + ${preview.additionalActions} adicionales = ${preview.totalActions} acciones',
+                  : '${preview.totalActions} acciones',
             ),
           ],
         ),
@@ -831,6 +841,7 @@ class _PriorityScreenState extends State<PriorityScreen> {
   Widget _number(TextEditingController controller, String label, String key) =>
       TextFormField(
         key: ValueKey(key),
+        onTap: _cancelDraw,
         controller: controller,
         keyboardType: TextInputType.number,
         decoration: InputDecoration(labelText: label),

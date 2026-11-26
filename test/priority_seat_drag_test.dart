@@ -175,9 +175,7 @@ void main() {
       await mount(t, c);
       await selectCount(t, 3);
       await enter(t, 'priority-name-J2', 'Primero');
-      await press(t, 'priority-initial-J1-3');
-      await t.tap(find.text('2. Primero').last);
-      await t.pumpAndSettle();
+      await press(t, 'priority-setup-select-J2');
       await t.ensureVisible(key('priority-setup-seats'));
       await t.pumpAndSettle();
       await dragSeat(t, 'J2', 'J3');

@@ -16,6 +16,7 @@ class PrioritySeatDragSource extends StatelessWidget {
     required this.color,
     required this.quarterTurns,
     required this.child,
+    this.onDragStarted,
     super.key,
   });
   final Object group;
@@ -23,12 +24,14 @@ class PrioritySeatDragSource extends StatelessWidget {
   final Color color;
   final int quarterTurns;
   final Widget child;
+  final VoidCallback? onDragStarted;
 
   @override
   Widget build(BuildContext context) =>
       LongPressDraggable<PrioritySeatDragData>(
         key: ValueKey('priority-drag-$playerId'),
         data: PrioritySeatDragData(group, playerId),
+        onDragStarted: onDragStarted,
         maxSimultaneousDrags: 1,
         dragAnchorStrategy: pointerDragAnchorStrategy,
         feedback: FractionalTranslation(

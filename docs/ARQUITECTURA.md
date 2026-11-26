@@ -105,6 +105,20 @@ pasan al menú para conservar áreas táctiles de 48 sin ampliar la barra. La
 confirmación de finalizar usa el diálogo desplazable común de Priority, incluidos
 sus botones. No se modifica motor, persistencia ni formato por este ajuste.
 
+Rc.25 separa `PrioritySetupDiagram`, un widget de presentación que comparte la
+geometría de mesa y ofrece toque corto para elegir inicial y pulsación larga para
+mover asientos. Las instrucciones se reúnen en el diálogo desplazable de ⓘ.
+El estado de configuración usa un `AnimationController` finito de 2,2 s: selecciona
+primero con `PriorityConfiguration.randomStart` y representa dos vueltas horarias
+más el tramo hasta el resultado, desacelerando al final. La fuente `Random` se puede
+inyectar para pruebas; no depende del ritmo de fotogramas y no inicia la partida.
+El dado gira y los asientos resaltan durante el sorteo; se bloquean dado/Listo hasta
+terminar. Otra selección o edición, mover asientos, ayuda/menú, segundo plano o salir
+cancelan el efecto conservando la elección comprometida; un toque manual la reemplaza.
+Se libera el ticker al disponer la pantalla y se respeta movimiento reducido tanto
+inicial como activado durante el sorteo. La selección final se anuncia mediante
+semántica liveRegion, sin anunciar cada fotograma. No cambia dominio ni archivos.
+
 Producción usa `priority_v1/` en almacenamiento privado Android, con formato
 Priority 2 (compatible con 1), checksum de corrupción, archivo activo y copia válida anterior.
 Cada partida archivada tiene ID propio. Nueva partida o cambiar de partida

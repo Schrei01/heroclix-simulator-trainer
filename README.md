@@ -1,9 +1,14 @@
 # TeamFight: GridLab
 
-Aplicación Android Flutter/Dart, offline y en español. Versión **1.0.0-rc.24+37**.
+Aplicación Android Flutter/Dart, offline y en español. Versión **1.0.0-rc.25+38**.
 
 **Priority** está disponible desde inicio: configura de 2 a 6 jugadores, organiza
 los asientos en sentido horario y coloca el teléfono en el centro de la mesa.
+Desde rc.25, las instrucciones de Preparar mesa se reúnen en **ⓘ** arriba. Toca
+un jugador en el diagrama para marcarlo como inicial. El dado junto al diagrama
+sortea entre los disponibles: el resaltado gira y se detiene en el elegido.
+El sorteo no inicia la partida; confirma con **Listo**. Se conserva la pulsación
+larga para mover asientos. Con animaciones reducidas, el sorteo es inmediato.
 Los paneles administran turnos, prioridad y acciones mediante el motor del formato
 personalizado de Valinor. Toca el contador de acciones para cambiar adicionales;
 la partida se guarda automáticamente en este dispositivo.
@@ -54,7 +59,7 @@ horario 1 → 2 → 3 → 1. Para 4–6, los asientos también se enumeran en se
 conservan sus superficies y orientación hacia los lados correspondientes.
 La mesa ocupa todo el espacio bajo la barra: se retiró la franja de ronda/turno.
 El borde dorado identifica la prioridad; se mantienen ACTIVO y REACTIVO.
-La versión actual está en la rama `codex/priority-toolbar-actions` del repositorio privado
+La versión actual está en la rama `codex/priority-setup-selector` del repositorio privado
 [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer).
 
 Desde rc.8 la marca visible es **TeamFight: GridLab**, con los iconos Android y el
@@ -77,7 +82,7 @@ azul con ondas y letra A. Conserva alturas, admite figuras y se guarda en biblio
 JSON y PNG. La paleta reúne seis pinceles. Según §16.6 de la edición implementada,
 agua se considera despejado para visión/movimiento salvo efectos específicos.
 
-Esta beta rc.24 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
+Esta beta rc.25 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
 (2026-12-30T05:00:00Z). Desde ese instante muestra «Versión de prueba finalizada»
 y bloquea todas las pantallas, también al reanudar o si permanece abierta. Acerca de
 muestra la fecha. No elimina biblioteca ni progreso. Usa el reloj del dispositivo:

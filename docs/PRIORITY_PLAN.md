@@ -634,3 +634,39 @@ relojes, PV, historial, recuperación y Deshacer de las etapas anteriores.
 No se cambia el flujo de APK ni se inicia una etapa nueva. La validación física
 continúa pendiente conforme a la decisión de seguir sin teléfono.
 Resultados definitivos y APK: [ESTADO.md](ESTADO.md).
+
+## Preparar mesa: ayuda única, selección táctil y sorteo rc.25 — 2026-11-26
+
+Rama `codex/priority-setup-selector`, base `6918fd4` (rc.24).
+Las explicaciones se reúnen en ⓘ arriba, dentro de un diálogo desplazable.
+El formulario conserva etiquetas, errores y el total de acciones de cada jugador;
+se retiran párrafos repetidos, lista textual de orden y selector desplegable del inicial.
+El diagrama mantiene geometría/giros y arrastre; el toque corto elige quién empieza.
+El dado se coloca junto al diagrama y sortea con una animación de 2,2 segundos,
+resaltando jugadores en sentido horario antes de detenerse en el resultado.
+
+- [x] Botón ⓘ y ayuda reunida, accesible sin perder datos del formulario.
+- [x] Selección del inicial por toque, borde/INICIA y conservación al mover asientos.
+- [x] Dado adyacente con giro, recorrido horario finito y desaceleración final.
+  Se elige una sola vez con el API del motor antes de animar; `Random` inyectable.
+- [x] Sorteo no inicia la partida; dado/Listo se deshabilitan durante el efecto.
+  No hay callbacks tardíos al elegir manualmente, editar, mover, abrir ayuda/menú,
+  pasar a segundo plano o salir. Reducir animaciones entrega la misma elección
+  inmediatamente; puede activarse durante el sorteo.
+- [x] Validación de campos reutilizada; los errores funcionales siguen visibles.
+- [x] 20 pruebas nuevas: selección/sorteo para 2–6 con resultado sembrado y visita a
+  todos; tres sorteos tras reordenar; ayuda/datos/gestos, inválidos, seis interrupciones,
+  movimiento reducido antes/durante y objetivos táctiles en 320×320/800×360 a 300 %.
+  Dos pruebas anteriores de selector desplegable se adaptan a seleccionar en el diagrama.
+- [x] Verificación focalizada de pantalla/arrastre/orden y renders: **240/240
+  aprobadas**, 2 min 31 s (208 pruebas y 32 renders). Análisis completo sin incidencias
+  y 205 archivos Dart con formato correcto. Revisión visual de configuración, ayuda,
+  sorteo en curso y resultado; las cuatro variantes mantienen posiciones/giros.
+- [x] APK rc.25/código 38 generado mediante `./tool/build_apk.ps1`, Gradle 51,6 s;
+  paquete/versión/SDK, firma v2, certificado anterior y copia/hash verificados,
+  sin INTERNET. Solo queda rc.25 tras retirar rc.24 con el script habitual.
+
+El resto de Priority, Editor y Entrenador mantiene su comportamiento. Sin paquetes,
+permisos ni cambios del formato de partida o del flujo de APK. La aceptación Android
+sigue pendiente según la decisión de continuar sin teléfono. Evidencia local en
+`build/verification/priority-setup-selector/`; resultados y APK en [ESTADO.md](ESTADO.md).
