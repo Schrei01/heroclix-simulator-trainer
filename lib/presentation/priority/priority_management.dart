@@ -4,6 +4,7 @@ import '../../domain/priority/priority.dart';
 import 'priority_controller.dart';
 import 'priority_input.dart';
 import 'priority_theme.dart';
+import 'priority_history.dart';
 
 Widget priorityRotatedDialog(int turns, Widget child) => PriorityTheme(
   child: Dialog(
@@ -45,6 +46,18 @@ Future<void> showPriorityStandings(
             ),
             const SizedBox(height: 12),
             Text('Ronda ${match.round} · Turno ${match.turn}'),
+            if (controller.storageError != null) ...[
+              Text(controller.storageError!),
+              TextButton(
+                onPressed: controller.flush,
+                child: const Text('Reintentar guardado'),
+              ),
+            ] else if (match.phase == PriorityPhase.finished)
+              Text(
+                controller.saving
+                    ? 'Guardando en este dispositivo…'
+                    : 'Guardado en este dispositivo',
+              ),
             if (match.phase == PriorityPhase.finished)
               Text(
                 'Jugadores no eliminados: ${match.players.where((p) => !p.eliminated).length}',
@@ -62,6 +75,17 @@ Future<void> showPriorityStandings(
                   ' · ${standing.player.eliminated ? 'Eliminado' : 'No eliminado'}',
                 ),
               ),
+            if (match.phase == PriorityPhase.finished &&
+                controller.session != null) ...[
+              const Divider(),
+              PriorityStatistics(session: controller.session!),
+              TextButton(
+                key: const ValueKey('priority-result-history'),
+                onPressed: () =>
+                    openPriorityHistory(context, controller: controller),
+                child: const Text('Consultar historial'),
+              ),
+            ],
             TextButton(
               key: const ValueKey('priority-ranking-close'),
               onPressed: () => Navigator.pop(context),

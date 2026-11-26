@@ -1,55 +1,80 @@
 # Estado actual — TeamFight: GridLab
 
-2026-11-25 (America/Bogota). **1.0.0-rc.21+34**, beta candidata debug.
-Rama `codex/priority-score-alignment`, base `c7fb926` (arrastre rc.20).
-Informe anterior: [ENTREGA_RC20.md](ENTREGA_RC20.md).
+2026-11-26 (America/Bogota). **1.0.0-rc.22+35**, beta candidata debug.
+Rama `codex/priority-stage4`, base `d739a8e` (rc.21).
+Informe anterior: [ENTREGA_RC21.md](ENTREGA_RC21.md).
 
-## Alineación del total de PV
+## Priority etapa 4
 
-- −, PV y + comparten centro vertical. El total se centra en una superficie de
-  48 unidades; el aviso temporal queda en una franja inferior independiente.
-- El total no se desplaza cuando aparece o desaparece +5/+10…; no hay superposición.
-  Se conservan tamaño 22/negrilla, distancia próxima y objetivos táctiles de 48.
-- No cambian estado, puntos, posiciones, arrastre, relojes, controles ni motor.
+- Historial cronológico de operaciones y consecuencias automáticas, con jugador,
+  fecha/hora, ronda/turno y cambios de prioridad. No hay registros por segundo.
+- Deshacer consecutivo restaura ventana, activo/prioridad, acciones, PV, eliminados,
+  tiempos, pendientes de turno/ronda y posiciones visuales. Conserva auditoría de
+  anulaciones y excluye operaciones deshechas del resumen.
+- Guardado automático local y recuperación al abrir. Recuperar o deshacer deja
+  relojes pausados hasta reanudación manual y no cobra tiempo de ausencia.
+- Biblioteca de partidas en curso/finalizadas, consulta de resultados e historial,
+  continuación y descarte confirmado. Crear otra partida conserva la actual;
+  un fallo de guardado impide sustituirla.
+- Finalización manual confirmada y resumen con clasificación/empates, estado,
+  seis tipos de operación, tiempos, ronda/turno e historial.
 
-Alcance: [PRIORITY_PLAN.md](PRIORITY_PLAN.md). Sin cambios en Editor/Entrenador,
-dependencias, permisos ni JSON. No se inicia etapa 4 o persistencia. La beta vence
-el 30/12/2026 a las 00:00 Colombia, según el reloj del dispositivo.
+Alcance y decisiones: [PRIORITY_PLAN.md](PRIORITY_PLAN.md) y
+[PRIORITY_STAGE4.md](PRIORITY_STAGE4.md). No se inicia ninguna etapa posterior.
+Sin dependencias/permisos nuevos ni cambios de reglas del motor o formatos del
+Editor/Entrenador. Los límites ampliados del almacén se inyectan solo a Priority.
+La beta vence el 30/12/2026 a las 00:00 Colombia, según el reloj del dispositivo.
 
 ## Verificación
 
 | Comprobación | Resultado |
 | --- | --- |
-| Focalizadas de Priority y renders | **201/201 aprobadas**, 1 min 39 s: 178 pruebas y 23 renders |
+| Motor/controladores antes del incremento | **201/201 aprobadas** |
+| Regresión general de la app | **1018/1018 aprobadas**, 6 min 13 s |
+| Verificación final de Priority | **263/263 aprobadas**, 29 s; motor etapas 1/3 y toda etapa 4 |
+| Pruebas nuevas | **81**: 64 unitarias/aplicación, 3 archivos reales, 14 UI/ciclo de vida |
+| UI y renders | **41/41 aprobadas**, 28 s; 14 pruebas UI y 27 renders |
 | Análisis completo | Sin incidencias |
-| Formato lib/test/tool | 191 archivos, 0 cambios pendientes |
-| ./tool/build_apk.ps1 | Correcto, Gradle 46,0 s; copia/hash válidos; 1 APK anterior eliminado |
+| Formato lib/test/tool | 200 archivos, 0 cambios pendientes |
+| ./tool/build_apk.ps1 | Correcto, Gradle 77,9 s; copia/hash válidos; 1 APK anterior eliminado |
 | aapt / apksigner | Paquete/versión/SDK/firma v2 válidos; mismo certificado; sin INTERNET |
 
-Se amplía la prueba existente de PV para verificar el eje vertical, estabilidad
-antes/durante/después del aviso y ausencia de superposición. Se reutilizan
-controles, arrastre, estado activo, gestión, relojes, teclado, dimensiones y texto
-ampliado. Revisión visual de mesas de dos/seis y acumulado temporal. La última
-suite general completa fue rc.16: 908/908 aprobadas; este ajuste verifica Priority
-y análisis global.
+La regresión cubre las 938 pruebas anteriores más las 80 iniciales de etapa 4.
+La revisión final añade un caso para nombres/IDs largos admitidos por el motor:
+se retira un límite de lectura arbitrario para conservar el roundtrip, manteniendo
+el límite global de tamaño. Se verifica de nuevo motor y toda la etapa 4 tras ese
+cambio, sin volver a ejecutar widgets ajenos al codec.
 
-Evidencia local: `build/verification/priority-score-alignment/`, con
-`targeted-final.log`, `analyze-final.log`, `format-check-final.log`,
-`apk-build.log` y `previews/`.
+Incluye recuperación para 2–6 jugadores, ACTION/FREE, con/sin reloj, 4000 roundtrips,
+undo mixto consecutivo, eliminaciones/finalización, colas y rondas, fallos de E/S,
+archivos reales/reinicio, corrupción/copia anterior/esquema futuro, callbacks
+obsoletos, biblioteca/resultados, ciclo de vida y texto 300 %. Revisión visual de
+historial con reversión, mesa pausada, biblioteca y resumen guardado.
+
+Evidencia local: `build/verification/priority-stage4/`: `baseline.log`,
+`full-final.log`, `priority-final.log`, `ui-renders-final.log`, `analyze-final.log`,
+`format-check-final.log`, `apk-build.log`, `apk-identity.log` y `previews/`.
 
 ## APK entregable único
 
-- `build/releases/teamfight-gridlab-1.0.0-rc.21-debug.apk`, **159062763** bytes.
-- SHA-256: `122D8FA8C197F089CD36235423FFA0CF1CE87D5A2E9DA0556F88E79E0ED05F69`.
-- Paquete `com.valinor.heroclixtrainer`, nombre TeamFight: GridLab, código 34;
+- `build/releases/teamfight-gridlab-1.0.0-rc.22-debug.apk`, **159133899** bytes.
+- SHA-256: `C829FEA77921EAF57506DFFE8A964DA8B68092F7F82491FE19CEE6977367611F`.
+- Paquete `com.valinor.heroclixtrainer`, nombre TeamFight: GridLab, código 35;
   SDK mínimo 24 y objetivo/compilación 36.
 - Certificado SHA-256 conservado:
   `57081ee91137c216eff437a7c75ac5bb6f552bc29167e63370d85628fc82ac54`.
-- El script retiró rc.20 solo después de validar compilación y copia. No cambió
-  el flujo de APK y no se utilizó flutter clean. Historial de código/informes en Git.
+- El script retiró rc.21 solo después de validar la compilación y la copia. No
+  cambió el flujo de APK y no se utilizó flutter clean. Informes/código históricos en Git.
 
-## Aceptación Android
+## Aceptación Android y datos locales
 
 Se mantiene la decisión de continuar sin teléfono. Queda pendiente instalar y
-verificar físicamente. Recorrido en [ANDROID.md](ANDROID.md). Instalar encima
-para conservar biblioteca/progreso.
+verificar físicamente, incluyendo cierre forzado, almacenamiento Android, TalkBack
+y rendimiento. Recorrido: [ANDROID.md](ANDROID.md). Las pruebas de widgets y archivos
+no sustituyen la validación nativa.
+
+Instalar encima con la misma firma conserva datos privados. Desinstalar/borrar
+los datos elimina las partidas Priority; esta etapa no incorpora exportación.
+La copia anterior puede recuperar un estado previo si el principal queda dañado;
+se avisa al usuario para revisarlo. No se garantiza salvar una escritura que Android
+no completó antes de un corte abrupto. Límites explícitos en PRIORITY_STAGE4.md.

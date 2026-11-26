@@ -6,8 +6,13 @@ import '../../application/scenarios/scenario_document.dart';
 
 /// Archivos privados: nombre por ID validado, temporal + flush + rename en el mismo directorio.
 final class FileDocumentStore implements LocalDocumentStore {
-  FileDocumentStore(this.directory);
+  FileDocumentStore(
+    this.directory, {
+    this.maxBytes = maxStoredBytes,
+    this.maxDocuments = 200,
+  });
   final Future<Directory> Function() directory;
+  final int maxBytes, maxDocuments;
   Future<Directory>? _root;
   static const maxStoredBytes = 3 * 1024 * 1024;
   Future<Directory> _directory() => _root ??= (() async {
@@ -52,9 +57,11 @@ final class FileDocumentStore implements LocalDocumentStore {
       if (!name.endsWith('.json')) continue;
       final id = name.substring(0, name.length - 5);
       if (ScenarioDocument.validId(id)) result.add(id);
-      if (result.length > 200) {
-        throw const FileSystemException(
-          'La biblioteca supera el límite de 200 escenarios.',
+      if (result.length > maxDocuments) {
+        throw FileSystemException(
+          maxDocuments == 200
+              ? 'La biblioteca supera el límite de 200 escenarios.'
+              : 'La biblioteca supera el límite de $maxDocuments documentos.',
         );
       }
     }
@@ -65,12 +72,12 @@ final class FileDocumentStore implements LocalDocumentStore {
   Future<String?> read(String id) async {
     final file = await _file(id);
     if (!await file.exists()) return null;
-    if (await file.length() > maxStoredBytes) {
+    if (await file.length() > maxBytes) {
       throw const FormatException('Archivo privado demasiado grande.');
     }
     final bytes = <int>[];
     await for (final chunk in file.openRead()) {
-      if (bytes.length + chunk.length > maxStoredBytes) {
+      if (bytes.length + chunk.length > maxBytes) {
         throw const FormatException('Archivo privado demasiado grande.');
       }
       bytes.addAll(chunk);
@@ -81,7 +88,7 @@ final class FileDocumentStore implements LocalDocumentStore {
   @override
   Future<void> write(String id, String document) async {
     final bytes = utf8.encode(document);
-    if (bytes.length > maxStoredBytes) {
+    if (bytes.length > maxBytes) {
       throw const FormatException('Documento demasiado grande.');
     }
     final target = await _file(id);

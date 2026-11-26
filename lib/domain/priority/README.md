@@ -1,4 +1,4 @@
-# Priority — motor, etapas 1–3
+# Priority — motor y restauración, etapas 1–4
 
 Formato personalizado de Valinor, independiente del tablero y de las reglas de
 figuras. Entrada pública: `priority.dart`. `priority_engine.dart` es una parte de
@@ -53,8 +53,8 @@ Solo se importa `dart:math`; no hay Flutter, archivos ni acceso al reloj del sis
   toques repetidos. Repetir ACTION en un turno que ya recuperó
   prioridad puede ser una segunda acción legítima.
 - Los eventos llevan jugador, turno y ronda; cambios de adicionales también
-  incluyen valor anterior y nuevo. Se entregan por operación, sin mantener todavía
-  historial acumulado, deshacer ni persistencia. No incluyen marcas de tiempo.
+  incluyen valor anterior y nuevo. Se entregan por operación, sin marcas de tiempo;
+  la capa de aplicación acumula el historial y los puntos de restauración.
 
 ## Relojes, puntos y eliminación
 
@@ -83,8 +83,29 @@ Solo se importa `dart:math`; no hay Flutter, archivos ni acceso al reloj del sis
   Si se elimina al activo, termina su turno y restablece acciones para los demás;
   si era un reactivo, continúa con los pendientes. Con un superviviente, finaliza.
   No declara un ganador ni sustituye una puntuación por supervivencia.
-- La confirmación de eliminación pertenece a UI. La reversión por Deshacer y el
-  almacenamiento/recuperación de partidas quedan para una etapa posterior.
+- La confirmación de eliminación pertenece a UI. La etapa 4 permite restaurarla
+  con Deshacer junto con el estado completo de la partida.
+
+## Snapshots y etapa 4
+
+`PrioritySnapshotCodec` es una frontera pura, sin Flutter ni archivos. Codifica y
+valida configuración/estado/eventos, incluidos fase subyacente, ambos órdenes
+pendientes, activo, prioridad, acciones, adicionales, eliminados, PV y relojes.
+Rechaza IDs/colas incompatibles, fases imposibles, negativos y desbordamientos.
+`restorePaused` conserva esos datos, incrementa la revisión y deja pausado todo
+reloj de una partida en curso; una partida finalizada sigue finalizada.
+
+`application/priority` contiene sesión, historial, checkpoints, formato versionado
+y repositorio. El controlador agrupa cada comando aceptado con todos sus eventos
+automáticos en una sola operación deshacible. No registra ticks. Deshacer preserva
+el registro original marcado y descuenta sus eventos del resumen; pausa/reanudación
+y eventos de reloj no consumen pasos de Deshacer. Se puede deshacer una finalización
+o eliminación y continuar la partida tras reanudar manualmente.
+
+El repositorio usa archivos privados locales, una copia anterior válida y escritura
+atómica por archivo; nunca requiere Internet. Recuperar conserva la ventana de
+respuesta y se realiza pausado, sin cobrar tiempo transcurrido fuera de la app.
+Contrato completo y límites en [PRIORITY_STAGE4.md](../../../docs/PRIORITY_STAGE4.md).
 
 ## Uso mínimo
 

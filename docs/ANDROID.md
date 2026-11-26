@@ -1,6 +1,6 @@
 # Preparar, compilar e instalar en Android
 
-Candidata actual: **TeamFight: GridLab 1.0.0-rc.21+34**. Inicio contiene Editor, Entrenador y Priority; las consultas
+Candidata actual: **TeamFight: GridLab 1.0.0-rc.22+35**. Inicio contiene Editor, Entrenador y Priority; las consultas
 y ensayos están en las herramientas del Editor. El recorrido vigente del Editor
 está al final de este documento. Los apartados identificados por etapa describen
 sus versiones históricas. Resultados efectivamente ejecutados: [ESTADO](ESTADO.md).
@@ -78,7 +78,8 @@ pulsaciones desde cada lado, en vertical/horizontal y con texto ampliado. Ejecut
 J1 ACTION → J2 RESPONSE ACTION → J3 PASS → J1 END TURN: todos recuperan 3 acciones
 y J2 recibe turno/prioridad. Probar edición de adicionales durante respuestas,
 pase automático a cero, FREE a cero, doble toque y volver al inicio/regresar. La
-partida de esta etapa se conserva solo en memoria, no después de cerrar el proceso.
+partida se guarda localmente y puede recuperarse después de cerrar el proceso,
+con los relojes pausados. El recorrido específico de etapa 4 está al final.
 
 Incremento visual rc.15: comprobar botones rectangulares de esquinas suaves en
 configuración/mesa/diálogos. Para 3 y 4, verificar el esquema de lados opuestos
@@ -520,3 +521,30 @@ desinstalar; conserva firma, datos y vencimiento 30/12/2026 00:00 Colombia.
    biblioteca rc.11, datos de entrenador, giro/texto ampliado y consultas de visión.
 
 Pruebas en Android real pendientes; se mantiene la decisión de continuar sin teléfono.
+
+## Priority etapa 4 (rc.22): recuperación y resultados
+
+Recorrido todavía pendiente en Android real; la decisión de continuar sin teléfono
+se mantiene. Las pruebas Flutter/archivos y renders se registran en ESTADO.md.
+
+1. Sin Wi-Fi/datos, configurar tres jugadores/reloj y realizar J1 ACTION → J2
+   RESPONSE ACTION, dejando prioridad J3. Cambiar PV, adicionales y corregir tiempo;
+   mover asientos. En ⋮ → Historial comprobar actores, ronda/turno y prioridad.
+2. Ir al inicio, bloquear/desbloquear y volver: conservar ventana y relojes pausados.
+   Forzar cierre del proceso y abrir: activo J1, prioridad J3, acciones/tiempos/PV
+   y asientos conservados, sin descontar el lapso de ausencia. Reanudar manualmente;
+   J3 PASS devuelve prioridad a J1 y END TURN restablece acciones para todos.
+3. Deshacer varias veces desde Historial. Comprobar respuesta parcial, eliminación,
+   finalización y correcciones de PV/tiempo/adicionales, con relojes siempre pausados.
+   Reabrir la app y continuar deshaciendo; los registros anulados siguen marcados.
+4. Nueva partida: Cancelar conserva; Confirmar archiva la anterior. Crear otra y
+   usar Partidas guardadas para consultar/retomar la primera. La segunda permanece
+   guardada. Descartar una guardada exige confirmación; la abierta no ofrece borrado.
+5. Finalizar desde ⋮: Cancelar conserva, Confirmar detiene juego y guarda resumen.
+   Revisar PV/empates/eliminados y seis contadores de operación, tiempos/ronda/turno.
+   Cerrar/abrir y consultarlo desde Partidas guardadas, sin reabrir el juego.
+6. Repetir historial, biblioteca y resumen en ambas orientaciones, texto ampliado y
+   TalkBack. Probar presión rápida de PV y cambio entre módulos sin pérdida.
+
+Instalar encima con la misma firma preserva los archivos privados. Desinstalar o
+borrar datos elimina las partidas Priority; no se incluye su exportación en etapa 4.

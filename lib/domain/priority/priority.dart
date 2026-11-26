@@ -2,6 +2,7 @@ import 'dart:math';
 
 part 'priority_engine.dart';
 part 'priority_clock.dart';
+part 'priority_snapshot.dart';
 
 /// The list order in [PriorityConfiguration] is the physical anticlockwise
 /// seating order. IDs identify players; names need not be unique.

@@ -1,10 +1,10 @@
 # Plan de implementación — Priority
 
-Actualización: 2026-11-25 (America/Bogota).
+Actualización: 2026-11-26 (America/Bogota).
 
 Referencia: contexto «Implementación del módulo HeroClix Priority», proporcionado
 por el usuario, secciones 1–19, y órdenes posteriores de implementar las etapas
-1, 2 y 3 por separado. No había un plan específico de Priority en el repositorio; este
+1, 2, 3 y 4 por separado. No había un plan específico de Priority en el repositorio; este
 documento registra el alcance autorizado y su seguimiento.
 
 Priority es un asistente del formato personalizado de Valinor para partidas
@@ -149,8 +149,10 @@ ni persistencia: la partida sigue viviendo en memoria hasta cerrar el proceso.
 No se inicia automáticamente ni se fija aquí el orden de las siguientes etapas.
 
 - Sonidos/vibración, pantalla encendida y otras mejoras del modo mesa.
-- Historial acumulado, deshacer, persistencia, recuperación y consulta local.
-- Integración, pruebas de interfaz y verificación Android/APK.
+- Verificación manual en Android real y aceptación de rendimiento/accesibilidad.
+
+Historial, Deshacer, persistencia, recuperación y consulta local corresponden a
+la etapa 4 descrita al final. No se inicia una etapa posterior.
 
 No se modifican navegación, versión, formatos del editor ni flujo de APK en la
 etapa 1. No se genera APK: el motor todavía no tiene una entrada en la interfaz.
@@ -497,3 +499,58 @@ visual de la alineación con dos/seis jugadores y durante el aviso temporal.
 APK rc.21/código 34 validado: paquete, versión, SDK, firma v2 y mismo certificado,
 sin INTERNET. Solo queda rc.21 tras validar la copia y retirar rc.20 mediante el
 script habitual, sin modificarlo. Corrección cerrada; aceptación nativa pendiente.
+
+## Etapa 4 — historial, Deshacer y persistencia (rc.22)
+
+2026-11-26. Rama `codex/priority-stage4`, base `d739a8e` (rc.21).
+Estado: **completada y verificada**. Entregable beta `1.0.0-rc.22+35`.
+
+Antes de implementar se revisaron motor/controladores y se ejecutaron **201/201
+pruebas de etapas anteriores**, todas aprobadas. No se cambian reglas de juego,
+consumos, ciclos ni distribución de la mesa.
+
+- [x] Historial cronológico por operación con timestamp, actor, ronda/turno y todos
+  los eventos: ACTION/FREE/respuestas/pases, turnos, prioridad, adicionales, PV,
+  correcciones/pausas/agotamiento de tiempo, eliminación y finalización.
+- [x] Deshacer consecutivo mediante checkpoints completos e inmutables. Restaura
+  ambos ciclos pendientes, ventana, activo/prioridad, acciones, eliminados, PV,
+  tiempos y asientos; aumenta revisión y limpia callbacks/toques pendientes.
+- [x] Relojes pausados tras Deshacer/recuperar, sin cobrar tiempo de ausencia.
+  Pausa/reanudación y eventos automáticos de reloj son auditables pero no añaden
+  pasos a la pila; inicio tampoco. El historial marca anulaciones sin borrarlas.
+- [x] Guardado automático local, cola de escrituras y checkpoints de reloj cada
+  segundo sin eventos por tick. Archivos privados Priority separados de los demás
+  módulos, escritura atómica y copia anterior válida para corrupción/interrupción.
+- [x] Recuperación automática al arrancar y biblioteca para continuar otra partida
+  guardada. Nueva partida/cambio conserva la actual antes de sustituirla. Un fallo
+  de guardado impide el reemplazo; error de lectura no sobrescribe datos desconocidos.
+- [x] Confirmaciones para nueva/finalizar/descartar. No se borra la partida abierta.
+- [x] Resumen final y consulta local de partidas finalizadas: clasificación con
+  empates, estado, seis tipos de operaciones, tiempo consumido, rondas, turnos e
+  historial. No inventa desempates ni ganador por supervivencia.
+- [x] Sin Internet, dependencias o permisos nuevos. Límites y formato propios;
+  formatos de escenarios/progreso conservados.
+- [x] 81 pruebas nuevas: 64 unitarias/de aplicación, 3 integración con archivos
+  reales y 14 interfaz/ciclo de vida. Recuperación 2–6 × ACTION/FREE × con/sin reloj,
+  4000 roundtrips, undo mixto consecutivo, errores/corrupción/versiones futuras,
+  copia válida, biblioteca, resultados, callbacks antiguos y texto 300 %.
+- [x] Renders ampliados a 27 y revisión visual de historial, undo pausado, biblioteca
+  y resultados guardados. Ejecución UI/renders: **41/41 aprobadas**, 28 s.
+- [x] Regresión general: **1018/1018 aprobadas**, 6 min 13 s. Tras añadir el caso
+  de nombres/IDs largos admitidos por el motor y retirar el límite arbitrario de
+  lectura, verificación final del motor y toda la etapa 4: **263/263 aprobadas**, 29 s.
+  Análisis completo sin incidencias; 200 archivos Dart con formato correcto.
+- [x] APK generado con `./tool/build_apk.ps1`, Gradle 77,9 s; paquete/versión/SDK,
+  firma v2, certificado anterior y copia/hash verificados, sin INTERNET. Solo queda
+  rc.22 en `build/releases/`: el script retiró rc.21 después de validar la copia.
+  No cambió el flujo de APK ni se utilizó flutter clean.
+
+Archivos: `domain/priority/priority_snapshot.dart` (codec puro),
+`application/priority/` (sesión, historial, checkpoints, codec y repositorio),
+`priority_history.dart` (historial/biblioteca/resultados); adaptación del controlador,
+composición en main y ciclo de vida. El almacenamiento existente admite límites
+inyectados solo para Priority, preservando los predeterminados de los otros módulos.
+
+Contrato, límites y recuperación de copia anterior: [PRIORITY_STAGE4.md](PRIORITY_STAGE4.md).
+Resultados definitivos de pruebas/APK y aceptación Android: [ESTADO.md](ESTADO.md).
+No se inicia ninguna función posterior a etapa 4.

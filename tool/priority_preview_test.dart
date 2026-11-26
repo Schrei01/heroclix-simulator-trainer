@@ -10,6 +10,7 @@ import 'package:heroclix_simulator_trainer/domain/priority/priority.dart';
 import 'package:heroclix_simulator_trainer/presentation/priority/priority_controller.dart';
 import 'package:heroclix_simulator_trainer/presentation/priority/priority_screen.dart';
 import 'package:heroclix_simulator_trainer/presentation/theme/app_theme.dart';
+import 'package:heroclix_simulator_trainer/presentation/priority/priority_history.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -52,6 +53,10 @@ void main() {
     ('score-ranking', 6, const Size(800, 360), false),
     ('seat-swap', 3, const Size(360, 800), false),
     ('seat-drag', 3, const Size(360, 800), false),
+    ('history', 3, const Size(360, 800), false),
+    ('undo-paused', 3, const Size(360, 800), false),
+    ('saved-games', 3, const Size(360, 800), false),
+    ('saved-results', 3, const Size(360, 800), false),
   ]) {
     testWidgets('Priority $name', (t) async {
       t.view.devicePixelRatio = 1;
@@ -70,6 +75,7 @@ void main() {
             clockEnabled:
                 name.startsWith('clock') ||
                 name == 'player-management' ||
+                name == 'undo-paused' ||
                 name == 'eliminated' ||
                 name == 'final-standings',
             players: [
@@ -151,6 +157,50 @@ void main() {
         await t.pumpAndSettle();
       }
       TestGesture? seatGesture;
+      if (name == 'history') {
+        controller.dispatch(
+          const PriorityCommand.responseAction('J2'),
+          expectedRevision: controller.value!.revision,
+        );
+        controller.undo();
+        openPriorityHistory(
+          t.element(find.byType(PriorityScreen)),
+          controller: controller,
+        );
+        await t.pumpAndSettle();
+      }
+      if (name == 'undo-paused') {
+        controller.undo();
+        await t.pumpAndSettle();
+      }
+      if (name == 'saved-games' || name == 'saved-results') {
+        final id = controller.session!.id;
+        controller.dispatch(
+          const PriorityCommand.setVictoryPoints('J1', 175),
+          expectedRevision: controller.value!.revision,
+        );
+        controller.dispatch(
+          const PriorityCommand.finish(),
+          expectedRevision: controller.value!.revision,
+        );
+        await controller.parkAndReset();
+        await t.pumpAndSettle();
+        if (name == 'saved-games') {
+          openPriorityLibrary(
+            t.element(find.byType(PriorityScreen)),
+            controller,
+          );
+        } else {
+          final session = await controller.readSaved(id);
+          Navigator.push<void>(
+            t.element(find.byType(PriorityScreen)),
+            MaterialPageRoute(
+              builder: (_) => PrioritySavedResultsScreen(session: session),
+            ),
+          );
+        }
+        await t.pumpAndSettle();
+      }
       if (name == 'seat-swap') {
         controller.swapVisualSeats(
           'J1',
@@ -195,7 +245,7 @@ void main() {
         final image = await boundary.toImage();
         final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
         final directory = Directory(
-          'build/verification/priority-score-alignment/previews',
+          'build/verification/priority-stage4/previews',
         );
         await directory.create(recursive: true);
         await File('${directory.path}/$name.png')

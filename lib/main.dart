@@ -12,6 +12,9 @@ import 'presentation/editor/editor_controller.dart';
 import 'presentation/scenarios/workspace_controller.dart';
 import 'presentation/training/training_controller.dart';
 import 'application/training/training_repository.dart';
+import 'application/priority/priority_repository.dart';
+import 'application/priority/priority_session_codec.dart';
+import 'presentation/priority/priority_controller.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,5 +38,20 @@ void main() {
     ),
     scenarios: workspace.repository,
   );
-  runApp(HeroClixApp(controller: controller, trainingController: training));
+  final priority = PriorityController(
+    repository: PriorityRepository(
+      FileDocumentStore(
+        () async => Directory('${await files.privateDirectory()}/priority_v1'),
+        maxBytes: PrioritySessionCodec.maxBytes,
+        maxDocuments: 10000,
+      ),
+    ),
+  );
+  runApp(
+    HeroClixApp(
+      controller: controller,
+      trainingController: training,
+      priorityController: priority,
+    ),
+  );
 }

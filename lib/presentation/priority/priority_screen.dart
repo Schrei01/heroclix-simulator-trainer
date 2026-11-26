@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
 
@@ -10,6 +11,9 @@ import 'priority_table.dart';
 import 'priority_table_layout.dart';
 import 'priority_theme.dart';
 import 'priority_seat_drag.dart';
+import 'priority_history.dart';
+
+enum _PriorityMenu { history, undo, saved, finish }
 
 class PriorityScreen extends StatefulWidget {
   const PriorityScreen({required this.controller, super.key});
@@ -36,6 +40,7 @@ class _PriorityScreenState extends State<PriorityScreen> {
   void initState() {
     super.initState();
     widget.controller.addListener(_checkFinished);
+    unawaited(widget.controller.initialize());
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkFinished());
   }
 
@@ -43,7 +48,24 @@ class _PriorityScreenState extends State<PriorityScreen> {
     if (!mounted) return;
     final match = widget.controller.value;
     _syncExpiryNotice(match);
-    if (match == null) _resultsShown = false;
+    if (match?.phase != PriorityPhase.finished) _resultsShown = false;
+    final notice = widget.controller.takeNotice();
+    if (notice != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                notice,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          );
+        }
+      });
+      WidgetsBinding.instance.ensureVisualUpdate();
+    }
     if (match?.phase == PriorityPhase.finished && !_resultsShown) {
       _resultsShown = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -132,6 +154,8 @@ class _PriorityScreenState extends State<PriorityScreen> {
   @override
   void dispose() {
     widget.controller.removeListener(_checkFinished);
+    widget.controller.pauseForNavigation();
+    unawaited(widget.controller.flush());
     _minutes.dispose();
     _points.dispose();
     for (final player in _players) {
@@ -202,7 +226,9 @@ class _PriorityScreenState extends State<PriorityScreen> {
       builder: (context) => PriorityTheme(
         child: AlertDialog(
           title: const Text('¿Configurar una nueva partida?'),
-          content: const Text('Se descartará la partida Priority actual.'),
+          content: const Text(
+            'La partida actual quedará guardada para retomarla después.',
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
@@ -217,7 +243,117 @@ class _PriorityScreenState extends State<PriorityScreen> {
         ),
       ),
     );
-    if (confirmed == true && mounted) widget.controller.reset();
+    if (confirmed == true && mounted) await widget.controller.parkAndReset();
+  }
+
+  Future<void> _more(_PriorityMenu choice) async {
+    switch (choice) {
+      case _PriorityMenu.history:
+        await openPriorityHistory(context, controller: widget.controller);
+      case _PriorityMenu.undo:
+        if (widget.controller.undo()) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Operación deshecha. Los relojes quedan pausados.',
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          );
+        }
+      case _PriorityMenu.saved:
+        await openPriorityLibrary(context, widget.controller);
+      case _PriorityMenu.finish:
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (context) => PriorityTheme(
+            child: AlertDialog(
+              title: const Text('¿Finalizar la partida?'),
+              content: const Text(
+                'Se detendrán los relojes y se guardará el resumen de resultados.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('Cancelar'),
+                ),
+                FilledButton(
+                  key: const ValueKey('priority-finish-confirm'),
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text('Finalizar'),
+                ),
+              ],
+            ),
+          ),
+        );
+        if (confirmed == true && mounted) {
+          widget.controller.synchronizeClock();
+          final current = widget.controller.value;
+          if (current != null) {
+            widget.controller.dispatch(
+              const PriorityCommand.finish(),
+              expectedRevision: current.revision,
+            );
+          }
+        }
+    }
+  }
+
+  Widget _body(PriorityMatch? match) {
+    final controller = widget.controller;
+    if (!controller.ready) {
+      return Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: controller.storageError == null
+              ? const CircularProgressIndicator()
+              : Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(controller.storageError!),
+                    FilledButton(
+                      key: const ValueKey('priority-retry-load'),
+                      onPressed: controller.initialize,
+                      child: const Text('Reintentar'),
+                    ),
+                  ],
+                ),
+        ),
+      );
+    }
+    return LayoutBuilder(
+      builder: (context, limits) => Column(
+        children: [
+          if (controller.storageError != null)
+            ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: limits.maxHeight * .4),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(8),
+                child: Column(
+                  children: [
+                    Text(
+                      controller.storageError!,
+                      key: const ValueKey('priority-storage-error'),
+                    ),
+                    TextButton(
+                      key: const ValueKey('priority-retry-save'),
+                      onPressed: controller.flush,
+                      child: const Text('Reintentar guardado'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          if (controller.busy) const LinearProgressIndicator(),
+          Expanded(
+            child: match == null
+                ? _setup()
+                : PriorityTable(controller: controller),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -271,18 +407,46 @@ class _PriorityScreenState extends State<PriorityScreen> {
               if (match != null)
                 IconButton(
                   key: const ValueKey('priority-new-game'),
-                  onPressed: _newGame,
+                  onPressed: widget.controller.busy ? null : _newGame,
                   tooltip: 'Nueva partida',
                   icon: const Icon(Icons.add_circle_outline),
                 ),
+              PopupMenuButton<_PriorityMenu>(
+                key: const ValueKey('priority-more'),
+                tooltip: 'Historial y partidas',
+                onSelected: _more,
+                itemBuilder: (context) => [
+                  if (match != null) ...[
+                    const PopupMenuItem(
+                      value: _PriorityMenu.history,
+                      key: ValueKey('priority-menu-history'),
+                      child: Text('Historial'),
+                    ),
+                    PopupMenuItem(
+                      value: _PriorityMenu.undo,
+                      enabled: widget.controller.canUndo,
+                      key: const ValueKey('priority-menu-undo'),
+                      child: const Text('Deshacer'),
+                    ),
+                    if (match.phase != PriorityPhase.finished)
+                      PopupMenuItem(
+                        value: _PriorityMenu.finish,
+                        enabled: !widget.controller.busy,
+                        key: const ValueKey('priority-menu-finish'),
+                        child: const Text('Finalizar partida'),
+                      ),
+                  ],
+                  PopupMenuItem(
+                    value: _PriorityMenu.saved,
+                    enabled: widget.controller.ready && !widget.controller.busy,
+                    key: const ValueKey('priority-menu-saved'),
+                    child: const Text('Partidas guardadas'),
+                  ),
+                ],
+              ),
             ],
           ),
-          body: SafeArea(
-            top: false,
-            child: match == null
-                ? _setup()
-                : PriorityTable(controller: widget.controller),
-          ),
+          body: SafeArea(top: false, child: _body(match)),
         ),
       ),
     ),
@@ -506,7 +670,7 @@ class _PriorityScreenState extends State<PriorityScreen> {
               const SizedBox(height: 12),
               const Text(
                 'Al finalizar cualquier turno se recuperan las acciones de todos. '
-                'Puedes volver al inicio y regresar a esta partida mientras la app siga abierta.',
+                'La partida se guarda en este dispositivo para retomarla después.',
               ),
               const SizedBox(height: 8),
               const Text(

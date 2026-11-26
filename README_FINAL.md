@@ -1,16 +1,16 @@
-# TeamFight: GridLab — 1.0.0-rc.21+34
+# TeamFight: GridLab — 1.0.0-rc.22+35
 
 Aplicación Android offline, en español, para construir escenarios, consultar reglas
 implementadas y practicar. **Versión candidata, APK debug**: faltan las comprobaciones
 nativas de aceptación y rendimiento descritas abajo. No se congela 1.0.0 estable.
 Repositorio privado: [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer),
-rama `codex/priority-score-alignment`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
+rama `codex/priority-stage4`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
 
 Nombre e iconos de Android, Inicio y Acerca de actualizados a TeamFight: GridLab.
 La identidad técnica y firma se conservan para actualizar la instalación anterior.
 Archivos de Google Play preparados en distribution/google-play/; [detalles de identidad](docs/IDENTIDAD.md).
 
-Esta beta rc.21 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
+Esta beta rc.22 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
 (2026-12-30T05:00:00Z). Desde ese instante muestra «Versión de prueba finalizada»
 y bloquea todas las pantallas, también al reanudar o si permanece abierta. Acerca de
 muestra la fecha. No elimina biblioteca ni progreso. Usa el reloj del dispositivo:
@@ -23,7 +23,7 @@ anterior sin caducidad también queda fuera de este control local.
 El archivo generado se conserva en:
 
 ```text
-build/releases/teamfight-gridlab-1.0.0-rc.21-debug.apk
+build/releases/teamfight-gridlab-1.0.0-rc.22-debug.apk
 ```
 
 1. Android 7.0/API 24 o superior. Copiar el APK al teléfono, abrirlo en Archivos
@@ -35,13 +35,13 @@ build/releases/teamfight-gridlab-1.0.0-rc.21-debug.apk
 
 ```powershell
 adb devices -l
-adb -s ID install -r build/releases/teamfight-gridlab-1.0.0-rc.21-debug.apk
+adb -s ID install -r build/releases/teamfight-gridlab-1.0.0-rc.22-debug.apk
 adb -s ID shell am start -n com.valinor.heroclixtrainer/com.valinor.heroclix_simulator_trainer.MainActivity
 ```
 
 La firma debug coincide con 00–11; instalación de esta candidata todavía no
 verificada en Android. Antes de desinstalar, exportar escenas como JSON. La
-desinstalación elimina progreso y ejercicios personales; su exportación todavía
+desinstalación elimina partidas Priority, progreso y ejercicios personales; su exportación todavía
 no está implementada. PNG sirve para compartir una imagen, no para recuperar datos.
 
 ## Uso básico
@@ -64,8 +64,9 @@ El activo usa ACTION/FREE/END TURN; los reactivos usan RESPONSE ACTION/RESPONSE
 FREE/PASS cuando están habilitados. Los jugadores pulsan después de resolver sus
 acciones físicas. Toca el contador disponibles/totales para editar adicionales:
 el consumo anterior se conserva. END TURN restablece las acciones de todos.
-Volver al inicio y regresar conserva la partida mientras la app siga abierta;
-Nueva partida pide confirmación. Activa **Cronómetros individuales** en la
+Volver al inicio y regresar conserva la partida; también se recupera después de
+cerrar el proceso. Nueva partida pide confirmación y guarda la anterior.
+Activa **Cronómetros individuales** en la
 configuración y elige minutos completos. Solo corre el reloj de quien tiene prioridad.
 Pausa/reanuda desde la barra; salir del módulo o volver de segundo plano exige
 reanudar manualmente. Agotar tiempo pausa y muestra un aviso flotante temporal,
@@ -87,7 +88,7 @@ INICIA sigue al seleccionado y ese jugador empieza aunque cambie de lugar.
 Durante la partida, hazlo desde el nombre hacia otro panel. Este intercambio
 mueve las vistas y conserva el inicial y el orden de juego ya establecido,
 incluidas respuestas pendientes, colores, PV, acciones y relojes. Soltar fuera
-cancela. Las posiciones se conservan al salir y volver mientras la app siga abierta.
+cancela. Las posiciones también se conservan al recuperar una partida.
 Rc.21 corrige la alineación: −, total de PV y + comparten centro vertical;
 el cambio temporal queda debajo sin mover el total ni superponerse.
 En rc.17 los botones de acción tienen más aire respecto al borde del panel y
@@ -101,7 +102,20 @@ La clasificación se abre
 desde la barra y conserva a los eliminados y los empates. Un superviviente finaliza
 la partida y abre la clasificación; no declara un ganador automático. Los puntos
 se pueden corregir también al finalizar, sin reabrir el juego.
-Historial, Deshacer y guardado de Priority siguen pendientes.
+En rc.22, abre **⋮ → Historial** para consultar registros cronológicos de acciones,
+respuestas, pases, turnos, prioridad, correcciones y eliminaciones. **Deshacer**
+restaura operaciones completas consecutivamente, incluidos respuestas pendientes,
+eliminados, acciones, PV, tiempos y asientos. Los registros deshechos quedan marcados
+y se excluyen del resumen. Los relojes quedan pausados tras deshacer o recuperar:
+usa Reanudar para continuar.
+
+El guardado es automático y local, sin conexión. **Partidas guardadas** permite
+consultar resultados/historial y continuar partidas interrumpidas; cambiar de
+partida conserva la actual. Descartar una guardada exige confirmación y la abierta
+no se puede borrar. **Finalizar partida** pide confirmación y guarda clasificación,
+estado individual, seis tipos de operación, tiempo consumido, rondas e historial.
+Un error de lectura no sobrescribe archivos; un error de escritura conserva la
+partida abierta y ofrece Reintentar. No hay sincronización ni exportación de Priority.
 [Plan y pruebas](docs/PRIORITY_PLAN.md).
 
 En la ficha, **IM Destruir bloqueado y muros** permite destruir lo que atraviesa.
@@ -145,7 +159,7 @@ también con archivos reales. Los archivos nuevos no se pueden abrir con apps vi
 | --- | --- |
 | Editor | Crear tablero 2–40 filas/columnas, figuras genéricas, equipos, terreno, muros y alturas; biblioteca y Deshacer |
 | Entrenador | 24 ejercicios curados más personales; responder, comprobar, recibir explicación y conservar progreso |
-| Priority | Mesa para 2–6 jugadores: turnos, prioridad, acciones, relojes opcionales, puntos, clasificación y eliminación |
+| Priority | Mesa para 2–6 jugadores: turnos, prioridad, acciones, relojes, PV, eliminación, historial, Deshacer, guardado y resultados locales |
 | Ejemplos locales | Visión H, diagonal/vértice, muro, elevación y movimiento; previsualizar y abrir copia independiente |
 | Guía rápida / Acerca de | Ayuda breve, versión, cobertura, fuente y licencias locales |
 
@@ -210,7 +224,7 @@ usa etiquetas genéricas. Exportar la escena completa sí conserva sus nombres.
 | Función | Estado |
 | --- | --- |
 | Editor y Entrenador, biblioteca, JSON/PNG y sesión temporal | Implementado; nuevo arranque vacío, biblioteca/progreso persistentes |
-| Priority: configuración, mesa, turnos, prioridad, acciones, relojes, puntos y eliminación | Etapas 1–3 implementadas; partida en memoria, historial/Deshacer/guardado pendientes |
+| Priority: configuración, mesa, turnos, prioridad, acciones, relojes, puntos, eliminación, historial, Deshacer y guardado | Etapas 1–4 implementadas; recuperación pausada y consulta local de resultados |
 | Geometría, visión, alcance, alturas, mejoras tipadas y movimiento | Perfil parcial implementado, con reglas y No evaluados explícitos |
 | Análisis de posiciones, hipótesis, ejercicios y diagnóstico TXT/PNG | Implementado; puente Android TXT corregido y compilado |
 | Catálogo de cinco ejemplos, guía y Acerca de/licencias | Implementado y probado; recursos locales |
@@ -218,7 +232,7 @@ usa etiquetas genéricas. Exportar la escena completa sí conserva sus nombres.
 | Instalación, nueva sesión tras cierre y selectores nativos | Pendiente de Android; equivalentes de archivos/controladores sí verificados |
 | Offline con radios desactivadas y rendimiento Android/FPS | Pendiente de dispositivo/emulador funcional |
 | APK release con firma del propietario | Preparado; sin claves suministradas, no generado |
-| Congelar 1.0.0 estable | Pendiente de cerrar aceptación nativa; esta entrega es 1.0.0-rc.21 |
+| Congelar 1.0.0 estable | Pendiente de cerrar aceptación nativa; esta entrega es 1.0.0-rc.22 |
 | Simular combates, dados, diales, daño y poderes de figuras | Fuera del alcance del proyecto |
 
 ## Dependencias y recompilación
