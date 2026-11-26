@@ -110,7 +110,27 @@ void main() {
                 t.getCenter(key('priority-score-plus-J$i')).dx) /
             2;
         expect(scoreCenter.dx, closeTo(buttonsCenter, .01));
+        expect(
+          scoreCenter.dy,
+          closeTo(t.getCenter(key('priority-score-minus-J$i')).dy, .01),
+        );
+        expect(
+          scoreCenter.dy,
+          closeTo(t.getCenter(key('priority-score-plus-J$i')).dy, .01),
+        );
       }
+      final centerBefore = t.getCenter(key('priority-score-J1'));
+      await step(t, 'J1');
+      expect(t.getCenter(key('priority-score-J1')), centerBefore);
+      expect(
+        t
+            .getRect(key('priority-score-J1'))
+            .overlaps(t.getRect(key('priority-score-delta-J1'))),
+        isFalse,
+      );
+      await t.pumpAndSettle();
+      expect(key('priority-score-delta-J1'), findsNothing);
+      expect(t.getCenter(key('priority-score-J1')), centerBefore);
       expect(t.takeException(), isNull);
     },
   );

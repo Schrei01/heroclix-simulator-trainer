@@ -1,6 +1,6 @@
 # Preparar, compilar e instalar en Android
 
-Candidata actual: **TeamFight: GridLab 1.0.0-rc.20+33**. Inicio contiene Editor, Entrenador y Priority; las consultas
+Candidata actual: **TeamFight: GridLab 1.0.0-rc.21+34**. Inicio contiene Editor, Entrenador y Priority; las consultas
 y ensayos están en las herramientas del Editor. El recorrido vigente del Editor
 está al final de este documento. Los apartados identificados por etapa describen
 sus versiones históricas. Resultados efectivamente ejecutados: [ESTADO](ESTADO.md).
@@ -126,6 +126,9 @@ debe quedar activo/con prioridad. En la mesa, mantener el nombre y arrastrar a
 otro panel: se intercambian posiciones, no el orden de juego ni los datos.
 Verificar color, PV, acciones, relojes, ventanas de respuesta, giro y salir/volver.
 Soltar fuera cancela. Un toque corto en el nombre sigue abriendo gestión.
+Rc.21: comprobar que − y + quedan a la misma altura que el total de PV, también
+en paneles girados. Pulsar repetidamente: +5/+10… aparece debajo, sin superponerse
+ni desplazar el total; al desaparecer la alineación debe mantenerse.
 Registrar/restar/corregir PV, incluidos eliminados y correcciones posteriores al
 final; rechazar puntos negativos. Eliminar con confirmación al activo, reactivo
 con prioridad y un pendiente; comprobar exclusión de ciclos y conservación de PV.

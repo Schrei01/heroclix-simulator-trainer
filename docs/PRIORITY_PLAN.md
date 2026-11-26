@@ -477,3 +477,23 @@ APK rc.20/código 33 validado: paquete, versión, SDK, firma v2 y mismo certific
 sin INTERNET. Se conserva únicamente rc.20 tras validar la copia y retirar rc.19
 con el script habitual, sin modificarlo. Incremento cerrado; aceptación nativa
 pendiente, manteniendo la decisión de continuar sin teléfono.
+
+## Alineación de PV rc.21 — 2026-11-25
+
+Se corrige el desplazamiento vertical causado por reservar el acumulado como
+otra línea bajo el total. El total queda en el centro de una superficie de 48
+unidades, alineado con los centros de −/+. El cambio temporal se pinta en una
+franja inferior independiente, sin participar en el centrado ni superponerse.
+Se conservan tamaño 22/negrilla, separación próxima, objetivos táctiles y estado.
+
+La prueba existente de PV amplía sus comprobaciones al eje vertical, a la
+alineación durante el aviso y tras desaparecer, y a la ausencia de superposición.
+Se reutilizan las pruebas de controles, arrastre, estado activo, gestión, teclado,
+dimensiones y renders. Resultados y APK en [ESTADO.md](ESTADO.md).
+
+Verificación final: **201/201 aprobadas**, 1 min 39 s (178 pruebas y 23 renders).
+Análisis completo sin incidencias y 191 archivos con formato correcto. Revisión
+visual de la alineación con dos/seis jugadores y durante el aviso temporal.
+APK rc.21/código 34 validado: paquete, versión, SDK, firma v2 y mismo certificado,
+sin INTERNET. Solo queda rc.21 tras validar la copia y retirar rc.20 mediante el
+script habitual, sin modificarlo. Corrección cerrada; aceptación nativa pendiente.

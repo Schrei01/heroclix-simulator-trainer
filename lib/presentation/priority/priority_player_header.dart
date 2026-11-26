@@ -208,47 +208,56 @@ class _PriorityPlayerHeaderState extends State<PriorityPlayerHeader>
     final position = match.standings
         .firstWhere((s) => s.player.id == player.id)
         .position;
-    final score = Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Tooltip(
-          message: '${player.victoryPoints} puntos de victoria',
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              '${player.victoryPoints} PV',
-              key: ValueKey('priority-score-${player.id}'),
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 22,
-                height: 1.1,
-                fontWeight: FontWeight.w900,
+    final score = SizedBox(
+      height: 48,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          SizedBox(
+            height: 24,
+            child: Tooltip(
+              message: '${player.victoryPoints} puntos de victoria',
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  '${player.victoryPoints} PV',
+                  key: ValueKey('priority-score-${player.id}'),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    height: 1,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
               ),
             ),
           ),
-        ),
-        SizedBox(
-          height: 18,
-          child: _delta == 0
-              ? const SizedBox.shrink()
-              : FadeTransition(
-                  key: ValueKey('priority-score-feedback-${player.id}'),
-                  opacity: _opacity,
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      '${_delta > 0 ? '+' : ''}$_delta',
-                      key: ValueKey('priority-score-delta-${player.id}'),
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: _delta > 0 ? AppTheme.accent : Colors.redAccent,
-                      ),
+          if (_delta != 0)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: 12,
+              child: FadeTransition(
+                key: ValueKey('priority-score-feedback-${player.id}'),
+                opacity: _opacity,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    '${_delta > 0 ? '+' : ''}$_delta',
+                    key: ValueKey('priority-score-delta-${player.id}'),
+                    style: TextStyle(
+                      fontSize: 12,
+                      height: 1,
+                      fontWeight: FontWeight.bold,
+                      color: _delta > 0 ? AppTheme.accent : Colors.redAccent,
                     ),
                   ),
                 ),
-        ),
-      ],
+              ),
+            ),
+        ],
+      ),
     );
     Widget scoreStep(int amount) => IconButton(
       key: ValueKey(
