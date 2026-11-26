@@ -1,16 +1,16 @@
-# TeamFight: GridLab — 1.0.0-rc.19+32
+# TeamFight: GridLab — 1.0.0-rc.20+33
 
 Aplicación Android offline, en español, para construir escenarios, consultar reglas
 implementadas y practicar. **Versión candidata, APK debug**: faltan las comprobaciones
 nativas de aceptación y rendimiento descritas abajo. No se congela 1.0.0 estable.
 Repositorio privado: [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer),
-rama `codex/priority-scores-ranks`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
+rama `codex/priority-seat-drag`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
 
 Nombre e iconos de Android, Inicio y Acerca de actualizados a TeamFight: GridLab.
 La identidad técnica y firma se conservan para actualizar la instalación anterior.
 Archivos de Google Play preparados en distribution/google-play/; [detalles de identidad](docs/IDENTIDAD.md).
 
-Esta beta rc.19 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
+Esta beta rc.20 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
 (2026-12-30T05:00:00Z). Desde ese instante muestra «Versión de prueba finalizada»
 y bloquea todas las pantallas, también al reanudar o si permanece abierta. Acerca de
 muestra la fecha. No elimina biblioteca ni progreso. Usa el reloj del dispositivo:
@@ -23,7 +23,7 @@ anterior sin caducidad también queda fuera de este control local.
 El archivo generado se conserva en:
 
 ```text
-build/releases/teamfight-gridlab-1.0.0-rc.19-debug.apk
+build/releases/teamfight-gridlab-1.0.0-rc.20-debug.apk
 ```
 
 1. Android 7.0/API 24 o superior. Copiar el APK al teléfono, abrirlo en Archivos
@@ -35,7 +35,7 @@ build/releases/teamfight-gridlab-1.0.0-rc.19-debug.apk
 
 ```powershell
 adb devices -l
-adb -s ID install -r build/releases/teamfight-gridlab-1.0.0-rc.19-debug.apk
+adb -s ID install -r build/releases/teamfight-gridlab-1.0.0-rc.20-debug.apk
 adb -s ID shell am start -n com.valinor.heroclixtrainer/com.valinor.heroclix_simulator_trainer.MainActivity
 ```
 
@@ -81,6 +81,13 @@ En rc.19 los PV salen del contador de acciones y se centran entre −/+ al doble
 de tamaño (22), en negrilla. Junto al nombre aparece la posición dentro de un
 círculo: 1 y 2 dorados, 3 bronce y del 4 en adelante verde. La clasificación se
 actualiza con cada ajuste y comparte posición en empates; conserva eliminados.
+En rc.20 los botones −/+ quedan próximos al total. Para cambiar asientos, mantén
+pulsado un asiento en la vista de configuración y suéltalo sobre otro: la marca
+INICIA sigue al seleccionado y ese jugador empieza aunque cambie de lugar.
+Durante la partida, hazlo desde el nombre hacia otro panel. Este intercambio
+mueve las vistas y conserva el inicial y el orden de juego ya establecido,
+incluidas respuestas pendientes, colores, PV, acciones y relojes. Soltar fuera
+cancela. Las posiciones se conservan al salir y volver mientras la app siga abierta.
 En rc.17 los botones de acción tienen más aire respecto al borde del panel y
 «Aplicar puntos» está separado del campo anterior, con mayor espacio interior.
 
@@ -209,7 +216,7 @@ usa etiquetas genéricas. Exportar la escena completa sí conserva sus nombres.
 | Instalación, nueva sesión tras cierre y selectores nativos | Pendiente de Android; equivalentes de archivos/controladores sí verificados |
 | Offline con radios desactivadas y rendimiento Android/FPS | Pendiente de dispositivo/emulador funcional |
 | APK release con firma del propietario | Preparado; sin claves suministradas, no generado |
-| Congelar 1.0.0 estable | Pendiente de cerrar aceptación nativa; esta entrega es 1.0.0-rc.19 |
+| Congelar 1.0.0 estable | Pendiente de cerrar aceptación nativa; esta entrega es 1.0.0-rc.20 |
 | Simular combates, dados, diales, daño y poderes de figuras | Fuera del alcance del proyecto |
 
 ## Dependencias y recompilación
@@ -220,7 +227,7 @@ No se añaden dependencias para Priority. Las licencias empaquetadas se consulta
 conexión en Acerca de → Licencias de dependencias.
 
 ```powershell
-git switch codex/priority-scores-ranks
+git switch codex/priority-seat-drag
 $env:Path = "$env:USERPROFILE\develop\flutter\bin;$env:Path"
 flutter --no-version-check pub get
 dart format --output=none --set-exit-if-changed lib test tool

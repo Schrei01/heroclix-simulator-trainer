@@ -9,6 +9,7 @@ import 'priority_management.dart';
 import 'priority_table.dart';
 import 'priority_table_layout.dart';
 import 'priority_theme.dart';
+import 'priority_seat_drag.dart';
 
 class PriorityScreen extends StatefulWidget {
   const PriorityScreen({required this.controller, super.key});
@@ -85,12 +86,6 @@ class _PriorityScreenState extends State<PriorityScreen> {
           current.player(id).remainingTime != Duration.zero) {
         return;
       }
-      final seats = priorityTableSeats(
-        MediaQuery.sizeOf(context),
-        current.players.length,
-        landscape: MediaQuery.orientationOf(context) == Orientation.landscape,
-      );
-      final index = current.players.indexWhere((p) => p.id == id);
       _expiryNotice = ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           behavior: SnackBarBehavior.floating,
@@ -107,6 +102,15 @@ class _PriorityScreenState extends State<PriorityScreen> {
             label: 'Ver',
             onPressed: () {
               _closeExpiryNotice();
+              final latest = widget.controller.value;
+              if (latest == null) return;
+              final seats = priorityTableSeats(
+                MediaQuery.sizeOf(context),
+                latest.players.length,
+                landscape:
+                    MediaQuery.orientationOf(context) == Orientation.landscape,
+              );
+              final index = widget.controller.visualSeatOrder.indexOf(id);
               showPriorityPlayer(
                 context,
                 widget.controller,
@@ -372,7 +376,12 @@ class _PriorityScreenState extends State<PriorityScreen> {
               const Text(
                 'Ubicación de los asientos con el teléfono en la mesa:',
               ),
+              const Text(
+                'Mantén pulsado un asiento y arrástralo sobre otro para intercambiarlos. '
+                'El jugador inicial se conserva.',
+              ),
               SizedBox(
+                key: const ValueKey('priority-setup-seats'),
                 height: 180,
                 child: Center(
                   child: AspectRatio(
@@ -391,20 +400,67 @@ class _PriorityScreenState extends State<PriorityScreen> {
                           children: [
                             for (var i = 0; i < _count; i++)
                               Positioned.fromRect(
+                                key: ValueKey(
+                                  'priority-setup-view-${_players[i].id}',
+                                ),
                                 rect: seats[i].bounds,
                                 child: Padding(
                                   padding: const EdgeInsets.all(2),
                                   child: RotatedBox(
                                     quarterTurns: seats[i].quarterTurns,
-                                    child: ColoredBox(
-                                      color: priorityPlayerColors[i].withValues(
-                                        alpha: .18,
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          '${i + 1}',
-                                          style: TextStyle(
-                                            color: priorityPlayerColors[i],
+                                    child: PrioritySeatDropZone(
+                                      group: _form,
+                                      playerId: _players[i].id,
+                                      onSwap: _swapSetupSeats,
+                                      child: PrioritySeatDragSource(
+                                        group: _form,
+                                        playerId: _players[i].id,
+                                        name: _players[i].displayName,
+                                        color: priorityPlayerColors[i],
+                                        quarterTurns: seats[i].quarterTurns,
+                                        child: ColoredBox(
+                                          color: priorityPlayerColors[i]
+                                              .withValues(alpha: .18),
+                                          child: Center(
+                                            child: FittedBox(
+                                              fit: BoxFit.scaleDown,
+                                              child: SizedBox(
+                                                width: 64,
+                                                child: Column(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    Text(
+                                                      '${i + 1}. ${_players[i].displayName}',
+                                                      maxLines: 2,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                      style: TextStyle(
+                                                        fontSize: 11,
+                                                        color:
+                                                            priorityPlayerColors[i],
+                                                      ),
+                                                    ),
+                                                    if (_players[i].id ==
+                                                        _first)
+                                                      const Text(
+                                                        'INICIA',
+                                                        maxLines: 1,
+                                                        style: TextStyle(
+                                                          fontSize: 10,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: Color(
+                                                            0xFFFFD878,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -485,6 +541,20 @@ class _PriorityScreenState extends State<PriorityScreen> {
       ),
     ),
   );
+
+  void _swapSetupSeats(String source, String destination) {
+    if (widget.controller.value != null) return;
+    final selected = _players.take(_count).toList();
+    final from = selected.indexWhere((p) => p.id == source);
+    final to = selected.indexWhere((p) => p.id == destination);
+    if (from < 0 || to < 0 || from == to) return;
+    setState(() {
+      final moving = _players[from];
+      _players[from] = _players[to];
+      _players[to] = moving;
+      _error = null;
+    });
+  }
 
   Widget _seatEditor(int index) {
     final draft = _players[index];

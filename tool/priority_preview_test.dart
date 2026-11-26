@@ -50,6 +50,8 @@ void main() {
     ('score-streak', 3, const Size(360, 800), false),
     ('active-highlight', 4, const Size(360, 800), false),
     ('score-ranking', 6, const Size(800, 360), false),
+    ('seat-swap', 3, const Size(360, 800), false),
+    ('seat-drag', 3, const Size(360, 800), false),
   ]) {
     testWidgets('Priority $name', (t) async {
       t.view.devicePixelRatio = 1;
@@ -148,6 +150,23 @@ void main() {
       } else {
         await t.pumpAndSettle();
       }
+      TestGesture? seatGesture;
+      if (name == 'seat-swap') {
+        controller.swapVisualSeats(
+          'J1',
+          'J3',
+          configuration: controller.value!.configuration,
+        );
+        await t.pumpAndSettle();
+      }
+      if (name == 'seat-drag') {
+        final source = find.byKey(const ValueKey('priority-drag-J1'));
+        final target = find.byKey(const ValueKey('priority-drop-J3'));
+        seatGesture = await t.startGesture(t.getCenter(source));
+        await t.pump(const Duration(milliseconds: 600));
+        await seatGesture.moveTo(t.getCenter(target));
+        await t.pump(const Duration(milliseconds: 50));
+      }
       if (name == 'player-management') {
         final player = find.byKey(const ValueKey('priority-player-menu-J2'));
         await t.ensureVisible(player);
@@ -176,13 +195,17 @@ void main() {
         final image = await boundary.toImage();
         final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
         final directory = Directory(
-          'build/verification/priority-scores/previews',
+          'build/verification/priority-seat-drag/previews',
         );
         await directory.create(recursive: true);
         await File('${directory.path}/$name.png')
             .writeAsBytes(bytes!.buffer.asUint8List());
         image.dispose();
       });
+      if (seatGesture != null) {
+        await seatGesture.up();
+        await t.pumpAndSettle();
+      }
     });
   }
 }

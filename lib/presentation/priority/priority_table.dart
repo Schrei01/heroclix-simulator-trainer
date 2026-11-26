@@ -8,6 +8,7 @@ import 'priority_controller.dart';
 import 'priority_input.dart';
 import 'priority_table_layout.dart';
 import 'priority_player_header.dart';
+import 'priority_seat_drag.dart';
 
 class PriorityTable extends StatelessWidget {
   const PriorityTable({required this.controller, super.key});
@@ -33,20 +34,42 @@ class PriorityTable extends StatelessWidget {
               children: [
                 for (var i = 0; i < match.players.length; i++)
                   Positioned.fromRect(
-                    rect: seats[i].bounds,
+                    key: ValueKey('priority-seat-view-${match.players[i].id}'),
+                    rect:
+                        seats[controller.visualSeatOrder.indexOf(
+                              match.players[i].id,
+                            )]
+                            .bounds,
                     child: Padding(
                       padding: const EdgeInsets.all(2),
-                      child: RotatedBox(
-                        key: ValueKey(
-                          'priority-orientation-${match.players[i].id}',
+                      child: PrioritySeatDropZone(
+                        group: match.configuration,
+                        playerId: match.players[i].id,
+                        onSwap: (a, b) => controller.swapVisualSeats(
+                          a,
+                          b,
+                          configuration: match.configuration,
                         ),
-                        quarterTurns: seats[i].quarterTurns,
-                        child: _PlayerPanel(
-                          controller: controller,
-                          match: match,
-                          player: match.players[i],
-                          seat: i,
-                          quarterTurns: seats[i].quarterTurns,
+                        child: RotatedBox(
+                          key: ValueKey(
+                            'priority-orientation-${match.players[i].id}',
+                          ),
+                          quarterTurns:
+                              seats[controller.visualSeatOrder.indexOf(
+                                    match.players[i].id,
+                                  )]
+                                  .quarterTurns,
+                          child: _PlayerPanel(
+                            controller: controller,
+                            match: match,
+                            player: match.players[i],
+                            seat: i,
+                            quarterTurns:
+                                seats[controller.visualSeatOrder.indexOf(
+                                      match.players[i].id,
+                                    )]
+                                    .quarterTurns,
+                          ),
                         ),
                       ),
                     ),

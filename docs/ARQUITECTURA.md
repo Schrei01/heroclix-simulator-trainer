@@ -56,6 +56,14 @@ cada pulsación intencional; conserva revisión/validación y protección de acc
 La calavera y el menú comparten confirmación y comando de eliminación. Los paneles
 estrechos distribuyen su cabecera en dos filas con controles de al menos 48 unidades.
 
+En rc.20 `PriorityController.visualSeatOrder` conserva una permutación de IDs
+exclusivamente visual en memoria. `swapVisualSeats` valida sesión/IDs/primer plano,
+notifica sin modificar el snapshot ni la revisión/eventos del motor y se limpia
+al reiniciar. La mesa posiciona/rota por esa permutación y conserva la identidad
+de widgets/colores por jugador. El arrastre de configuración intercambia borradores
+sin cambiar el ID del inicial; la disposición resultante se usa al crear la partida.
+Los datos de arrastre incluyen la identidad de su grupo para rechazar otras sesiones.
+
 `domain/board` contiene BoardDimensions, CellCoordinate, BoardGeometry,
 BoardCamera y ViewportSize. characters implementa figuras, equipos y ocupación.
 terrain implementa terrenos, muros normalizados y geometría de edición. geometry

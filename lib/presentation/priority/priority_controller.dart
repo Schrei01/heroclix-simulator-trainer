@@ -26,6 +26,28 @@ class PriorityController extends ValueNotifier<PriorityMatch?> {
   final _inputTimers = <(PriorityOperation, String?), Timer>{};
   List<PriorityEvent> _events = const [];
   List<PriorityEvent> get events => _events;
+  List<String> _visualSeatOrder = const [];
+  List<String> get visualSeatOrder => _visualSeatOrder;
+
+  /// Move views only; game order, revisions, clocks and player identity stay put.
+  bool swapVisualSeats(
+    String source,
+    String destination, {
+    required PriorityConfiguration configuration,
+  }) {
+    if (!_foreground || !identical(value?.configuration, configuration)) {
+      return false;
+    }
+    final from = _visualSeatOrder.indexOf(source);
+    final to = _visualSeatOrder.indexOf(destination);
+    if (from < 0 || to < 0 || from == to) return false;
+    final seats = _visualSeatOrder.toList();
+    seats[from] = destination;
+    seats[to] = source;
+    _visualSeatOrder = List.unmodifiable(seats);
+    notifyListeners();
+    return true;
+  }
 
   bool start(PriorityConfiguration configuration) {
     if (value != null) return false;
@@ -34,6 +56,9 @@ class PriorityController extends ValueNotifier<PriorityMatch?> {
       const PriorityCommand.start(),
     );
     _events = transition.events;
+    _visualSeatOrder = List.unmodifiable(
+      transition.match.players.map((p) => p.id),
+    );
     value = transition.match;
     _clockAnchor = _now;
     if (!_foreground) _pauseClock(PriorityPauseReason.background);
@@ -147,6 +172,7 @@ class PriorityController extends ValueNotifier<PriorityMatch?> {
 
   /// Called only after the user confirms replacing the in-memory game.
   void reset() {
+    _visualSeatOrder = const [];
     _cancelInputTimers();
     _events = const [];
     _clockTicker?.cancel();

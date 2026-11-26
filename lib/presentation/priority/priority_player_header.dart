@@ -11,6 +11,7 @@ import 'priority_skull_icon.dart';
 import 'priority_theme.dart';
 import 'priority_active_indicator.dart';
 import 'priority_rank_badge.dart';
+import 'priority_seat_drag.dart';
 
 class PriorityPlayerHeader extends StatefulWidget {
   const PriorityPlayerHeader({
@@ -97,6 +98,7 @@ class _PriorityPlayerHeaderState extends State<PriorityPlayerHeader>
     final name = Semantics(
       button: true,
       label: 'Opciones de ${player.name}',
+      hint: 'Mantén pulsado y arrastra para intercambiar asientos.',
       child: InkWell(
         key: ValueKey('priority-player-menu-${player.id}'),
         onTap: () =>
@@ -291,18 +293,32 @@ class _PriorityPlayerHeaderState extends State<PriorityPlayerHeader>
                 children: [
                   PriorityRankBadge(playerId: player.id, position: position),
                   const SizedBox(width: 4),
-                  Expanded(child: name),
+                  Expanded(
+                    child: PrioritySeatDragSource(
+                      group: match.configuration,
+                      playerId: player.id,
+                      name: player.name,
+                      color: color,
+                      quarterTurns: quarterTurns,
+                      child: name,
+                    ),
+                  ),
                   SizedBox(width: 56, child: counter),
                   skull,
                 ],
               ),
-              Row(
-                key: ValueKey('priority-score-row-${player.id}'),
-                children: [
-                  scoreStep(-5),
-                  Expanded(child: score),
-                  scoreStep(5),
-                ],
+              Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 208),
+                  child: Row(
+                    key: ValueKey('priority-score-row-${player.id}'),
+                    children: [
+                      scoreStep(-5),
+                      Expanded(child: score),
+                      scoreStep(5),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),

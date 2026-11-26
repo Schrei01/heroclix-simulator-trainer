@@ -412,6 +412,7 @@ sin INTERNET. Solo se conserva rc.18 después de validar la copia y retirar rc.1
 con el script habitual, sin modificarlo. Incremento cerrado; aceptación nativa
 pendiente, manteniendo la decisión de continuar sin teléfono.
 
+
 ## PV centrados y posiciones rc.19 — 2026-11-25
 
 El total de PV se separa del contador de acciones y se muestra centrado entre
@@ -439,5 +440,40 @@ renders). Análisis global sin incidencias; 189 archivos con formato correcto.
 PV y controles permanecen visibles con seis en ambas orientaciones a tamaño normal.
 APK rc.19/código 32 validado: paquete, versión, SDK, firma v2 y mismo certificado,
 sin INTERNET. Se conserva únicamente rc.19 tras validar la copia y retirar rc.18
+con el script habitual, sin modificarlo. Incremento cerrado; aceptación nativa
+pendiente, manteniendo la decisión de continuar sin teléfono.
+
+## PV próximos y arrastre de asientos rc.20 — 2026-11-25
+
+El grupo −/PV/+ se limita a 208 unidades centradas para acercar los botones al
+total, conservando objetivos táctiles de 48 y tamaño/negrilla de los PV.
+
+Se añade arrastre por pulsación mantenida: desde una celda de la vista de asientos
+en configuración, y desde el nombre durante la partida. Soltar sobre otro jugador
+intercambia las dos posiciones; soltar fuera cancela. Un borde temporal marca el
+destino y una tarjeta sigue el dedo. El toque corto conserva la gestión del nombre.
+
+En configuración se intercambian los borradores y se conserva el ID seleccionado
+para iniciar; la vista muestra nombres e INICIA. El orden configurado resultante
+define los asientos al crear la partida. Durante la partida se intercambian solo
+vistas, usando una permutación inmutable de IDs en el controlador: conserva inicial,
+orden de juego, cola, revisión, eventos, identidad/color, puntos, acciones y relojes.
+No se pausa ni se transfiere el reloj por mover una vista. Se conserva al salir/
+volver y se limpia con una nueva partida. El aviso de tiempo agotado consulta la
+posición/orientación actual al abrir gestión. No cambia el dominio.
+
+22 pruebas nuevas: todos los pares en partidas 2–6, sesión/IDs/primer plano/estado
+inmutable, ejemplo obligatorio y reloj; arrastre real 2–6 en ambas orientaciones,
+inicial distinto del primer asiento en configuración, cancelación, reapertura y
+orientación desde el aviso del reloj. Se reutilizan pruebas de controlador,
+geometría, interfaz y gestión. Renders ampliados a 23, incluidos intercambio y
+arrastre en curso. Evidencia en `build/verification/priority-seat-drag/`; resultados
+y APK en [ESTADO.md](ESTADO.md). No se inicia etapa 4 ni persistencia.
+
+Verificación final: **246/246 aprobadas**, 1 min 31 s (223 pruebas y 23 renders),
+con las 22 nuevas incluidas. Análisis global sin incidencias; 191 archivos con
+formato correcto. Revisión visual del grupo de PV próximo y del arrastre/destino.
+APK rc.20/código 33 validado: paquete, versión, SDK, firma v2 y mismo certificado,
+sin INTERNET. Se conserva únicamente rc.20 tras validar la copia y retirar rc.19
 con el script habitual, sin modificarlo. Incremento cerrado; aceptación nativa
 pendiente, manteniendo la decisión de continuar sin teléfono.
