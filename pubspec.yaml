@@ -1,7 +1,7 @@
 name: heroclix_simulator_trainer
 description: Simulador táctico y entrenador offline para Android.
 publish_to: none
-version: 1.0.0-rc.17+30
+version: 1.0.0-rc.18+31
 
 environment:
   sdk: ^3.14.0

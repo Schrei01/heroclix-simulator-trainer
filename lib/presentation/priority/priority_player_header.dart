@@ -9,6 +9,7 @@ import 'priority_input.dart';
 import 'priority_management.dart';
 import 'priority_skull_icon.dart';
 import 'priority_theme.dart';
+import 'priority_active_indicator.dart';
 
 class PriorityPlayerHeader extends StatefulWidget {
   const PriorityPlayerHeader({
@@ -124,27 +125,26 @@ class _PriorityPlayerHeaderState extends State<PriorityPlayerHeader>
                   const Icon(Icons.more_vert, size: 14),
                 ],
               ),
-              Text(
-                player.eliminated
-                    ? 'ELIMINADO'
-                    : match.phase == PriorityPhase.finished
-                    ? 'FINALIZADA'
-                    : active
-                    ? 'ACTIVO'
-                    : 'REACTIVO',
-                key: player.eliminated
-                    ? ValueKey('priority-eliminated-${player.id}')
-                    : active
-                    ? ValueKey('priority-active-${player.id}')
-                    : null,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 11,
-                  height: 1.1,
-                  color: active ? AppTheme.accent : AppTheme.muted,
+              if (active)
+                PriorityActiveIndicator(playerId: player.id, color: color)
+              else
+                Text(
+                  player.eliminated
+                      ? 'ELIMINADO'
+                      : match.phase == PriorityPhase.finished
+                      ? 'FINALIZADA'
+                      : 'REACTIVO',
+                  key: player.eliminated
+                      ? ValueKey('priority-eliminated-${player.id}')
+                      : null,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11,
+                    height: 1.1,
+                    color: AppTheme.muted,
+                  ),
                 ),
-              ),
             ],
           ),
         ),

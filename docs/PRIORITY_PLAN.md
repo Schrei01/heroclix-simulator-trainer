@@ -386,3 +386,28 @@ Revisión visual de márgenes de la mesa y diálogo, incluyendo seis en horizont
 APK rc.17/código 30 validado: paquete, versión, SDK, firma v2 y mismo certificado,
 sin INTERNET. Se conserva solo rc.17 tras validar la copia y retirar rc.16 mediante
 el script habitual; no se modificó ese flujo. Incremento cerrado.
+
+## Resaltado del activo rc.18 — 2026-11-25
+
+ACTIVO pasa a una etiqueta en negrilla con fondo, borde, punto y brillo del color
+del asiento. Un componente de presentación independiente anima dos pulsos suaves
+al iniciar cada turno (3,2 s) y conserva después el resaltado fijo, sin animación
+perpetua. La preferencia de movimiento reducido detiene los pulsos y mantiene el
+resaltado. No modifica la prioridad, los controles, relojes ni el motor.
+
+El indicador permanece en el dueño del turno mientras responden los demás,
+cambia al siguiente activo y desaparece al eliminarlo o finalizar la partida.
+El borde dorado de prioridad se conserva. Cuatro pruebas nuevas verifican negrilla,
+color/brillo finito sin alterar partida, transiciones de turno/eliminación/final,
+movimiento reducido inicial y activado durante el pulso. Se reutilizan los casos
+de dimensiones, teclado y visibilidad; los renders se amplían a 20 con una captura
+del brillo en su punto alto. Evidencia en `build/verification/priority-active/`;
+resultados y APK en [ESTADO.md](ESTADO.md). No se inicia la etapa 4.
+
+Verificación final: **172/172 aprobadas**, 1 min 34 s (152 pruebas y 20 renders).
+Análisis global sin incidencias; 187 archivos con formato correcto. El indicador
+mantiene los controles visibles con seis y termina su animación al quedar en reposo.
+APK rc.18/código 31 validado: paquete, versión, SDK, firma v2 y mismo certificado,
+sin INTERNET. Solo se conserva rc.18 después de validar la copia y retirar rc.17
+con el script habitual, sin modificarlo. Incremento cerrado; aceptación nativa
+pendiente, manteniendo la decisión de continuar sin teléfono.

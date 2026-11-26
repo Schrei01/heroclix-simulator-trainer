@@ -1,6 +1,6 @@
 # Preparar, compilar e instalar en Android
 
-Candidata actual: **TeamFight: GridLab 1.0.0-rc.17+30**. Inicio contiene Editor, Entrenador y Priority; las consultas
+Candidata actual: **TeamFight: GridLab 1.0.0-rc.18+31**. Inicio contiene Editor, Entrenador y Priority; las consultas
 y ensayos están en las herramientas del Editor. El recorrido vigente del Editor
 está al final de este documento. Los apartados identificados por etapa describen
 sus versiones históricas. Resultados efectivamente ejecutados: [ESTADO](ESTADO.md).
@@ -108,6 +108,12 @@ Rc.17: comprobar que ACTION y demás acciones no se pegan al borde del panel,
 incluidos seis jugadores en horizontal, y que conservan un área táctil mínima
 de 48 unidades. «Aplicar puntos» debe separarse del campo anterior y tener margen
 interior cómodo. Repetir con teclado y texto ampliado.
+Rc.18: ACTIVO debe verse en negrilla y con fondo/punto del color del jugador.
+Al comenzar cada turno, comprobar dos pulsos suaves de luz durante 3,2 s y luego
+resaltado fijo. ACTION pasa la prioridad, pero el indicador sigue en el dueño del
+turno; END TURN lo traslada al siguiente. Al eliminar/finalizar debe actualizarse.
+Activar la opción del sistema de reducir animaciones: debe conservar el resaltado
+fijo sin pulsos. Revisar 2–6 jugadores, giro, texto ampliado y márgenes de rc.17.
 Registrar/restar/corregir PV, incluidos eliminados y correcciones posteriores al
 final; rechazar puntos negativos. Eliminar con confirmación al activo, reactivo
 con prioridad y un pendiente; comprobar exclusión de ciclos y conservación de PV.

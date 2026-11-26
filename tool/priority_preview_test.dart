@@ -48,6 +48,7 @@ void main() {
     ('final-standings', 3, const Size(360, 800), false),
     ('clock-setup', 2, const Size(360, 800), true),
     ('score-streak', 3, const Size(360, 800), false),
+    ('active-highlight', 4, const Size(360, 800), false),
   ]) {
     testWidgets('Priority $name', (t) async {
       t.view.devicePixelRatio = 1;
@@ -132,7 +133,12 @@ void main() {
           ),
         ),
       );
-      await t.pumpAndSettle();
+      if (name == 'active-highlight') {
+        await t.pump();
+        await t.pump(const Duration(milliseconds: 800));
+      } else {
+        await t.pumpAndSettle();
+      }
       if (name == 'player-management') {
         final player = find.byKey(const ValueKey('priority-player-menu-J2'));
         await t.ensureVisible(player);
@@ -161,7 +167,7 @@ void main() {
         final image = await boundary.toImage();
         final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
         final directory = Directory(
-          'build/verification/priority-spacing/previews',
+          'build/verification/priority-active/previews',
         );
         await directory.create(recursive: true);
         await File('${directory.path}/$name.png')

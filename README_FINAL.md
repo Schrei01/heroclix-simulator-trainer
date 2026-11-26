@@ -1,16 +1,16 @@
-# TeamFight: GridLab — 1.0.0-rc.17+30
+# TeamFight: GridLab — 1.0.0-rc.18+31
 
 Aplicación Android offline, en español, para construir escenarios, consultar reglas
 implementadas y practicar. **Versión candidata, APK debug**: faltan las comprobaciones
 nativas de aceptación y rendimiento descritas abajo. No se congela 1.0.0 estable.
 Repositorio privado: [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer),
-rama `codex/priority-button-spacing`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
+rama `codex/priority-active-highlight`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
 
 Nombre e iconos de Android, Inicio y Acerca de actualizados a TeamFight: GridLab.
 La identidad técnica y firma se conservan para actualizar la instalación anterior.
 Archivos de Google Play preparados en distribution/google-play/; [detalles de identidad](docs/IDENTIDAD.md).
 
-Esta beta rc.17 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
+Esta beta rc.18 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
 (2026-12-30T05:00:00Z). Desde ese instante muestra «Versión de prueba finalizada»
 y bloquea todas las pantallas, también al reanudar o si permanece abierta. Acerca de
 muestra la fecha. No elimina biblioteca ni progreso. Usa el reloj del dispositivo:
@@ -23,7 +23,7 @@ anterior sin caducidad también queda fuera de este control local.
 El archivo generado se conserva en:
 
 ```text
-build/releases/teamfight-gridlab-1.0.0-rc.17-debug.apk
+build/releases/teamfight-gridlab-1.0.0-rc.18-debug.apk
 ```
 
 1. Android 7.0/API 24 o superior. Copiar el APK al teléfono, abrirlo en Archivos
@@ -35,7 +35,7 @@ build/releases/teamfight-gridlab-1.0.0-rc.17-debug.apk
 
 ```powershell
 adb devices -l
-adb -s ID install -r build/releases/teamfight-gridlab-1.0.0-rc.17-debug.apk
+adb -s ID install -r build/releases/teamfight-gridlab-1.0.0-rc.18-debug.apk
 adb -s ID shell am start -n com.valinor.heroclixtrainer/com.valinor.heroclix_simulator_trainer.MainActivity
 ```
 
@@ -55,6 +55,10 @@ el mismo esquema de lados opuestos de 5 y 6. Los botones son rectangulares, con
 esquinas de 6 píxeles. El borde dorado identifica quién puede intervenir;
 ACTIVO y REACTIVO indican el papel de cada jugador. Se retiraron el rótulo
 PRIORIDAD y la franja superior de ronda/turno para dar más espacio a la mesa.
+ACTIVO aparece en negrilla, con punto y fondo del color del jugador. La luz sube
+y baja dos veces al iniciar el turno (3,2 s) y queda fija después. Con animaciones
+reducidas es fija desde el inicio. El borde dorado sigue indicando prioridad;
+el indicador ACTIVO permanece en el dueño del turno durante las respuestas.
 
 El activo usa ACTION/FREE/END TURN; los reactivos usan RESPONSE ACTION/RESPONSE
 FREE/PASS cuando están habilitados. Los jugadores pulsan después de resolver sus
@@ -201,7 +205,7 @@ usa etiquetas genéricas. Exportar la escena completa sí conserva sus nombres.
 | Instalación, nueva sesión tras cierre y selectores nativos | Pendiente de Android; equivalentes de archivos/controladores sí verificados |
 | Offline con radios desactivadas y rendimiento Android/FPS | Pendiente de dispositivo/emulador funcional |
 | APK release con firma del propietario | Preparado; sin claves suministradas, no generado |
-| Congelar 1.0.0 estable | Pendiente de cerrar aceptación nativa; esta entrega es 1.0.0-rc.17 |
+| Congelar 1.0.0 estable | Pendiente de cerrar aceptación nativa; esta entrega es 1.0.0-rc.18 |
 | Simular combates, dados, diales, daño y poderes de figuras | Fuera del alcance del proyecto |
 
 ## Dependencias y recompilación
@@ -212,7 +216,7 @@ No se añaden dependencias para Priority. Las licencias empaquetadas se consulta
 conexión en Acerca de → Licencias de dependencias.
 
 ```powershell
-git switch codex/priority-button-spacing
+git switch codex/priority-active-highlight
 $env:Path = "$env:USERPROFILE\develop\flutter\bin;$env:Path"
 flutter --no-version-check pub get
 dart format --output=none --set-exit-if-changed lib test tool
