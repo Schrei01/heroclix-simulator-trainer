@@ -5,7 +5,7 @@ import 'package:heroclix_simulator_trainer/presentation/beta/beta_access_gate.da
 import 'package:material_ui/material_ui.dart';
 
 void main() {
-  testWidgets('la app real bloquea Editor y Entrenador al arrancar vencida', (
+  testWidgets('la app real bloquea todos los módulos al arrancar vencida', (
     tester,
   ) async {
     await tester.pumpWidget(HeroClixApp(clock: () => BetaExpiration.deadline));
@@ -13,6 +13,7 @@ void main() {
     expect(find.text('Versión de prueba finalizada'), findsOneWidget);
     expect(find.byKey(const ValueKey('mode-editor')), findsNothing);
     expect(find.byKey(const ValueKey('mode-trainer')), findsNothing);
+    expect(find.byKey(const ValueKey('mode-priority')), findsNothing);
   });
 
   test(

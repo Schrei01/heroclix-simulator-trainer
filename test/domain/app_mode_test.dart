@@ -6,6 +6,7 @@ void main() {
     expect(AppMode.values.map((mode) => mode.id).toSet(), {
       'editor',
       'trainer',
+      'priority',
     });
     for (final mode in AppMode.values) {
       expect(AppMode.tryParse(mode.id), same(mode));
