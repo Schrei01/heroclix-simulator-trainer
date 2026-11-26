@@ -35,6 +35,80 @@ movimiento, ataques ni excepciones. El inicio no emite dictámenes.
 No se distribuyen el PDF, texto completo, iconografía ni ilustraciones oficiales.
 La herramienta futura será de apoyo, no una decisión oficial de torneo.
 
+## Destrucción durante movimiento — rc.12, 2026-11-18
+
+Se mantiene la edición oficial 07.01.2026 enlazada por WizKids. Revisados §10.4–5
+(p. 24), §16.8a (p. 44), §16.9a–c (p. 45), §17.14d (p. 51) y §27.5b–d (p. 86).
+IM Bloqueado y Bloqueado exterior permiten pasar sin destruir. IM Destruir bloqueado
+destruye el bloqueado que atraviesa, incluidos los muros, durante el movimiento.
+El destino también forma parte de las casillas atravesadas: al destruir B de destino
+queda debris H y puede terminar allí si cumple ocupación, altura y demás restricciones.
+El origen se valida primero; no se concede permiso para representar una figura en B
+intacto ni ocupar un muro en su huella original. Cero pasos sigue sin confirmación.
+
+B destruido pierde su tipo base y genera debris, conservando elevación e Indoor.
+Un muro destruido se retira y genera debris en ambos lados salvo las casillas que
+continúen bloqueadas. No se destruye por proximidad otro B no atravesado. Retirar el
+debris no reconstruye B/muro; el marcador es H y conserva debajo el tipo previo de
+una casilla no destruida (por ejemplo agua). El modelo del Editor representa terreno
+impreso; no se añaden objetos portables, marcadores con vencimiento o efectos de
+retirada de marcadores especiales de §16.9c.
+
+Cada paso se evalúa sobre el mundo simulado después del paso anterior, también para
+adyacencia y aterrizaje. Bases múltiples agregan las partes del perfil de traslación
+ya soportado; si requieren otra maniobra sigue No evaluado. En diagonal se elige el
+lado menos restrictivo de §16.8a. A igualdad se prefiere menos destrucción y después
+una clave canónica: el informe enumera exactamente las casillas/muros elegidos antes
+de confirmar. No se destruyen ambos laterales por simple contacto con el vértice.
+Todavía no hay selector manual entre laterales equivalentes del mismo paso diagonal.
+
+Confirmar revalida el escenario original y aplica posición/capas juntas, con un solo
+Deshacer. Rutas inválidas, canceladas o con efectos sin soporte no aplican cambios.
+La búsqueda destructiva considera el estado del terreno, se limita a 4096 prefijos
+y solo devuelve alternativas completas verificadas. Un prefijo no se puede confirmar.
+La comparación futura de visión/alcance usa debris y muros retirados. Contratos en
+movement_destruction_test.dart; se conservan los contratos de movimiento anteriores.
+
+## Indoor/Outdoor — revisión 2026-11-18, rc.11
+
+Se mantiene el enlace oficial 07.01.2026. Revisados §15.1a–c/15.2 (p. 37) y
+§27.5b–c (p. 86) en el PDF oficial de consulta. La página oficial sigue enlazando
+esa edición. Indoor/Outdoor son ámbitos del mapa, no sustitutos del terreno:
+por sí solos no añaden restricciones ordinarias de visión o movimiento.
+El amarillo identifica zonas Indoor en mapas mixtos y no es un muro. Un muro
+que coincide con un límite amarillo cuenta como Indoor. Los límites del tablero
+siguen impidiendo salir; no se convierten en muros para obstruir visión interna.
+
+Se implementa IM Bloqueado exterior (§27.5c): ignora bloqueado Outdoor y muros
+con ambos lados Outdoor al atravesarlos, conservando las restricciones de destino
+de §13.2. No ignora bloqueado Indoor ni un muro que toque una casilla Indoor.
+IM Bloqueado (§27.5b) ignora ambos para el paso. Las reglas de altura, esquinas,
+ocupación y poderes no implementados siguen siendo independientes.
+
+Contratos de indoor_movement_test.dart: cruzar amarillo sin muro mantiene visión
+despejada/costo ordinario; muro real bloquea; IM exterior atraviesa B/muro Outdoor
+y falla en Indoor, incluido el lado de origen de un muro. IM Bloqueado general
+sí atraviesa B Indoor, y ninguna variante permite terminar sobre bloqueado.
+Los trazos solo producen la lista ordenada de pasos: todas las reglas se evalúan
+mediante el mismo motor de movimiento, sin inferir pasos válidos por la forma del gesto.
+
+## Agua — revisión 2026-11-18, rc.10
+
+La página oficial continúa enlazando la edición 07.01.2026. Revisado §16.6,
+página impresa 42 (página PDF 59, índice cero 58), en el PDF oficial arriba enlazado
+y en la copia de consulta local de build/verification/prompt-06/.
+El agua usa límite azul y se considera despejado salvo interacciones con efectos
+específicos. En el perfil ordinario no obstaculiza la visión, no bloquea el paso,
+no añade costo de movimiento ni exige detenerse. Las restricciones independientes
+de figura, muro, altura y ocupación se siguen aplicando. No se añaden poderes de
+agua ni marcadores especiales. La opción de efectos sin soporte sigue dando No
+evaluado cuando corresponda.
+
+Contratos en water_terrain_test.dart: agua en origen/interior/destino mantiene
+visión despejada; obstaculizado o bloqueado distintos siguen prevaleciendo; entrar,
+cruzar y salir cuesta una casilla por paso. El dictamen añade W01/§16.6 al observar
+agua; el recorrido añade §16.6 al paso de agua sin una restricción prioritaria.
+
 ## Cobertura en 05
 
 Geometría exacta centro-a-centro operativa en el Editor: casillas interiores,

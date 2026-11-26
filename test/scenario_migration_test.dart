@@ -39,12 +39,12 @@ void main() {
     expect(await store.listIds(), [doc.id]);
   });
   test(
-    'fixture real de 07 migra de esquema 1 a 3 sin perder metadatos ni capas',
+    'fixture real de 07 migra de esquema 1 a 4 sin perder metadatos ni capas',
     () {
       final old = jsonDecode(legacy) as Map<String, dynamic>;
       expect(old['schemaVersion'], 1);
       final doc = codec.decode(legacy), migrated = codec.toMap(doc);
-      expect(migrated['schemaVersion'], 3);
+      expect(migrated['schemaVersion'], 5);
       for (final field in [
         'metadata',
         'board',
@@ -101,11 +101,11 @@ void main() {
       final store = MemoryStore(), doc = codec.decode(legacy);
       store.documents[doc.id] = legacy;
       final repository = ScenarioRepository(store);
-      expect(codec.toMap(await repository.open(doc.id))['schemaVersion'], 3);
+      expect(codec.toMap(await repository.open(doc.id))['schemaVersion'], 5);
       expect(store.documents[doc.id], legacy);
       await repository.save(doc);
       expect(store.documents['schema1-${doc.id}'], legacy);
-      expect(jsonDecode(store.documents[doc.id]!)['schemaVersion'], 3);
+      expect(jsonDecode(store.documents[doc.id]!)['schemaVersion'], 5);
       final backup = store.documents['schema1-${doc.id}'];
       await repository.save(doc.revised(name: 'Editado'));
       expect(store.documents['schema1-${doc.id}'], backup);
@@ -136,7 +136,7 @@ void main() {
       expect(store.documents['schema1-working'], raw);
       expect(
         jsonDecode(store.documents['working']!)['document']['schemaVersion'],
-        3,
+        5,
       );
     },
   );

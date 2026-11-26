@@ -24,36 +24,76 @@ class MovementToolbar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final m = controller.movement, r = m.result;
-    return Row(
+    return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Expanded(
-          child: TextButton.icon(
-            key: const ValueKey('movement-report'),
-            onPressed: () => showMovementReport(context, controller),
-            icon: Icon(Icons.route_outlined, color: movementColor(r?.status)),
-            label: Text(
-              r == null
-                  ? 'Movimiento · elegir figura'
-                  : '${r.cost}/${r.budget} · ${movementLabel(r.status)}',
-              maxLines: 1,
+        Row(
+          children: [
+            IconButton(
+              key: const ValueKey('movement-choose'),
+              tooltip: 'Elegir otra figura',
+              onPressed: () => controller.updateMovement((m) => m.clear()),
+              icon: const Icon(Icons.person_search_outlined),
+            ),
+            Expanded(
+              child: TextButton.icon(
+                key: const ValueKey('movement-report'),
+                onPressed: () => showMovementReport(context, controller),
+                icon: Icon(
+                  Icons.route_outlined,
+                  color: movementColor(r?.status),
+                ),
+                label: Text(
+                  r == null
+                      ? 'Movimiento · elegir figura'
+                      : '${r.cost}/${r.budget} · ${movementLabel(r.status)}',
+                  // La ruta sigue siendo un ensayo; la destrucción solo se confirma
+                  // mediante el mismo comando que desplaza la figura.
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+            IconButton(
+              key: const ValueKey('movement-back'),
+              tooltip: 'Quitar último paso',
+              onPressed: m.route.length > 1
+                  ? () => controller.updateMovement((m) => m.removeLast())
+                  : null,
+              icon: const Icon(Icons.undo),
+            ),
+            IconButton(
+              key: const ValueKey('movement-apply'),
+              tooltip: 'Confirmar movimiento',
+              onPressed: r?.canConfirm == true
+                  ? () {
+                      final error = controller.confirmMovement();
+                      if (error != null) {
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(SnackBar(content: Text(error)));
+                      }
+                    }
+                  : null,
+              icon: const Icon(Icons.check),
+            ),
+            IconButton(
+              key: const ValueKey('movement-cancel'),
+              tooltip: 'Cancelar ensayo sin mover',
+              onPressed: () => controller.updateMovement((m) => m.clear()),
+              icon: const Icon(Icons.close),
+            ),
+          ],
+        ),
+        if (r?.changes case final changes?)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Text(
+              'Al confirmar: ${changes.blocking.length} B y ${changes.destroyedWalls.length} muros destruidos · ${changes.debris.length} nuevas casillas con debris',
+              key: const ValueKey('movement-effects-summary'),
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
           ),
-        ),
-        IconButton(
-          key: const ValueKey('movement-back'),
-          tooltip: 'Quitar último paso',
-          onPressed: m.route.length > 1
-              ? () => controller.updateMovement((m) => m.removeLast())
-              : null,
-          icon: const Icon(Icons.undo),
-        ),
-        IconButton(
-          key: const ValueKey('movement-cancel'),
-          tooltip: 'Cancelar ensayo sin mover',
-          onPressed: () => controller.updateMovement((m) => m.clear()),
-          icon: const Icon(Icons.close),
-        ),
       ],
     );
   }
@@ -113,7 +153,7 @@ class _MovementDialogState extends State<MovementDialog> {
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
                 const Text(
-                  'La figura conserva su posición original. Toca casillas sucesivas del tablero; no se rellenan saltos. Confirmar aplica la ruta válida como una operación de historial.',
+                  'La figura conserva su posición original. Primero elígela en el mapa; toca pasos vecinos o traza desde ella o desde el último paso. El trazo incluye las casillas intermedias; los saltos por toque o coordenada no se rellenan. Confirmar aplica la ruta válida como una operación de historial.',
                 ),
                 DropdownButtonFormField<String>(
                   key: ValueKey('movement-source-${m.sourceId}'),
@@ -154,6 +194,13 @@ class _MovementDialogState extends State<MovementDialog> {
                     'Distancia directa: ${_direct(m.route)}. La ruta consume sus pasos reales.',
                   ),
                   Text(r.reason, key: const ValueKey('movement-reason')),
+                  if (r.changes case final changes?)
+                    Text(
+                      'Al confirmar: destruir B en ${changes.blocking.map((c) => c.label).join(', ')}; '
+                      'muros ${changes.destroyedWalls.map((w) => '${w.firstCell.label}–${w.secondCell.label}').join(', ')}; '
+                      'debris obstaculizado en ${changes.debris.map((c) => c.label).join(', ')}.',
+                      key: const ValueKey('movement-effects'),
+                    ),
                   Text('Ruta: ${m.route.map((c) => c.label).join(' / ')}'),
                   const Text(
                     'ENSAYO: origen y destino se comparan sin mover ni guardar. La velocidad no incorpora modificadores, dados ni acciones.',

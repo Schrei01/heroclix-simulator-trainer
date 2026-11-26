@@ -527,3 +527,156 @@ verificado ni implementado ninguna regla del juego.
   un zoom/pan manual conserva su centro y escala. Evita recortar A1 en 10×10.
 - 1.0.0-rc.5+18, misma firma debug, sin dependencias/permisos/esquemas nuevos.
   Pruebas Flutter/Windows; aceptación Android sigue pendiente por decisión previa.
+## 2026-11-17 — Equipos, avisos y trazos rc.6
+
+- En Personajes, cada par de toques sobre una figura existente pasa al siguiente
+  equipo de la lista disponible, volviendo al primero. Crear sigue usando el primer
+  equipo; la colocación no cuenta como primer toque del cambio. Se conservan ID,
+  etiqueta, posición, base, atributos y capacidades. Un cambio es una operación reversible.
+- Sustituir la ayuda SnackBar de herramientas por una franja vertical a la derecha
+  del mapa durante cuatro segundos. Es una superposición IgnorePointer, sin alterar
+  el viewport/cámara. Un nuevo aviso reinicia la duración; el temporizador pertenece
+  al widget y se cancela al destruirlo. Los errores de validación conservan sus avisos.
+- Elevado comparte el trazo interpolado de terreno. LayerDraft conserva el pincel;
+  las casillas únicas se elevan una vez desde su nivel al comenzar. Se previsualiza
+  el nivel de destino; se confirma una sola operación al soltar. Validación de bases
+  al final del conjunto, sin rechazar estados intermedios de una base completa.
+  E40 o una base que quedaría entre niveles rechazan todo el trazo sin cambios parciales.
+- Borrar entra siempre en Borrar todo. El trazo limpia tipos/alturas y bordes de
+  muro/transición incidentes; retira figuras completas cuya base toca. El resto de
+  las casillas, equipos y contadores se conserva. Sin diálogo para el trazo total;
+  Deshacer lo recupera completo. Se mantienen las opciones explícitas de una capa.
+- Trazo vacío sin operación en historial. Cancelar o añadir segundo dedo descarta
+  la vista previa en elevación y borrado, con la misma política de pintura existente.
+- 1.0.0-rc.6+19, sin nuevas reglas, esquemas, dependencias ni permisos. Firma debug
+  conservada; aceptación nativa pendiente según decisión de continuar sin teléfono.
+## 2026-11-17 — Lectura del aviso rc.7
+
+- Aclaración del usuario: vertical significa texto derecho, leído en columna de
+  arriba hacia abajo, sin girar el celular. Retirar RotatedBox y distribuir las
+  acciones en bloques separados, con ajuste de líneas y ancho lateral adaptable.
+- Mantener cuatro segundos, renovación, posición derecha, cámara y paso de gestos.
+  Limitar líneas al alto disponible, conservando el mensaje completo en semántica.
+- Corrección de presentación: 1.0.0-rc.7+20, misma firma debug y formatos. Pruebas
+  afectadas y renders completos; aceptación nativa pendiente como antes.
+## 2026-11-17 — TeamFight: GridLab rc.8
+
+- Petición del usuario: aplicar los iconos del ZIP y renombrar la app a TeamFight:
+  GridLab. AppInfo centraliza nombre/asset; Android usa app_name. Inicio, Acerca de,
+  título y licencias actualizados. Se usan los PNG originales, con hashes contrastados.
+- 25 PNG en cinco densidades y dos XML adaptables incluidos tal como se aportan;
+  foreground/background/monochrome según el formato oficial de Android. Manifest
+  con icon/roundIcon y vector genérico retirado. Asset Flutter 512×512; los dos
+  archivos de Google Play preparados aparte en distribution/google-play/.
+- Conservar applicationId, namespace, canales nativos, directorios privados y firma
+  para permitir actualizar la instalación existente. El paquete Dart conserva su
+  nombre técnico. Reglas, formatos, permisos y dependencias no cambian.
+- LEEME del ZIP es referencia de recursos; la solicitud es implementar identidad.
+  Se valida compilación incremental, conservando APK anteriores. Recursos y etiquetas
+  compilados comprobados con aapt; firma/hash y PNG empaquetado verificados.
+- 1.0.0-rc.8+21, candidata debug. Máscaras, tema, launcher/splash y actualización
+  reales continúan pendientes según decisión previa de continuar sin teléfono.
+## 2026-11-17 — Conservar únicamente el APK más reciente
+
+- Petición explícita del usuario: eliminar las versiones anteriores al generar un
+  nuevo APK. Sustituye la política previa de conservar entregas binarias históricas.
+- Flujo oficial tool/build_apk.ps1: compilar, verificar paquete/versión/firma, copiar
+  a nombre de entrega y comprobar SHA-256 antes de retirar los otros APK de
+  build/releases/. El fallo conserva los anteriores. Sin cambios de aplicación ni versión.
+- Limpieza acotada a archivos .apk de esa carpeta, con rutas absolutas verificadas,
+  rechazo de enlaces de directorio y operaciones nativas de PowerShell. Se conservan
+  otros archivos, carpetas, informes, datos y salidas técnicas actuales del compilador.
+- AGENTS.md registra el procedimiento para futuras sesiones. Pruebas en una carpeta
+  temporal aislada: fallo de compilación con APK previo válido, versión incorrecta,
+  APK corrupto, publicación correcta y publicación repetida.
+
+## 2026-11-17 — Beta con vencimiento el 30 de diciembre de 2026
+
+- Petición explícita del usuario: fijar el vencimiento el 30 de diciembre de este
+  año. Se interpreta el corte al inicio de ese día, 00:00 Colombia (05:00 UTC),
+  comunicado durante la implementación. Rc.9+22 contiene este límite fijo.
+- BetaExpiration centraliza instante y texto. BetaAccessGate envuelve el Navigator
+  desde MaterialApp.builder: protege todas las rutas/diálogos, también al arrancar
+  vencida. Se comprueba al reanudar y como máximo cada minuto; el último temporizador
+  se programa para el instante exacto. Una sesión vencida permanece bloqueada.
+- Pantalla «Versión de prueba finalizada», con fecha y petición de actualizar.
+  Acerca de muestra la caducidad antes del corte. Biblioteca/progreso no se borran.
+  No hay ficha publicada de Play a la que enlazar todavía.
+- Se conserva la app offline sin dependencias ni permisos nuevos. Se usa reloj
+  local; se acepta la limitación ya explicada sobre manipulación de fecha. No se
+  implementa servidor, licencia remota ni migración de firma de publicación.
+- El reloj es inyectable para verificar límites y mantener los recorridos y renders
+  funcionales deterministas cuando pase la fecha. El arranque real usa DateTime.now.
+  La futura edición oficial debe retirar expresamente este corte, incluso en release.
+
+## 2026-11-18 — Agua por trazo, rc.10+23
+
+- Se añade TerrainType.water y TerrainBrush.water sin alterar valores anteriores.
+  Agua comparte el flujo existente de trazo/rectángulo, cancelación, confirmación,
+  historial y borrado. Cambiar tipo de terreno conserva elevación/transiciones.
+- Paleta de seis pinceles, gota para Agua, distribución adaptable y ancho mínimo
+  de 48 px por botón. El mapa y PNG comparten azul, ondas, letra A y borde azul
+  exterior de la región; el trazo pendiente de Agua usa azul. Leyendas/Guía actualizadas.
+- LayerCodec ya serializa tipos por nombre; water se conserva en escenario,
+  biblioteca y snapshots de ejercicios sin cambiar la estructura JSON. Las versiones
+  anteriores que no reconozcan water rechazan ese escenario; no lo convierten en H/D.
+- Revisión de §16.6 del PDF oficial 07.01.2026: agua se trata como despejado salvo
+  efectos específicos. Se incluyen referencias en visión/movimiento sin añadir
+  poderes nuevos ni omitir restricciones de muro/altura/ocupación.
+- Se mantiene vencimiento 30/12/2026 a las 00:00 Colombia, marca, paquete, firma,
+  funcionamiento offline y política de APK único. No se modifica el flujo de APK.
+
+## 2026-11-18 — Indoor/Outdoor y movimiento directo, rc.11+24
+
+- El botón de estado del escenario se sustituye por selector Indoor/Outdoor en la
+  misma barra. El detalle permanece en Información del escenario del menú general.
+  El selector aplica el tipo al mapa completo y vacía marcas Indoor locales, con
+  una operación reversible. Outdoor es el valor inicial y el de los formatos antiguos.
+- Indoor es metadato independiente en TerrainLayer: ambiente global e indoorCells
+  locales solo en Outdoor. Pincel Indoor por trazo/rectángulo, contorno amarillo/I;
+  mapa Indoor con borde amarillo exterior. Preserva terreno, agua, alturas y
+  transiciones. Despejado conserva Indoor; borrado total retira marcas locales;
+  Borrar Indoor solo esa capa. El mapa global solo cambia con el selector.
+- JSON de escenario 4/capas 3, lectura histórica 1–3. Validación estricta de tipo,
+  casillas únicas/canónicas/dentro de límites y ausencia de redundancias en Indoor
+  global. Respaldo schema3 antes de sobrescribir, admitido por FileDocumentStore;
+  biblioteca/entrenador/diagnósticos/PNG comparten los mismos datos y codecs.
+- §15.1 confirma que el amarillo no bloquea por sí solo. IM Bloqueado exterior
+  pasa a estar soportado según §27.5c, distinguiendo B/muros Indoor y Outdoor.
+  Un muro con alguno de sus lados Indoor no se ignora con esa mejora. No se
+  conceden poderes adicionales ni se permite terminar sobre bloqueado.
+- Movimiento abre en tablero, exige elegir figura, acepta toques o trazos ordenados
+  desde la figura/último paso. Conserva el ancla de bases múltiples. La confirmación
+  inline usa la validación actual e historial; informe manual disponible. Cancelar
+  o añadir otro dedo restaura la ruta previa y el efecto especial, sin mover.
+- Paleta de siete pinceles adaptable, mínimo 48 px, etiquetas limitadas a una línea
+  con texto completo en semántica/ayuda para evitar desbordes al girar.
+- Se conserva marca/paquete/firma, vencimiento 30/12/2026 00:00 Colombia y flujo de
+  APK único. No se añaden permisos ni dependencias. Aceptación nativa pendiente.
+
+## 2026-11-18 — Efectos de movimiento y debris, rc.12+25
+
+- Se habilita IM Destruir bloqueado y muros (§27.5d). Las mejoras Bloqueado y
+  Bloqueado exterior normales conservan el comportamiento de atravesar sin destruir.
+- StepEvaluation aporta los obstáculos atravesados; RouteEvaluation ofrece un plan
+  inmutable de cambios solo para rutas válidas. Cada paso actualiza un snapshot
+  temporal antes del siguiente; el aterrizaje se comprueba tras destruir. Predicción
+  de visión/alcance usa ese mundo futuro. El escenario real se conserva hasta confirmar.
+- Confirmación fresca y atómica de posición, terreno, muros y escombros en un solo
+  historial. Cancelar, ruta inválida, velocidad excedida, efecto sin soporte o edición
+  concurrente no aplican el plan. Normal/Indoor/altura y bases mantienen su alcance.
+- Debris es un marcador separado, visible como Db/piedras y efectivo como H; conserva
+  el terreno base debajo. Destruir B cambia esa base a despejado; destruir muro no
+  destruye B vecino no atravesado. Se generan debris en los lados no bloqueados.
+  Borrar escombros retira solo el marcador; Deshacer reconstruye la operación completa.
+- Diagonales conservan el lado menos restrictivo; a igualdad se minimiza destrucción
+  y se desempata canónicamente, visible en el plan. No se afectan los cuatro lados
+  por vértice. No existe todavía selección manual de laterales equivalentes.
+- BFS especial para destrucción con clave posición/obstáculos destruidos, límite
+  explícito de 4096 prefijos y alternativas completas revalidadas. Prefijos marcados
+  no confirmables; BFS previo se conserva para el resto de figuras.
+- JSON escenario 5/capas 4: debrisCells canónicas, únicas y acotadas; lee 1–4 sin
+  debris. Respaldo schema4 admitido en archivos reales antes de guardar. Modelos de
+  biblioteca, ejercicios, exportación y diagnósticos preservan los mismos datos.
+- Se corrige Borrar todo sobre casillas con solo Indoor o debris, sin tipo base.
+  Marca, paquete, firma, vencimiento y política de APK único se conservan.

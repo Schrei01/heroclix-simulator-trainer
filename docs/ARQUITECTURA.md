@@ -17,6 +17,13 @@ no importa Flutter, infraestructura ni plataforma.
 | `android/` | Adaptación nativa, identidad y configuración de build |
 | `test/` | Contratos de dominio y pruebas de widgets |
 
+Desde la etapa 1 de Priority, `domain/priority` contiene un motor independiente
+para el formato personalizado de partidas físicas. Sus estados son inmutables;
+`PriorityEngine` valida comandos y devuelve partida/eventos por transición. No
+depende del tablero, Flutter, plataforma ni persistencia y todavía no se conecta
+a la navegación. Contrato en `lib/domain/priority/README.md` y avance en
+[PRIORITY_PLAN.md](PRIORITY_PLAN.md).
+
 `domain/board` contiene BoardDimensions, CellCoordinate, BoardGeometry,
 BoardCamera y ViewportSize. characters implementa figuras, equipos y ocupación.
 terrain implementa terrenos, muros normalizados y geometría de edición. geometry
@@ -409,3 +416,40 @@ las listas de la ficha. Targeting usa el mismo patrón de expansión que Movemen
 SetSightEndpoint limpia extremos/selección cuando coinciden en la herramienta
 Visión. No cambia la geometría pura ni el conteo cero de Distancia. La barra de
 cámara deja de repetir el dictamen: conserva referencias e instrucciones.
+## Equipos y trazos — rc.6
+
+CharacterDraft.withTeam conserva todos sus campos. BoardSession.cycleCharacterTeam
+usa el orden de teams y el comando de edición existente. BoardCanvas cuenta pares
+de toques solo en Personajes y sobre figuras existentes; arrastre, pinza y creación
+limpian ese extremo transitorio. Un único equipo no modifica contenido ni historial.
+
+LayerDraft incluye TerrainBrush. Elevado usa cellsAlong y un conjunto de casillas;
+TerrainLayer.raiseElevations calcula cada destino desde la capa original y filtra
+transiciones solo al finalizar. BoardSession comprueba entonces las bases completas.
+BoardPainter presenta los niveles de destino sin mantener el badge antiguo debajo.
+No hay mutaciones parciales durante los movimientos del puntero.
+
+EraseLayer.all es el valor inicial y se restablece al activar Borrar. EraseCells
+elimina las capas de las casillas tocadas, muros/transiciones incidentes y figuras
+completas que tocan alguna. Conserva lo demás y devuelve la sesión original si no
+hay contenido que quitar. El mismo historial agrupa cada trazo; las variantes de
+borrado por capa siguen disponibles explícitamente.
+
+ToolHint recibe un registro transitorio con identidad y texto del controlador.
+Su widget posee un Timer de cuatro segundos, se renueva con identidad nueva y se
+cancela al desmontar. Desde rc.7 se muestra sin rotación, en una columna de texto
+derecho con ajuste de líneas y bloques. IgnorePointer lo ubica al borde derecho
+sin cambiar geometría ni interceptar gestos. El alto limita las líneas visibles y
+la semántica conserva el texto completo. No se persiste ni se exporta al PNG.
+
+## Identidad TeamFight: GridLab — rc.8
+
+AppInfo.name e iconAsset centralizan la marca Flutter. MaterialApp, HomeScreen,
+AboutScreen y licencias los reutilizan. El recurso PNG está declarado en pubspec;
+Home/Acerca de lo muestran como imagen decorativa junto al nombre accesible.
+
+AndroidManifest usa app_name y mipmap/ic_launcher + ic_launcher_round. Los PNG por
+densidad y XML anydpi-v26 componen la identidad normal/adaptable/monocromática.
+El ID/namespace/canales no cambian, manteniendo la instalación y almacenamiento.
+Detalles de origen y recursos en IDENTIDAD.md. Recursos de tienda separados del
+bundle Flutter en distribution/google-play/; .kotlin generado excluido de Git.

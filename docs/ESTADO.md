@@ -1,96 +1,97 @@
-# Estado actual — incrementos del Editor
+# Estado actual — TeamFight: GridLab
 
-2026-11-17 (America/Bogota). **1.0.0-rc.5+18**, candidata debug.
-Rama `codex/editor-terrain-gestures`, sobre `53dc6df` (rc.4). Código: f17ccf2.
-Informe anterior: [ENTREGA_RC4.md](ENTREGA_RC4.md).
+2026-11-18 (America/Bogota). **1.0.0-rc.12+25**, beta candidata debug.
+Rama `codex/movement-destruction`, base `9d272e6`.
+Informe anterior: [ENTREGA_RC11.md](ENTREGA_RC11.md).
 
-## Cambios operativos
+## Destrucción confirmada
 
-- Cada escenario nuevo empieza 10×10. Biblioteca/importación mantienen el tamaño
-  guardado. Continúa la sesión temporal, con figuras nuevas desde A al reiniciar.
-- Terrenos integra cinco opciones en el mismo lugar bajo el mapa: Bloqueado,
-  Obstaculizado, Elevado, Transición, Despejado. Caben juntas en los tamaños probados;
-  con poco espacio se muestran iconos con tooltip y etiquetas accesibles.
-- Elevado: tocar suelo crea E2; cada toque siguiente sube un nivel, hasta E40.
-  Despejado conserva elevación y transiciones. Coordenadas permite edición avanzada.
-- Transición: tocar dos vecinos ortogonales de distinto nivel y sin muro compartido.
-  Solo tras validar se dibujan los triángulos. Casilla repetida, diagonal, salto,
-  igual nivel o muro muestran error sin edición parcial. Cambiar pincel limpia el
-  primer extremo pendiente. Sin nuevas reglas ni ampliación de cobertura.
-- Seleccionar: volver a tocar la misma casilla pregunta si quieres borrar; prioridad
-  personaje, tipo de terreno, elevación. Las transiciones restantes también pueden
-  borrarse. Cancelar conserva datos; confirmar modifica una capa y permite Deshacer.
-- Borrar permite figura, terreno, elevación, transición y muro. Quitar terreno
-  conserva alturas; quitar altura vuelve a suelo y retira transiciones que dejan
-  de unir niveles distintos. Quitar transición conserva terreno y alturas.
-- Ficha sin checkbox de estudio; se retira allowStudy de los comandos. Crear,
-  duplicar, mover o editar hacia bloqueado y pintarlo bajo figuras se rechazan.
-  Los documentos antiguos incompatibles se leen sin pérdida, con aviso para corregirlos.
-- Improved Targeting se despliega como Movement. Se oculta Otra excepción en ambas
-  listas, conservando sus IDs/datos heredados y el resultado No evaluado.
-- Dictamen solo arriba del mapa; abajo quedan instrucciones y referencias. Elegir
-  mismo origen/destino en Visión limpia extremos, selección, marcas y resultado.
-  Distancia conserva la medición cero; el motor geométrico no cambia.
-- La cámara conserva el ajuste automático al cambiar el espacio del mapa por las
-  herramientas. Un zoom/pan manual conserva su centro/escala. Corrige A1 recortada
-  al abrir Terrenos con el nuevo tablero 10×10.
+- IM Destruir bloqueado y muros (§27.5d) pasa a estar soportada. IM Bloqueado e
+  IM Bloqueado exterior normales siguen permitiendo atravesar sin destruir.
+- La ruta se simula por pasos sobre una copia: B atravesado se destruye y genera
+  debris H; un muro se retira y genera debris en ambos lados salvo B que continúe
+  intacto. Se mantienen elevación e Indoor y se consideran los cambios en pasos
+  posteriores, aterrizaje, adyacencia y comparación futura de visión/alcance.
+- El destino forma parte de lo atravesado (§10.4): puede terminar en la casilla B
+  recién destruida porque ya es H, si cumple las demás restricciones. El reposicionado
+  libre sigue impidiendo poner personajes en B intacto. El perfil de base/altura,
+  separación, velocidad y poderes no soportados conserva sus comprobaciones.
+- El escenario real permanece intacto durante ensayo/búsqueda. Barra e informe
+  enumeran cambios previstos. Confirmar revalida y aplica posición/capas juntas en
+  una operación; Deshacer/Rehacer recupera posición, B, muros y marcadores. Una ruta
+  inválida/cancelada, un efecto sin soporte o escenario modificado no aplica el plan.
+- Db/piedras identifica debris y funciona como H para visión/movimiento. Es un marcador
+  separado del tipo base: retirar debris sobre agua recupera agua; B destruido queda
+  despejado y el muro no reaparece. Borrar escombros solo retira ese marcador;
+  Borrar todo limpia todas las capas locales. Cambiar altura o Indoor conserva debris.
+- Se corrige Borrar todo en una casilla con solo Indoor/debris sin terreno base.
+  Retirar un marcador no puede descubrir B bajo una figura mediante edición.
+- En diagonal se conserva el lado menos restrictivo, luego menor destrucción y un
+  desempate canónico visible en el plan. No se destruyen todos los laterales por
+  contacto con el vértice. No hay selector manual de laterales equivalentes todavía.
+- Búsqueda de destrucción: estado incluye obstáculos destruidos y límite de 4096
+  prefijos; solo devuelve rutas completas revalidadas y avisa si se alcanza el límite.
+  Un prefijo no es confirmable. El buscador anterior se conserva para otras figuras.
+- Revisión oficial 07.01.2026: §10.4–5/16.8a/16.9a–c/17.14d/27.5b–d. Alcance y
+  decisiones en REGLAS.md y MATRIZ_MOVIMIENTO.md. No se modelan objetos portables,
+  marcadores de poderes con retirada/vencimiento ni acciones CLOSE/RANGE Destroy.
+
+## Guardado y compatibilidad
+
+- JSON escenario 5/capas 4 añade debrisCells, separadas del terreno base, con
+  coordenadas canónicas, únicas y dentro de límites. Lee escenarios 1–4 sin debris,
+  conservando terreno, Indoor, personajes, capacidades y alturas.
+- Guardar una versión anterior hace primero respaldo schema1/schema2/schema3/schema4,
+  también working. Adaptador real y prueba de migración cubren versiones 2/3/4;
+  las pruebas de 1 se conservan. Un fallo de copia preserva el original.
+- Biblioteca, ejercicios, consultas, diagnósticos y PNG comparten los mismos datos.
+  Las versiones antiguas no admiten formato 5; no se eliminan campos para fingirlo.
+- Se conserva marca, paquete, firma y vencimiento 30/12/2026 00:00 Colombia. Sigue
+  offline, sin nuevas dependencias ni permisos. El vencimiento usa el reloj local.
 
 ## Verificación ejecutada
 
-Flutter 3.50.0, Dart 3.14.0, material_ui 1.11.0, Windows. Sin dependencias, permisos
-ni esquemas nuevos. No se presenta como aceptación en Android real.
+Flutter 3.50.0, Dart 3.14.0, material_ui 1.11.0, Windows.
 
-| Comando | Resultado |
+| Comprobación | Resultado |
 | --- | --- |
-| `dart format --output=none --set-exit-if-changed lib test tool` | 153 archivos, 0 cambios |
-| `flutter --no-version-check analyze --no-pub` | No issues found, 3,9 s |
-| `flutter --no-version-check test --no-pub --reporter expanded` | **473 aprobadas**, 226 s |
-| `flutter --no-version-check test tool/preview_test.dart --no-pub --reporter expanded` | **94 renders aprobados**, 56 s |
-| `flutter --no-version-check build apk --debug --no-pub` | Correcto; Gradle 55,2 s |
-| `aapt dump badging` / `dump permissions` | 1.0.0-rc.5/código 18, SDK 24/36; sin INTERNET ni almacenamiento amplio |
-| `apksigner verify --verbose --print-certs` | Verifies; firma v2 válida y mismo certificado |
+| dart format --output=none --set-exit-if-changed lib test tool | 162 archivos, 0 cambios |
+| flutter --no-version-check analyze --no-pub | No issues found, 9,4 s |
+| flutter --no-version-check test --no-pub --reporter expanded | **533 aprobadas**, 5 min 12 s |
+| flutter test tool/preview_test.dart --no-pub --reporter expanded | **116 renders aprobados**, 2 min 10 s |
+| ./tool/build_apk.ps1 | Correcto, Gradle 143,5 s; copia/hash válidos; 1 APK anterior eliminado |
+| aapt + apksigner | Identidad/versión/SDK/firma v2 válidos, mismo certificado; sin INTERNET |
 
-Nuevo editor_increments_test: 14 casos con gestos reales de widgets, confirmación/
-cancelación, prioridad y conservación de capas, E2/E3, cinco pares inválidos,
-transiciones válidas/Deshacer, ficha, visión limpia y tres tamaños/escala al 300 %.
-Las regresiones anteriores se conservan, actualizando los contratos de estudio y
-visión iguales a los nuevos requisitos. Los casos geométricos/de límites 4×4 se
-hacen explícitos en sus fixtures; el Editor y los nuevos casos usan 10×10 real.
-Los tests de PNG/JSON siguen comprobando documentos antiguos, incluidos datos
-incompatibles heredados; no se habilita crear esos datos desde la UI.
+Veinte pruebas nuevas cubren diferencia IM normal/destructiva, B de destino, muros,
+vecinos B intactos, altura/Indoor, diagonales libres y con obstáculos, base 2×2,
+bucles, rutas inválidas/efectos sin soporte, búsqueda, aplicación atómica/Deshacer,
+visión futura, retirada de debris sobre agua, JSON inválido/ida-vuelta, confirmación
+por trazo, cero pasos/quitar paso, edición que invalida plan, altura sobre marcador y
+borrado de capas locales puras. Los contratos M19/M20 mantienen invalidez de destinos
+ilegales antes del No evaluado de otra parte de base. Formatos y pruebas previos se
+actualizan al esquema 5, sin cambiar sus expectativas reglamentarias ordinarias.
 
-Renders en build/previews/editor-increments/: se mantienen los 87 anteriores y
-se añaden siete (paleta vertical/horizontal/compacta, transición válida/errónea,
-confirmación de borrado y Targeting expandido). Revisados visualmente; el caso
-compacto es 320×320 con texto al 300 %. La navegación de previews apunta al botón
-real visible, con advertencias de hit test fatales. No se ocultan fallos de render.
-En altura extrema el mapa necesita zoom/pan para inspeccionar casillas; los cinco
-terrenos y las herramientas siguen accesibles. Son capturas Flutter, no Android.
+Capturas revisadas en build/previews/movement-destruction/: antes/después de
+confirmar, informe y compacto, más recorridos previos. Logs finales:
+build/test-destruction-full.log, build/analyze-destruction-final.log,
+build/render-destruction.log y build/build-destruction.log.
+Metadatos en build/verification/movement-destruction/. No son pruebas Android.
 
-## APK
+## APK entregable único
 
-- `build/releases/heroclix-1.0.0-rc.5-debug.apk`, 158514269 bytes.
-- SHA-256: `A08B647BC228BFA71BD3CE204A7CCAC54923BE32B4540E637A592E9642D5A3C5`.
-- Copia archivada y salida estándar con el mismo hash; anteriores conservadas.
-- Paquete `com.valinor.heroclixtrainer`, 1.0.0-rc.5/código 18, SDK mínimo 24/objetivo 36.
-- Certificado SHA-256: `57081ee91137c216eff437a7c75ac5bb6f552bc29167e63370d85628fc82ac54`.
-- Firma debug conservada. Instalar encima, sin desinstalar, para mantener biblioteca
-  y progreso. Licencias NOTICES.Z comprobadas; binarios y claves fuera de Git.
+- build/releases/teamfight-gridlab-1.0.0-rc.12-debug.apk, **158947015 bytes**.
+- SHA-256: `6BA886945582740491C370BC9139002D1452BD5FF622E1FBF555420FCDABE140`.
+- Paquete com.valinor.heroclixtrainer, nombre TeamFight: GridLab, código 25;
+  SDK mínimo 24, objetivo/compilación 36.
+- Certificado SHA-256 conservado:
+  `57081ee91137c216eff437a7c75ac5bb6f552bc29167e63370d85628fc82ac54`.
+- Instalar encima sin desinstalar para conservar datos de la beta anterior con igual
+  firma. Rc.11 se eliminó solo después de validar rc.12. Las salidas técnicas actuales
+  permanecen en build/app/; no se modificó el flujo de APK ni se usó flutter clean.
 
-## Pendientes y límites
+## Pendiente en Android
 
-Recorrido nativo actualizado en ANDROID.md: instalación, gestos, giro/texto, mismas
-capas en PNG/JSON, biblioteca/progreso y nueva sesión tras cierre. Instalación,
-selectores, TalkBack, radios apagadas, cierre real y rendimiento siguen pendientes.
-Se mantiene la decisión del usuario de continuar sin teléfono. Sin claves release,
-no se genera release ni se declara estable.
-
-Las transiciones admitidas siguen siendo de altura, con los límites documentados;
-no se añaden pasajes del mismo nivel ni reglas de marcadores durante set-up. Las
-bases no pueden quedar repartidas entre alturas. Un borrado o incremento que lo
-provocaría se rechaza y explica; puede editarse la región completa con Coordenadas.
-No evaluado conserva incertidumbre y el dictamen no autoriza ataques completos.
-
-README/README_FINAL, Guía/leyenda, arquitectura, decisiones, reglas, Android, hoja
-de ruta y matriz de aceptación actualizados. AC21/23 adaptados; AC25–28 añadidos.
-Rc.4 archivada en ENTREGA_RC4.md. Logs y capturas en build/, excluidos de Git.
+Se mantiene la decisión de continuar sin teléfono. Falta verificar actualización
+con biblioteca antigua, destrucción por gestos reales, giro/TalkBack, selectores,
+rendimiento y vencimiento nativo. Recorrido en docs/ANDROID.md. La preparación de
+firma/publicación de Play queda aparte; continúa candidata debug, no release estable.

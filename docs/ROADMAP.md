@@ -25,8 +25,13 @@ Alcance declarado y objetivos se incorporan en 07. Entrenador está disponible
 desde 10. Movimiento tiene un perfil verificado desde 09; maniobras y excepciones
 fuera de las matrices de capacidades permanecen pendientes.
 
-Fuera de alcance: partidas completas, dados, daño, turnos, puntuación completa,
+Fuera de alcance del editor: partidas completas, dados, daño, turnos, puntuación completa,
 cuentas, backend, servicios de IA externos y funciones online.
+
+Incremento Priority (2026-11-25): motor independiente del formato personalizado
+para partidas físicas, limitado a la etapa 1 autorizada. Plan, decisiones y
+resultados en [PRIORITY_PLAN.md](PRIORITY_PLAN.md). Su implementación no habilita
+una nueva sección de interfaz ni cambia las funciones del editor.
 
 Actualización posterior a 12: ajustes de edición solicitados por el usuario,
 1.0.0-rc.2+15 en `codex/editor-quick-tools`. Paleta de terreno, altura propuesta 2
@@ -44,9 +49,25 @@ sus consultas y ensayos en Editor. Transiciones con dos triángulos numerados,
 uno por casilla conectada; elevadas normales E2/E3. Sin nuevas reglas ni formatos.
 Entrega rc.3 archivada en ENTREGA_RC3.md; aceptación Android pendiente.
 
-Actualización actual: **1.0.0-rc.5+18**, rama `codex/editor-terrain-gestures`.
+Actualización rc.5: **1.0.0-rc.5+18**, rama `codex/editor-terrain-gestures`.
 Inicio 10×10, Terrenos con cinco pinceles, E2/E3 por toque, transición por par,
 borrado de alturas/transiciones y confirmación por segundo toque. Ficha con Targeting
 plegable, sin permiso sobre bloqueado ni Other; visión igual limpia y dictamen solo
 arriba. Ajuste automático del mapa mientras no haya cámara manual. Rc.4 archivada
 en ENTREGA_RC4.md. Sin nuevas reglas/esquemas; aceptación Android pendiente.
+
+Actualización rc.6: **1.0.0-rc.6+19**, rama `codex/editor-brush-teams`.
+Personajes cambia de equipo por pares de toques; avisos verticales laterales de
+cuatro segundos; Elevado por trazo mixto y Borrar todo por trazo. Deshacer/Rehacer
+y cancelación/pinza conservados. Rc.5 archivada en ENTREGA_RC5.md. Sin nuevas reglas
+ni formatos; aceptación Android pendiente.
+
+Actualización rc.7: **1.0.0-rc.7+20**, rama `codex/upright-tool-hints`.
+Aviso lateral con texto derecho, en columna de arriba hacia abajo, conservando
+cuatro segundos y paso de gestos. Corrección de presentación; rc.6 archivada en
+ENTREGA_RC6.md. Aceptación Android pendiente.
+
+Actualización actual: **TeamFight: GridLab 1.0.0-rc.8+21**, rama
+`codex/teamfight-gridlab-brand`. Nombre e iconos aportados integrados en Android e
+interfaz, con recursos de Google Play preparados. Firma, ID y datos conservados.
+Rc.7 archivada en ENTREGA_RC7.md. Aceptación Android pendiente.

@@ -59,24 +59,45 @@ final class BoardPainter extends CustomPainter {
     canvas.drawRect(grid, Paint()..color = AppTheme.surface);
     final terrain = session?.terrain;
     if (terrain != null) {
-      for (final entry in terrain.cells.entries) {
-        final type = entry.value.type;
+      for (final cellKey in {...terrain.cells.keys, ...terrain.debrisCells}) {
+        final type = terrain.at(cellKey).type;
+        final debris = terrain.debrisCells.contains(cellKey);
         if (type == TerrainType.clear) continue;
-        final rect = _cellRect(entry.key);
+        final rect = _cellRect(cellKey);
         final blocking = type == TerrainType.blocking;
+        final water = type == TerrainType.water;
         canvas.drawRect(
           rect,
           Paint()
             ..color = blocking
                 ? const Color(0xff524229)
+                : water
+                ? const Color(0xff193e60)
                 : const Color(0xff25453c),
         );
         canvas.save();
         canvas.clipRect(rect.deflate(1));
         final pattern = Paint()
-          ..color = blocking ? const Color(0xffe9bd6b) : const Color(0xff87d8c0)
+          ..color = blocking
+              ? const Color(0xffe9bd6b)
+              : water
+              ? const Color(0xff79c9ff)
+              : const Color(0xff87d8c0)
           ..strokeWidth = 1.5;
-        if (blocking) {
+        if (debris) {
+          for (double x = rect.left + 9; x < rect.right; x += 17) {
+            for (double y = rect.top + 13; y < rect.bottom; y += 17) {
+              canvas.drawPath(
+                Path()
+                  ..moveTo(x - 4, y + 3)
+                  ..lineTo(x, y - 3)
+                  ..lineTo(x + 5, y + 3)
+                  ..close(),
+                pattern..color = const Color(0xffceb794),
+              );
+            }
+          }
+        } else if (blocking) {
           for (double x = rect.left - cell; x < rect.right; x += 12) {
             canvas.drawLine(
               Offset(x, rect.top),
@@ -84,6 +105,16 @@ final class BoardPainter extends CustomPainter {
               pattern,
             );
           }
+        } else if (water) {
+          final waves = Path();
+          for (double y = rect.top + 16; y < rect.bottom; y += 16) {
+            waves.moveTo(rect.left + 4, y);
+            for (double x = rect.left + 4; x + 12 < rect.right; x += 12) {
+              waves.quadraticBezierTo(x + 3, y - 4, x + 6, y);
+              waves.quadraticBezierTo(x + 9, y + 4, x + 12, y);
+            }
+          }
+          canvas.drawPath(waves, pattern..style = PaintingStyle.stroke);
         } else {
           for (double x = rect.left + 8; x < rect.right; x += 12) {
             for (double y = rect.top + 8; y < rect.bottom; y += 12) {
@@ -92,14 +123,21 @@ final class BoardPainter extends CustomPainter {
           }
         }
         canvas.restore();
+        if (water) _waterBoundary(canvas, cellKey, rect, terrain);
         canvas.drawRect(
-          Rect.fromLTWH(rect.left + 3, rect.top + 3, 14, 15),
+          Rect.fromLTWH(rect.left + 3, rect.top + 3, debris ? 23 : 14, 15),
           Paint()..color = AppTheme.background,
         );
         _text(
           canvas,
-          blocking ? 'B' : 'H',
-          Offset(rect.left + 10, rect.top + 10),
+          debris
+              ? 'Db'
+              : blocking
+              ? 'B'
+              : water
+              ? 'A'
+              : 'H',
+          Offset(rect.left + (debris ? 14 : 10), rect.top + 10),
           fontSize: 11,
           color: Colors.white,
         );
@@ -248,6 +286,7 @@ final class BoardPainter extends CustomPainter {
     }
     if (state != null) {
       _elevations(canvas, state);
+      _indoorBoundaries(canvas, state.terrain);
       for (final edge in state.walls.edges.values) {
         _wall(canvas, edge, const Color(0xfff5d28b));
       }
@@ -262,11 +301,18 @@ final class BoardPainter extends CustomPainter {
     if (draft != null) {
       final incompatible =
           draft.tool == EditorTool.terrain &&
+          draft.brush.type == TerrainType.blocking &&
           state != null &&
           state.blockingConflicts(draft.cells, draft.type).isNotEmpty;
       final color =
           incompatible || draft.tool == EditorTool.erase || draft.eraseWalls
           ? const Color(0xffff8a80)
+          : draft.tool == EditorTool.terrain &&
+                draft.brush == TerrainBrush.water
+          ? const Color(0xff79c9ff)
+          : draft.tool == EditorTool.terrain &&
+                draft.brush == TerrainBrush.indoor
+          ? const Color(0xffffde59)
           : const Color(0xff69f0ae);
       for (final cell in draft.cells) {
         final rect = _cellRect(cell).deflate(1);
@@ -278,6 +324,20 @@ final class BoardPainter extends CustomPainter {
             ..strokeWidth = 2
             ..style = PaintingStyle.stroke,
         );
+      }
+      if (draft.tool == EditorTool.terrain &&
+          draft.brush == TerrainBrush.elevated &&
+          state != null) {
+        for (final cell in draft.cells) {
+          final next = state.terrain.at(cell).level + 1;
+          _text(
+            canvas,
+            next > 40 ? 'E40 máx.' : 'E$next',
+            _cellRect(cell).center,
+            fontSize: 16,
+            color: Colors.white,
+          );
+        }
       }
       for (final edge in draft.edges) {
         _wall(canvas, edge, color);
@@ -317,6 +377,79 @@ final class BoardPainter extends CustomPainter {
     BoardGeometry.cellExtent,
     BoardGeometry.cellExtent,
   );
+  void _indoorBoundaries(Canvas canvas, TerrainLayer terrain) {
+    final yellow = Paint()
+      ..color = const Color(0xffffde59)
+      ..strokeWidth = 3;
+    if (terrain.environment == MapEnvironment.indoor) {
+      canvas.drawRect(
+        Rect.fromLTWH(
+          BoardGeometry.gutter,
+          BoardGeometry.gutter,
+          dimensions.columns * BoardGeometry.cellExtent,
+          dimensions.rows * BoardGeometry.cellExtent,
+        ).deflate(3),
+        yellow..style = PaintingStyle.stroke,
+      );
+      return;
+    }
+    bool inside(int col, int row) =>
+        col >= 0 &&
+        row >= 0 &&
+        col < dimensions.columns &&
+        row < dimensions.rows &&
+        terrain.isIndoor(CellCoordinate(column: col, row: row));
+    for (final cell in terrain.indoorCells) {
+      final rect = _cellRect(cell).deflate(4);
+      for (final (dx, dy, from, to) in [
+        (-1, 0, rect.topLeft, rect.bottomLeft),
+        (1, 0, rect.topRight, rect.bottomRight),
+        (0, -1, rect.topLeft, rect.topRight),
+        (0, 1, rect.bottomLeft, rect.bottomRight),
+      ]) {
+        if (!inside(cell.column + dx, cell.row + dy)) {
+          canvas.drawLine(from, to, yellow);
+        }
+      }
+      _text(
+        canvas,
+        'I',
+        Offset(rect.right - 7, rect.top + 7),
+        fontSize: 11,
+        color: yellow.color,
+      );
+    }
+  }
+
+  void _waterBoundary(
+    Canvas canvas,
+    CellCoordinate cell,
+    Rect rect,
+    TerrainLayer terrain,
+  ) {
+    bool isWater(int column, int row) =>
+        column >= 0 &&
+        row >= 0 &&
+        column < dimensions.columns &&
+        row < dimensions.rows &&
+        terrain.at(CellCoordinate(column: column, row: row)).type ==
+            TerrainType.water;
+    final border = Paint()
+      ..color = const Color(0xff79c9ff)
+      ..strokeWidth = 3;
+    final inset = rect.deflate(1.5);
+    for (final (dx, dy, from, to) in [
+      (-1, 0, inset.topLeft, inset.bottomLeft),
+      (1, 0, inset.topRight, inset.bottomRight),
+      (0, -1, inset.topLeft, inset.topRight),
+      (0, 1, inset.bottomLeft, inset.bottomRight),
+    ]) {
+      if (!isWater(cell.column + dx, cell.row + dy)) {
+        canvas.drawLine(from, to, border);
+      }
+    }
+  }
+
   void _elevations(Canvas canvas, BoardSession state) {
     const extent = BoardGeometry.cellExtent, gutter = BoardGeometry.gutter;
     final transitionCells = {
@@ -330,7 +463,11 @@ final class BoardPainter extends CustomPainter {
         final c = CellCoordinate(row: row, column: col);
         final level = state.terrain.at(c).level;
         final rect = _cellRect(c);
-        if (level > 1 && !transitionCells.contains(c)) {
+        final raising =
+            layerPreview?.tool == EditorTool.terrain &&
+            layerPreview?.brush == TerrainBrush.elevated &&
+            layerPreview!.cells.contains(c);
+        if (level > 1 && !transitionCells.contains(c) && !raising) {
           final badge = Rect.fromLTWH(
             rect.right - 31,
             rect.bottom - 19,

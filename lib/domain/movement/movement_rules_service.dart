@@ -116,8 +116,21 @@ final class MovementRulesService {
     CellCoordinate a,
     CellCoordinate b,
   ) {
-    final ignoresB = f.movementAbilities.contains(MovementAbility.blocking);
-    if (!ignoresB && (_blocked(w, b) || _wall(w, a, b))) {
+    final destroys = f.movementAbilities.contains(
+      MovementAbility.destroyBlocking,
+    );
+    final ignoresB =
+        f.movementAbilities.contains(MovementAbility.blocking) || destroys;
+    final outdoor = f.movementAbilities.contains(
+      MovementAbility.outdoorBlocking,
+    );
+    final ignoresTerrain = ignoresB || (outdoor && !w.terrain.isIndoor(b));
+    // Un muro que coincide con un límite amarillo es Indoor (§15.1c).
+    final ignoresWall =
+        ignoresB ||
+        (outdoor && !w.terrain.isIndoor(a) && !w.terrain.isIndoor(b));
+    if ((!ignoresTerrain && _blocked(w, b)) ||
+        (!ignoresWall && _wall(w, a, b))) {
       return StepEvaluation(
         MovementStatus.invalid,
         _wall(w, a, b) ? 'Muro cruzado.' : 'Terreno bloqueado en ${b.label}.',
@@ -147,21 +160,33 @@ final class MovementRulesService {
           ? 'Cruza borde de altura: debe terminar aquí.'
           : changed && transition
           ? 'Cruza las dos casillas conectadas de transición.'
+          : destroys && (_blocked(w, b) || _wall(w, a, b))
+          ? 'IM Destruir bloqueado atraviesa y destruye B/muro; genera escombros.'
           : ignoresB && (_blocked(w, b) || _wall(w, a, b))
           ? 'IM Bloqueado ignora B/muro para pasar.'
+          : outdoor && (_blocked(w, b) || _wall(w, a, b))
+          ? 'IM Bloqueado exterior permite atravesar B/muro Outdoor.'
           : changed && f.movementAbilities.contains(MovementAbility.elevated)
           ? 'IM Elevación permite continuar al cruzar altura.'
           : occupant != null
           ? 'Paso por figura permitido; no permite terminar ocupado.'
           : w.terrain.at(b).type == TerrainType.hindering
           ? 'H no añade costo de movimiento.'
+          : w.terrain.at(b).type == TerrainType.water
+          ? 'Agua se considera despejado: sin costo adicional.'
+          : w.terrain.isIndoor(b)
+          ? 'Paso Indoor: el límite amarillo no añade costo ni es un muro.'
           : 'Paso permitido.',
       stop
           ? '16.5a'
           : changed && transition
           ? '16.7b'
+          : destroys && (_blocked(w, b) || _wall(w, a, b))
+          ? '27.5d'
           : ignoresB && (_blocked(w, b) || _wall(w, a, b))
           ? '27.5b'
+          : outdoor && (_blocked(w, b) || _wall(w, a, b))
+          ? '27.5c'
           : changed && f.movementAbilities.contains(MovementAbility.elevated)
           ? '27.5a'
           : occupant != null
@@ -172,8 +197,16 @@ final class MovementRulesService {
                 : '27.5f')
           : w.terrain.at(b).type == TerrainType.hindering
           ? '16.2a'
+          : w.terrain.at(b).type == TerrainType.water
+          ? '16.6'
+          : w.terrain.isIndoor(b)
+          ? '15.1'
           : '10.2',
       stop: stop,
+      destroyedBlocking: destroys && _blocked(w, b) ? [b] : const [],
+      destroyedWalls: destroys && _wall(w, a, b)
+          ? [EdgeWall.between(a, b)]
+          : const [],
     );
   }
 
@@ -226,6 +259,14 @@ final class MovementRulesService {
                     : 'Esquina por el lado menos restrictivo.',
                 '16.8a',
                 stop: stop,
+                destroyedBlocking: [
+                  ...first.destroyedBlocking,
+                  ...last.destroyedBlocking,
+                ],
+                destroyedWalls: [
+                  ...first.destroyedWalls,
+                  ...last.destroyedWalls,
+                ],
               ),
       );
     }
@@ -233,8 +274,8 @@ final class MovementRulesService {
       for (var i = 0; i < alternatives.length; i++)
         '${sides[i].label}: ${alternatives[i].reason}',
     ];
-    alternatives.sort(
-      (a, b) =>
+    alternatives.sort((a, b) {
+      final restriction =
           (a.status == MovementStatus.invalid
                   ? 2
                   : a.stop
@@ -246,14 +287,27 @@ final class MovementRulesService {
                     : b.stop
                     ? 1
                     : 0,
-              ),
-    );
+              );
+      if (restriction != 0) return restriction;
+      // A igualdad de movimiento, prefiere el lado sin destrucción; desempate
+      // canónico visible en el informe antes de confirmar (§16.8a).
+      final count = (a.destroyedBlocking.length + a.destroyedWalls.length)
+          .compareTo(b.destroyedBlocking.length + b.destroyedWalls.length);
+      if (count != 0) return count;
+      String key(StepEvaluation e) => ([
+        ...e.destroyedBlocking.map((c) => c.label),
+        ...e.destroyedWalls.map((w) => w.id),
+      ]..sort()).join('|');
+      return key(a).compareTo(key(b));
+    });
     final best = alternatives.first;
     return StepEvaluation(
       best.status,
       '${best.reason} Lados: ${descriptions.join(' / ')}',
       best.status == MovementStatus.invalid ? '16.8a' : best.rule,
       stop: best.stop,
+      destroyedBlocking: best.destroyedBlocking,
+      destroyedWalls: best.destroyedWalls,
     );
   }
 
@@ -309,9 +363,12 @@ final class MovementRulesService {
     String id,
     Iterable<CellCoordinate> path, {
     MovementContext context = const MovementContext(),
+    bool prefix = false,
   }) {
     final route = List<CellCoordinate>.of(path), f = figure(w, id);
     final events = <MovementEvent>[];
+    var current = w, mustStop = false;
+    final destroyedBlocks = <CellCoordinate>{}, destroyedWalls = <EdgeWall>{};
     RouteEvaluation finish(
       MovementStatus status,
       String reason,
@@ -334,6 +391,21 @@ final class MovementRulesService {
         budget: f?.speed ?? 0,
         reason: reason,
         events: events,
+        complete: !prefix,
+        mustStop: mustStop,
+        changes:
+            status == MovementStatus.valid &&
+                (destroyedBlocks.isNotEmpty || destroyedWalls.isNotEmpty)
+            ? MovementChanges(
+                terrain: current.terrain,
+                walls: current.walls,
+                blocking: destroyedBlocks,
+                destroyedWalls: destroyedWalls,
+                debris: current.terrain.debrisCells.difference(
+                  w.terrain.debrisCells,
+                ),
+              )
+            : null,
       );
     }
 
@@ -374,7 +446,6 @@ final class MovementRulesService {
         ),
       );
     }
-    var mustStop = false;
     for (var i = 1; i < route.length; i++) {
       if (mustStop) {
         return finish(
@@ -392,10 +463,66 @@ final class MovementRulesService {
           i,
         );
       }
-      final result = validateTranslation(w, f, route[i - 1], route[i]);
+      final result = validateTranslation(current, f, route[i - 1], route[i]);
       events.add(MovementEvent(i, route[i], result.rule, result.reason));
-      if (i == route.length - 1) {
-        final finalLanding = landing(w, f, route[i]);
+      if (result.status != MovementStatus.valid) {
+        final invalidLanding = !prefix && i == route.length - 1
+            ? landing(current, f, route[i])
+            : null;
+        if (invalidLanding != null) {
+          return finish(
+            invalidLanding.status,
+            invalidLanding.reason,
+            invalidLanding.rule,
+            i,
+          );
+        }
+        return finish(result.status, result.reason, result.rule, i);
+      }
+      if (result.destroyedBlocking.isNotEmpty ||
+          result.destroyedWalls.isNotEmpty) {
+        final newBlocks = result.destroyedBlocking
+            .where((c) => _blocked(current, c))
+            .toSet();
+        final newWalls = result.destroyedWalls
+            .where(current.walls.contains)
+            .toSet();
+        var terrain = current.terrain.destroyBlocking(newBlocks, w.dimensions);
+        final debris = {
+          for (final wall in newWalls) ...[wall.firstCell, wall.secondCell],
+        }.where((c) => terrain.at(c).type != TerrainType.blocking).toSet();
+        terrain = terrain.withDebris(debris, w.dimensions);
+        current = VisionSnapshot(
+          dimensions: w.dimensions,
+          characters: w.characters,
+          terrain: terrain,
+          walls: current.walls.edit(newWalls, w.dimensions, erase: true),
+        );
+        destroyedBlocks.addAll(newBlocks);
+        destroyedWalls.addAll(newWalls);
+        for (final c in newBlocks) {
+          events.add(
+            MovementEvent(
+              i,
+              c,
+              '27.5d / 16.9a',
+              'Simulado: B en ${c.label} destruido y convertido en debris obstaculizado. Se aplica al confirmar.',
+            ),
+          );
+        }
+        for (final wall in newWalls) {
+          events.add(
+            MovementEvent(
+              i,
+              route[i],
+              '27.5d / 16.9b',
+              'Simulado: muro ${wall.firstCell.label}–${wall.secondCell.label} eliminado; debris a ambos lados salvo casillas bloqueadas. Se aplica al confirmar.',
+            ),
+          );
+        }
+      }
+      if (!prefix && i == route.length - 1) {
+        final finalLanding = landing(current, f, route[i]);
         if (finalLanding != null) {
           return finish(
             finalLanding.status,
@@ -405,16 +532,13 @@ final class MovementRulesService {
           );
         }
       }
-      if (result.status != MovementStatus.valid) {
-        return finish(result.status, result.reason, result.rule, i);
-      }
       mustStop =
           result.stop ||
           (!f.movementAbilities.contains(MovementAbility.characters) &&
               !f.movementAbilities.contains(MovementAbility.moveThrough) &&
-              besideEnemy(w, f, route[i], referenceOnly: true));
+              besideEnemy(current, f, route[i], referenceOnly: true));
       if (!mustStop &&
-          besideEnemy(w, f, route[i], referenceOnly: true) &&
+          besideEnemy(current, f, route[i], referenceOnly: true) &&
           (f.movementAbilities.contains(MovementAbility.characters) ||
               f.movementAbilities.contains(MovementAbility.moveThrough))) {
         events.add(
@@ -439,7 +563,7 @@ final class MovementRulesService {
         );
       }
     }
-    final end = landing(w, f, route.last);
+    final end = prefix ? null : landing(current, f, route.last);
     if (end != null) {
       return finish(end.status, end.reason, end.rule, route.length - 1);
     }
@@ -464,12 +588,16 @@ final class MovementRulesService {
     }
     // Subconjunto conservador: §24.2d solo mueve la referencia. Si otra parte
     // exige una maniobra distinta, no se afirma ilegalidad general de la base.
+    final blocking = {...reference.destroyedBlocking},
+        walls = {...reference.destroyedWalls};
     for (var y = 0; y < f.footprint.height; y++) {
       for (var x = 0; x < f.footprint.width; x++) {
         if (x == 0 && y == 0) continue;
         final a = CellCoordinate(column: from.column + x, row: from.row + y);
         final b = CellCoordinate(column: to.column + x, row: to.row + y);
         final part = validateStep(w, f, a, b);
+        blocking.addAll(part.destroyedBlocking);
+        walls.addAll(part.destroyedWalls);
         if (part.status != MovementStatus.valid ||
             part.stop != reference.stop) {
           return StepEvaluation(
@@ -480,6 +608,13 @@ final class MovementRulesService {
         }
       }
     }
-    return reference;
+    return StepEvaluation(
+      reference.status,
+      reference.reason,
+      reference.rule,
+      stop: reference.stop,
+      destroyedBlocking: blocking.toList(),
+      destroyedWalls: walls.toList(),
+    );
   }
 }

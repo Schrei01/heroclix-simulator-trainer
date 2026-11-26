@@ -62,6 +62,22 @@ final class MovementAnalysis {
     _evaluate();
   }
 
+  void appendCells(Iterable<CellCoordinate> cells) {
+    if (original == null || route.isEmpty) return;
+    final next = [...route];
+    for (final cell in cells) {
+      if (next.last != cell && next.length < 102) next.add(cell);
+    }
+    replaceRoute(next);
+  }
+
+  void replaceRoute(Iterable<CellCoordinate> cells) {
+    if (original == null) return;
+    route = List.of(cells);
+    alternatives = null;
+    _evaluate();
+  }
+
   void removeLast() {
     if (route.length <= 1) return;
     route = route.sublist(0, route.length - 1);
@@ -109,8 +125,8 @@ final class MovementAnalysis {
     if (result!.status != MovementStatus.valid) return;
     final future = VisionSnapshot(
       dimensions: w.dimensions,
-      terrain: w.terrain,
-      walls: w.walls,
+      terrain: result!.changes?.terrain ?? w.terrain,
+      walls: result!.changes?.walls ?? w.walls,
       characters: w.characters.map(
         (f) => f.id == sourceId ? f.revised(f.data.at(route.last)) : f,
       ),

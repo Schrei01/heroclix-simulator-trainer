@@ -23,6 +23,10 @@ import '../../application/board/movement_analysis.dart';
 final class EditorController extends ValueNotifier<BoardSession> {
   EditorController() : super(BoardSession.initial());
   final draft = ValueNotifier<LayerDraft?>(null);
+  final toolHint = ValueNotifier<({int id, String text})?>(null);
+  int _hintId = 0;
+  void showToolHint(String text) =>
+      toolHint.value = (id: ++_hintId, text: text);
   final history = EditorHistory();
   final sight = SightProbe();
   final vision = VisionAnalysis();
@@ -161,6 +165,7 @@ final class EditorController extends ValueNotifier<BoardSession> {
   }
 
   void loadScenario(BoardSession session) {
+    toolHint.value = null;
     transitionStart = null;
     cancelDraft();
     sight.clear();
@@ -214,6 +219,8 @@ final class EditorController extends ValueNotifier<BoardSession> {
       removeWalls: removeWalls,
       erase: erase,
     );
+    if (brush != null) _showToolHelp();
+    if (erase != null) _showToolHelp();
   }
 
   @override
@@ -222,6 +229,7 @@ final class EditorController extends ValueNotifier<BoardSession> {
     workspace?.removeListener(_onWorkspace);
     workspace?.dispose();
     draft.dispose();
+    toolHint.dispose();
     super.dispose();
   }
 
@@ -242,16 +250,44 @@ final class EditorController extends ValueNotifier<BoardSession> {
       value = value.clearSelection();
     }
     cancelDraft();
-    if (tool != EditorTool.movement) movement.clear();
+    if (tool != EditorTool.movement || value.tool != tool) movement.clear();
     if (tool == EditorTool.vision) vision.enabled = true;
     if (tool == EditorTool.targets) enableTargets();
     value = value.setTool(tool);
-    if (tool == EditorTool.movement &&
-        movement.sourceId == null &&
-        value.selectedCharacterId != null) {
-      beginMovement(value.selectedCharacterId!);
+    if (tool == EditorTool.movement && movement.sourceId == null) {
+      value = value.clearSelection();
     }
+    if (tool == EditorTool.erase) {
+      value = value.configureLayers(erase: EraseLayer.all);
+    }
+    _showToolHelp();
   }
+
+  void _showToolHelp() => showToolHint(switch (value.tool) {
+    EditorTool.characters =>
+      'Vacío: crear · Dos toques: cambiar equipo · Mantén y arrastra: mover.',
+    EditorTool.select =>
+      'Toca para seleccionar · Repite para borrar · Arrastra para navegar.',
+    EditorTool.terrain => switch (value.terrainBrush) {
+      TerrainBrush.elevated => 'Traza para elevar: suelo a E2, E2 a E3 · Una subida por casilla y trazo.',
+      TerrainBrush.transition =>
+        'Toca dos vecinos de distinto nivel, sin muro entre ellos.',
+      _ => 'Traza para pintar terreno · Dos dedos para navegar.',
+    },
+    EditorTool.erase =>
+      value.eraseLayer == EraseLayer.all
+          ? 'Traza para limpiar todas las capas · Deshacer recupera el trazo.'
+          : 'Traza sobre la capa elegida · Deshacer recupera los cambios.',
+    EditorTool.walls => 'Traza sobre bordes internos para editar muros.',
+    EditorTool.vision => 'Toca origen y destino para consultar la visión.',
+    EditorTool.distance => 'Toca origen y destino para medir distancia.',
+    EditorTool.targets => 'Elige una figura y consulta sus objetivos.',
+    EditorTool.movement => 'Primero toca una figura · Después toca pasos o traza desde ella o desde el último paso · Dos dedos para navegar.',
+    EditorTool.positionAnalysis => 'Elige una figura para comparar posiciones.',
+  });
+
+  String? cycleCharacterTeam(String id) =>
+      attempt((s) => s.cycleCharacterTeam(id));
 
   void updateMovement(void Function(MovementAnalysis) change) {
     change(movement);
@@ -259,14 +295,20 @@ final class EditorController extends ValueNotifier<BoardSession> {
   }
 
   void beginMovement(String id) {
+    if (value.characters.byId(id) == null) return;
+    value = value.selectCharacter(id);
     movement.begin(value, id, rulesVersion);
     notifyListeners();
   }
 
   void movementCell(CellCoordinate cell) {
+    final figure = value.characters.at(cell);
     if (movement.sourceId == null) {
-      final f = value.characters.at(cell);
-      if (f != null) beginMovement(f.id);
+      if (figure != null) beginMovement(figure.id);
+    } else if (movement.route.length == 1 &&
+        figure != null &&
+        figure.id != movement.sourceId) {
+      beginMovement(figure.id);
     } else {
       updateMovement((m) => m.append(cell));
     }
@@ -289,7 +331,15 @@ final class EditorController extends ValueNotifier<BoardSession> {
       context: m.context,
     );
     if (!fresh.canConfirm) return fresh.reason;
-    return moveCharacter(id, fresh.route.last);
+    return attempt(
+      (s) => s
+          .replaceLayers(
+            terrain: fresh.changes?.terrain ?? s.terrain,
+            walls: fresh.changes?.walls ?? s.walls,
+            characters: s.characters,
+          )
+          .moveCharacter(id, fresh.route.last),
+    );
   }
 
   void setTargetSource(String id) {

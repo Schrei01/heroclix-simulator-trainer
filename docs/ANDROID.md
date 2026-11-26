@@ -1,9 +1,12 @@
 # Preparar, compilar e instalar en Android
 
-Candidata actual: **1.0.0-rc.5+18**. Inicio contiene Editor y Entrenador; las consultas
-y ensayos están en las herramientas del Editor. El recorrido vigente de transiciones
+Candidata actual: **TeamFight: GridLab 1.0.0-rc.12+25**. Inicio contiene Editor y Entrenador; las consultas
+y ensayos están en las herramientas del Editor. El recorrido vigente del Editor
 está al final de este documento. Los apartados identificados por etapa describen
 sus versiones históricas. Resultados efectivamente ejecutados: [ESTADO](ESTADO.md).
+
+La política actual conserva solo el APK entregable más reciente en `build/releases/`.
+Los APK históricos citados en los apartados anteriores ya no se conservan.
 
 ## Herramientas
 
@@ -45,8 +48,8 @@ flutter pub get
 dart format --output=none --set-exit-if-changed lib test
 flutter analyze
 flutter test
-flutter build apk --debug
-Get-Item -LiteralPath '.\build\app\outputs\flutter-apk\app-debug.apk'
+./tool/build_apk.ps1 | Format-List
+Get-ChildItem -LiteralPath './build/releases' -Filter '*.apk'
 ```
 
 La ruta anterior es la salida esperada, no evidencia de un APK generado. Consultar
@@ -94,8 +97,8 @@ La configuración Gradle carga exclusivamente la firma release proporcionada.
 Si falta, detiene las tareas release con un mensaje explícito.
 
 ```powershell
-flutter build apk --release
-Get-Item -LiteralPath '.\build\app\outputs\flutter-apk\app-release.apk'
+./tool/build_apk.ps1 -Mode release | Format-List
+Get-ChildItem -LiteralPath './build/releases' -Filter '*.apk'
 ```
 
 Antes de distribuir, verificar la firma con `apksigner verify --verbose` de
@@ -307,7 +310,7 @@ Pruebas Flutter/Windows y metadatos del APK en ESTADO.md. Instalación, interacc
 Android, TalkBack y rendimiento siguen pendientes; se mantiene la decisión del
 usuario de continuar sin teléfono. No se afirma aceptación nativa ni versión estable.
 
-## Incrementos del Editor — candidata actual 1.0.0-rc.5+18
+## Incrementos del Editor — candidata rc.5
 
 APK: build/releases/heroclix-1.0.0-rc.5-debug.apk. Instalar encima, sin desinstalar.
 Recorrido pendiente en dispositivo:
@@ -334,3 +337,123 @@ Recorrido pendiente en dispositivo:
 No ejecutado en Android: se mantiene la instrucción de continuar sin teléfono.
 Capturas y tests Flutter/Windows no sustituyen instalación, TalkBack, selectores,
 proceso real ni rendimiento. La entrega continúa candidata debug.
+
+## Equipos y trazos — candidata rc.6
+
+APK: build/releases/heroclix-1.0.0-rc.6-debug.apk. Instalar encima sin desinstalar.
+Recorrido todavía pendiente en dispositivo:
+
+1. Personajes: colocar A (T1), tocar dos veces la figura existente y comprobar T2;
+   otro par vuelve a T1. Crear un tercer equipo en la ficha y probar T1/T2/T3/T1.
+   Verificar nombre, base, atributos, capacidades, ID/etiqueta y Deshacer/Rehacer.
+2. Activar herramientas: ayuda vertical al lado derecho durante cuatro segundos.
+   Probar giro/texto y cambiar de herramienta antes de que expire; debe renovarse.
+   Tocar/arrastrar sobre el mapa sigue funcionando y la cámara no cambia por el aviso.
+3. Elevar: montar una fila de niveles 1/2/3, trazar de un extremo al otro y volver
+   sin levantar el dedo. La vista previa debe anunciar 2/3/4; al soltar se aplican
+   una sola vez. Otro trazo vuelve a subir. H/B se conservan; probar Deshacer/Rehacer.
+4. Probar una base múltiple: recorrer su región completa permite elevarla sin un
+   estado intermedio inválido. Una región parcial o E40 debe rechazar atómicamente.
+5. Borrar: al activarlo debe decir Borrar todo. Trazar sobre figuras, H/B, altura,
+   muros y transiciones debe dejar esas casillas en suelo despejado. Una base tocada
+   se elimina completa. Comprobar otras casillas intactas y recuperación con Deshacer.
+6. Cancelar un trazo y añadir un segundo dedo no deben aplicar elevación ni borrado.
+   Probar zoom/pan, trazos rápidos y un trazo vacío. El contador de figuras no se recicla.
+7. Verificar biblioteca/JSON/PNG/progreso y cierre/nuevo arranque como en rc.5.
+
+No ejecutado en Android: continúa la decisión de trabajar sin teléfono. Los tests,
+capturas Flutter y metadatos del APK no sustituyen instalación, gestos nativos,
+TalkBack, radios apagadas, selectores, ciclo de proceso ni rendimiento.
+
+## Aviso derecho — candidata rc.7
+
+APK: build/releases/heroclix-1.0.0-rc.7-debug.apk, instalar encima sin desinstalar.
+Al elegir una herramienta, comprobar que el aviso lateral tiene letras derechas
+y se lee por líneas de arriba hacia abajo. Debe durar cuatro segundos, renovarse
+al cambiar herramienta y dejar pasar los gestos sin alterar cámara. Probar vertical,
+horizontal y texto ampliado. Verificación Android pendiente; pruebas y capturas
+Flutter/Windows en ESTADO.md. Se mantiene la decisión de continuar sin teléfono.
+
+## TeamFight: GridLab — identidad rc.8+21 (histórica)
+
+APK: build/releases/teamfight-gridlab-1.0.0-rc.8-debug.apk. Conserva paquete y firma;
+instalar encima sin desinstalar para mantener biblioteca/progreso.
+
+Verificar en dispositivo: nombre e icono de launcher/Ajustes, máscara normal/redonda,
+tema monocromático si el launcher lo ofrece, arranque/recientes, Inicio/Acerca de y
+licencias. Revisar giro/texto y datos anteriores. Recursos compilados y originales
+contrastados; documentación de identidad en IDENTIDAD.md. El recorrido real sigue
+pendiente, manteniendo la decisión del usuario de continuar sin teléfono.
+
+## Beta con vencimiento — candidata rc.9+22
+
+APK histórico: build/releases/teamfight-gridlab-1.0.0-rc.9-debug.apk. Mismo paquete y
+certificado debug; instalar encima. Caduca al empezar el 30 de diciembre de 2026,
+00:00 Colombia (05:00 UTC). Acerca de muestra ese límite. El corte cubre Navigator,
+diálogos y todas las funciones; no elimina los datos guardados.
+
+Comprobar en dispositivo de pruebas: abrir antes del corte, abrir con fecha vencida,
+cruzar el corte con Editor/diálogo abierto y reanudar desde segundo plano después
+del límite. Probar giro/texto ampliado y botón Atrás. Usar fecha manual solo para
+esas comprobaciones y restaurarla después. Este recorrido nativo sigue pendiente.
+
+La app mantiene funcionamiento offline y no añade permisos. El reloj local puede
+alterarse: la caducidad no es protección contra manipulación. La futura versión
+oficial debe retirar expresamente BetaAccessGate; compilar en release por sí solo
+no elimina el vencimiento. No se incluye enlace de Play hasta disponer de la ficha.
+
+## Agua — candidata rc.10+23 (histórica)
+
+APK: build/releases/teamfight-gridlab-1.0.0-rc.10-debug.apk. Instalar encima con la
+misma firma; se mantiene el corte del 30/12/2026 a las 00:00 Colombia.
+
+En Editor → Terrenos → Agua (gota), arrastrar por varias casillas: vista previa azul,
+al soltar quedan azul/ondas/A. Repetir sobre obstaculizado/bloqueado y sobre altura:
+cambia el tipo, conserva nivel y transiciones. Admite personajes sobre agua.
+Probar Deshacer/Rehacer, cancelar gesto, segundo dedo, rectángulo con confirmación,
+Despejado y Borrar por trazo. Revisar paleta de seis botones en vertical/horizontal
+y texto ampliado, biblioteca/JSON/PNG, dictamen de visión y ruta sobre agua.
+
+Pruebas Flutter y capturas en Windows no sustituyen aceptación Android. Sigue la
+decisión previa del usuario de continuar sin teléfono; pruebas nativas pendientes.
+
+## Indoor y trazos de movimiento — candidata rc.11+24 (histórica)
+
+APK: build/releases/teamfight-gridlab-1.0.0-rc.11-debug.apk. Instalar encima con la
+misma firma. Mantiene vencimiento 30/12/2026 00:00 Colombia.
+
+1. Abrir biblioteca de una instalación anterior y guardar: lectura de JSON 1–3,
+   copia de migración antes de escribir JSON 4; escenarios/progreso se conservan.
+2. Elegir Indoor en el desplegable de la barra: borde amarillo del mapa completo.
+   Cambiar a Outdoor y trazar zonas con Terrenos → Indoor. Probar sobre agua,
+   bloqueado y altura; conservar capas y deshacer tipo global/local.
+3. Despejado no retira Indoor. Borrar Indoor solo retira marcas locales; Borrar
+   todo limpia todas las capas locales. El tipo global cambia con el desplegable.
+4. Movimiento no abre diálogo. Tocar figura y pasos, arrastrar desde figura/último
+   paso, base 2×2 desde otra casilla de su huella, diagonal, muro, altura y velocidad.
+   La figura permanece en origen hasta confirmar; Deshacer recupera posición.
+5. Cancelar gesto o usar dos dedos restaura la ruta previa y navega sin editar.
+   Cambiar figura y abrir informe manual. Probar giro/texto ampliado, trazos rápidos
+   y menú de siete pinceles. Verificar amarillo/IM Bloqueado exterior/JSON/PNG.
+
+El recorrido Android real sigue pendiente según la decisión de continuar sin teléfono.
+
+## Destrucción confirmada — candidata actual rc.12+25
+
+APK: build/releases/teamfight-gridlab-1.0.0-rc.12-debug.apk. Instalar encima sin
+desinstalar; conserva firma, datos y vencimiento 30/12/2026 00:00 Colombia.
+
+1. Figura con IM Bloqueado normal: atravesar B/muro y confirmar no los destruye.
+2. Activar IM Destruir bloqueado y muros en ficha. Trazar B y muro: plan visible,
+   mapa original intacto. Confirmar mueve y crea Db/H; muro desaparece. Probar que
+   puede terminar sobre la casilla que acaba de dejar de ser B, pero no sobre figuras.
+3. Deshacer/Rehacer: recuperar posición y todas las capas juntas. Cancelar, ruta
+   inválida o cambiar el escenario no deben aplicar destrucción parcial.
+4. Probar diagonales con un lado libre, muros/Indoor/elevación, base 2×2 y bucles.
+   Revisar plan de laterales antes de confirmar; conserva el perfil de traslación.
+5. Comprobar ambos lados del muro, debris sobre agua y B cercano intacto. Borrar
+   escombros recupera agua o despejado; no reconstruye B/muro. Altura/Indoor se conservan.
+6. Guardar/reabrir/exportar JSON y PNG. Verificar migración con respaldo desde
+   biblioteca rc.11, datos de entrenador, giro/texto ampliado y consultas de visión.
+
+Pruebas en Android real pendientes; se mantiene la decisión de continuar sin teléfono.

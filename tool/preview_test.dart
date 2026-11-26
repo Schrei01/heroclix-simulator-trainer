@@ -1,3 +1,5 @@
+import '../test/support/test_clock.dart';
+
 // Ejecutar explícitamente: flutter test tool/preview_test.dart
 // Capturas de render Flutter; no representan una prueba en Android real.
 import 'dart:io';
@@ -8,10 +10,13 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:heroclix_simulator_trainer/app.dart';
+import 'package:heroclix_simulator_trainer/domain/app_info.dart';
+import 'package:heroclix_simulator_trainer/domain/beta_expiration.dart';
 import 'package:heroclix_simulator_trainer/domain/board/board_dimensions.dart';
 import 'package:heroclix_simulator_trainer/domain/board/board_viewport.dart';
 import 'package:heroclix_simulator_trainer/domain/board/cell_coordinate.dart';
 import 'package:heroclix_simulator_trainer/domain/characters/character.dart';
+import 'package:heroclix_simulator_trainer/domain/characters/movement_ability.dart';
 import 'package:heroclix_simulator_trainer/presentation/editor/editor_screen.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:heroclix_simulator_trainer/application/board/board_session.dart';
@@ -83,6 +88,28 @@ void main() {
   });
 
   for (final (name, size, dimensions) in [
+    ('destruction_before', const Size(400, 900), null),
+    ('destruction_after', const Size(400, 900), null),
+    ('destruction_report', const Size(400, 900), null),
+    ('destruction_compact', const Size(320, 568), null),
+    ('indoor_entire', const Size(400, 900), null),
+    ('indoor_zones', const Size(400, 900), null),
+    ('indoor_compact', const Size(320, 320), null),
+    ('movement_trace', const Size(400, 900), null),
+    ('movement_trace_landscape', const Size(1000, 700), null),
+    ('water_portrait', const Size(400, 900), null),
+    ('water_landscape', const Size(1000, 700), null),
+    ('water_compact', const Size(320, 568), null),
+    ('water_preview', const Size(400, 900), null),
+    ('beta_expired', const Size(400, 900), null),
+    ('beta_expired_landscape', const Size(800, 360), null),
+    ('brush_hint_portrait', const Size(400, 900), null),
+    ('brush_hint_landscape', const Size(1000, 700), null),
+    ('brush_hint_compact', const Size(320, 320), null),
+    ('brush_elevation_preview', const Size(400, 900), null),
+    ('brush_elevation_done', const Size(400, 900), null),
+    ('brush_erase_done', const Size(400, 900), null),
+    ('brush_team_cycle', const Size(400, 900), null),
     ('increment_palette_portrait', const Size(400, 900), null),
     ('increment_palette_landscape', const Size(1000, 700), null),
     ('increment_palette_compact', const Size(320, 320), null),
@@ -387,7 +414,10 @@ void main() {
         tester.platformDispatcher.textScaleFactorTestValue = 2;
         addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
       }
-      if (name == 'quick_palette_compact') {
+      if (name == 'quick_palette_compact' ||
+          name == 'water_compact' ||
+          name == 'indoor_compact' ||
+          name == 'destruction_compact') {
         tester.platformDispatcher.textScaleFactorTestValue = 3;
         addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
       }
@@ -396,6 +426,10 @@ void main() {
         addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
       }
       if (name == 'increment_palette_compact') {
+        tester.platformDispatcher.textScaleFactorTestValue = 3;
+        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      }
+      if (name == 'brush_hint_compact') {
         tester.platformDispatcher.textScaleFactorTestValue = 3;
         addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
       }
@@ -435,12 +469,195 @@ void main() {
         RepaintBoundary(
           key: key,
           child: HeroClixApp(
+            clock: name.startsWith('beta_expired')
+                ? () => BetaExpiration.deadline
+                : testClock,
             controller: persistent,
             trainingController: training,
           ),
         ),
       );
       await tester.pumpAndSettle();
+      if (name.startsWith('beta_expired')) {
+        await tester.runAsync(
+          () => precacheImage(
+            const AssetImage(AppInfo.iconAsset),
+            key.currentContext!,
+          ),
+        );
+        await tester.pumpAndSettle();
+      }
+      TestGesture? brushGesture;
+      if (name.startsWith('destruction_')) {
+        persistent.loadScenario(
+          visionSession(
+            mw(
+              abilities: [MovementAbility.destroyBlocking],
+              terrain: {'B1': TerrainType.blocking, 'C1': TerrainType.water},
+              walls: [
+                EdgeWall.between(
+                  CellCoordinate.parse('B1'),
+                  CellCoordinate.parse('C1'),
+                ),
+              ],
+            ),
+          ),
+        );
+        await tester.ensureVisible(find.text('Abrir editor'));
+        await tester.tap(find.text('Abrir editor'));
+        await tester.pumpAndSettle();
+        await press(tester, 'tool-movement');
+        final gesture = await tester.startGesture(
+          cellPosition(tester, persistent, 'A1'),
+        );
+        await gesture.moveTo(cellPosition(tester, persistent, 'D1'));
+        await tester.pump();
+        await gesture.up();
+        await tester.pumpAndSettle();
+        expect(
+          persistent.value.terrain.at(CellCoordinate.parse('B1')).type,
+          TerrainType.blocking,
+        );
+        if (name == 'destruction_after') {
+          await press(tester, 'movement-apply');
+          expect(persistent.value.walls.isEmpty, isTrue);
+          expect(persistent.value.terrain.debrisCells.length, 2);
+        }
+        if (name == 'destruction_report') {
+          await press(tester, 'movement-report');
+        }
+        await tester.pump(const Duration(seconds: 5));
+        await tester.pumpAndSettle();
+      }
+      if (name.startsWith('indoor_') || name.startsWith('movement_trace')) {
+        var scene = BoardSession.initial()
+            .paintTerrain([CellCoordinate.parse('D4')], TerrainType.blocking)
+            .paintTerrain([CellCoordinate.parse('B4')], TerrainType.water)
+            .paintElevation([CellCoordinate.parse('E4')], 2)
+            .paintIndoor([
+              for (var row = 2; row < 5; row++)
+                for (var col = 2; col < 7; col++)
+                  CellCoordinate(column: col, row: row),
+            ]);
+        if (name == 'indoor_entire') {
+          scene = scene.setEnvironment(MapEnvironment.indoor);
+        }
+        scene = scene.createCharacter(
+          CharacterDraft(
+            name: 'Figura',
+            teamId: 'team-1',
+            position: CellCoordinate.parse('A1'),
+          ),
+        );
+        persistent.loadScenario(scene);
+        await tester.ensureVisible(find.text('Abrir editor'));
+        await tester.tap(find.text('Abrir editor'));
+        await tester.pumpAndSettle();
+        if (name.startsWith('indoor_')) {
+          await press(tester, 'tool-terrain');
+          await press(tester, 'terrain-indoor');
+        } else {
+          await press(tester, 'tool-movement');
+          final gesture = await tester.startGesture(
+            cellPosition(tester, persistent, 'A1'),
+          );
+          await gesture.moveTo(cellPosition(tester, persistent, 'D1'));
+          await tester.pump();
+          await gesture.moveTo(cellPosition(tester, persistent, 'D2'));
+          await tester.pump();
+          await gesture.up();
+          await tester.pumpAndSettle();
+          expect(persistent.movement.route.length, 5);
+          expect(
+            persistent.value.characters.byId('figure-1')!.position,
+            CellCoordinate.parse('A1'),
+          );
+          expect(find.text('Ensayo de movimiento'), findsNothing);
+        }
+      }
+      if (name.startsWith('water_')) {
+        persistent.loadScenario(
+          BoardSession.initial()
+              .paintElevation([CellCoordinate.parse('E4')], 2)
+              .paintTerrain([
+                for (var row = 2; row < 5; row++)
+                  for (var column = 2; column < 7; column++)
+                    CellCoordinate(column: column, row: row),
+              ], TerrainType.water)
+              .paintTerrain([CellCoordinate.parse('H4')], TerrainType.blocking)
+              .paintTerrain([
+                CellCoordinate.parse('B4'),
+              ], TerrainType.hindering),
+        );
+        await press(tester, 'mode-editor');
+        await press(tester, 'tool-terrain');
+        await press(tester, 'terrain-water');
+        if (name == 'water_preview') {
+          brushGesture = await tester.startGesture(
+            cellPosition(tester, persistent, 'C2'),
+          );
+          await brushGesture.moveTo(cellPosition(tester, persistent, 'G2'));
+          await tester.pump();
+          expect(persistent.draft.value!.cells.length, 5);
+        }
+      }
+      if (name.startsWith('brush_')) {
+        persistent.loadScenario(
+          BoardSession.initial()
+              .paintElevation([CellCoordinate.parse('E4')], 2)
+              .paintElevation([CellCoordinate.parse('F4')], 3)
+              .paintTerrain([
+                CellCoordinate.parse('E4'),
+                CellCoordinate.parse('B7'),
+              ], TerrainType.hindering)
+              .paintTerrain([CellCoordinate.parse('G2')], TerrainType.blocking),
+        );
+        await tester.ensureVisible(find.text('Abrir editor'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Abrir editor'));
+        await tester.pumpAndSettle();
+        if (name == 'brush_team_cycle' || name == 'brush_erase_done') {
+          persistent.saveCharacter(
+            CharacterDraft(
+              name: 'Figura',
+              teamId: 'team-1',
+              position: CellCoordinate.parse('E4'),
+            ),
+          );
+          await tester.pumpAndSettle();
+        }
+        if (name.startsWith('brush_hint') || name == 'brush_team_cycle') {
+          await press(tester, 'tool-characters');
+          if (name == 'brush_team_cycle') {
+            for (var i = 0; i < 2; i++) {
+              await tester.tapAt(cellPosition(tester, persistent, 'E4'));
+              await tester.pumpAndSettle();
+            }
+            expect(persistent.value.selectedCharacter!.teamId, 'team-2');
+          }
+        } else {
+          if (name == 'brush_erase_done') {
+            await press(tester, 'tool-erase');
+          } else {
+            await press(tester, 'tool-terrain');
+            await press(tester, 'terrain-elevated');
+          }
+          persistent.zoom(1.6);
+          await tester.pumpAndSettle();
+          brushGesture = await tester.startGesture(
+            cellPosition(tester, persistent, 'D4'),
+          );
+          await brushGesture.moveTo(cellPosition(tester, persistent, 'F4'));
+          await tester.pump();
+          await brushGesture.moveTo(cellPosition(tester, persistent, 'D4'));
+          await tester.pump();
+          if (name != 'brush_elevation_preview') {
+            await brushGesture.up();
+            brushGesture = null;
+            await tester.pumpAndSettle();
+          }
+        }
+      }
       if (name.startsWith('increment_')) {
         persistent.loadScenario(
           BoardSession.initial()
@@ -734,10 +951,10 @@ void main() {
           );
           await tester.pumpAndSettle();
           await persistent.workspace!.save();
-          await tester.ensureVisible(
-            find.byKey(const ValueKey('autosave-status')),
-          );
-          await tester.tap(find.byKey(const ValueKey('autosave-status')));
+          await tester.tap(find.byKey(const ValueKey('board-view-options')));
+          await tester.pumpAndSettle();
+          await tester.ensureVisible(find.text('Información del escenario'));
+          await tester.tap(find.text('Información del escenario'));
           await tester.pumpAndSettle();
         }
         if (name.startsWith('geometria')) {
@@ -1035,21 +1252,18 @@ void main() {
               session: visionSession(world),
             );
             const codec = ScenarioCodec();
-            final file = File(
-              'build/verification/editor-increments/$name.json',
-            );
+            final file = File('build/verification/teamfight-brand/$name.json');
             await file.parent.create(recursive: true);
             await file.writeAsString(codec.encode(doc));
-            await File(
-              'build/verification/editor-increments/$name-working.json',
-            ).writeAsString(
-              jsonEncode({
-                'workspaceSchemaVersion': 1,
-                'document': codec.toMap(doc),
-                'dirty': true,
-                'saved': false,
-              }),
-            );
+            await File('build/verification/teamfight-brand/$name-working.json')
+                .writeAsString(
+                  jsonEncode({
+                    'workspaceSchemaVersion': 1,
+                    'document': codec.toMap(doc),
+                    'dirty': true,
+                    'saved': false,
+                  }),
+                );
           });
         }
       }
@@ -1215,7 +1429,7 @@ void main() {
                 analysis.priority,
               );
               final file = File(
-                'build/verification/editor-increments/diagnostico.png',
+                'build/verification/teamfight-brand/diagnostico.png',
               );
               await file.parent.create(recursive: true);
               await file.writeAsBytes(bytes);
@@ -1231,13 +1445,17 @@ void main() {
         final image = await boundary.toImage();
         try {
           final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-          final output = File('build/previews/editor-increments/$name.png');
+          final output = File('build/previews/movement-destruction/$name.png');
           await output.parent.create(recursive: true);
           await output.writeAsBytes(bytes!.buffer.asUint8List());
         } finally {
           image.dispose();
         }
       });
+      if (brushGesture != null) {
+        await brushGesture.cancel();
+        await tester.pumpAndSettle();
+      }
     });
   }
 }

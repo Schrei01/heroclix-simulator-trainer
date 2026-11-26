@@ -46,7 +46,8 @@ class LayerToolbar extends StatelessWidget {
           child: Row(
             children: [
               if (state.tool == EditorTool.terrain &&
-                  state.terrainBrush.type != null) ...[
+                  (state.terrainBrush.type != null ||
+                      state.terrainBrush == TerrainBrush.indoor)) ...[
                 PopupMenuButton<bool>(
                   key: const ValueKey('terrain-brush'),
                   tooltip: 'Trazo o rectángulo',
@@ -173,14 +174,18 @@ class LayerToolbar extends StatelessWidget {
     controller.draft.value = LayerDraft(
       tool: state.tool,
       type: state.terrainType,
+      brush: state.terrainBrush,
       rectangle: state.tool == EditorTool.terrain,
       eraseWalls: state.eraseWalls,
       eraseLayer: state.eraseLayer,
       cells:
           state.tool == EditorTool.terrain ||
               (state.tool == EditorTool.erase &&
-                  (state.eraseLayer == EraseLayer.terrain ||
-                      state.eraseLayer == EraseLayer.elevation))
+                  (state.eraseLayer == EraseLayer.all ||
+                      state.eraseLayer == EraseLayer.terrain ||
+                      state.eraseLayer == EraseLayer.elevation ||
+                      state.eraseLayer == EraseLayer.indoor ||
+                      state.eraseLayer == EraseLayer.debris))
           ? const EditingGeometry().rectangle(a, b)
           : [],
       edges:

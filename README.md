@@ -1,13 +1,41 @@
-# HeroClix Simulator & Trainer
+# TeamFight: GridLab
 
-Aplicación Android Flutter/Dart, offline y en español. Versión **1.0.0-rc.5+18**.
-La actualización del Editor está en la rama `codex/editor-terrain-gestures` del repositorio privado
+Aplicación Android Flutter/Dart, offline y en español. Versión **1.0.0-rc.12+25**.
+La versión actual está en la rama `codex/movement-destruction` del repositorio privado
 [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer).
+
+Desde rc.8 la marca visible es **TeamFight: GridLab**, con los iconos Android y el
+símbolo aportados por el usuario. Conserva el identificador y los datos de la app.
+Recursos y procedencia en [IDENTIDAD](docs/IDENTIDAD.md).
+
+Desde rc.12, **IM Destruir bloqueado y muros** simula destrucción y debris durante
+el ensayo y los aplica junto con la posición al confirmar, con un único Deshacer.
+Los escombros se muestran como **Db** y actúan como obstaculizado. **IM Bloqueado**
+y **Bloqueado exterior** normales solo permiten atravesar; no destruyen.
+
+Desde rc.11, el selector **Indoor/Outdoor** de la barra aplica el tipo a todo el
+mapa (al cambiar reinicia las zonas Indoor locales). Indoor completo lleva borde
+amarillo. En Outdoor, **Terrenos → Indoor** pinta zonas independientes de obstáculos,
+agua y altura. Se guardan en biblioteca, JSON y PNG. Movimiento abre directamente:
+elige figura y toca pasos o traza desde ella; Confirma en la barra para moverla.
+
+Desde rc.10, Terrenos incluye **Agua** por trazo o rectángulo: icono de gota,
+azul con ondas y letra A. Conserva alturas, admite figuras y se guarda en biblioteca,
+JSON y PNG. La paleta reúne seis pinceles. Según §16.6 de la edición implementada,
+agua se considera despejado para visión/movimiento salvo efectos específicos.
+
+Esta beta rc.12 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
+(2026-12-30T05:00:00Z). Desde ese instante muestra «Versión de prueba finalizada»
+y bloquea todas las pantallas, también al reanudar o si permanece abierta. Acerca de
+muestra la fecha. No elimina biblioteca ni progreso. Usa el reloj del dispositivo:
+no es una licencia validada por servidor y puede eludirse al alterar el reloj.
+La futura edición de Play debe retirar expresamente este corte. Instalar una beta
+anterior sin caducidad también queda fuera de este control local.
 
 ```powershell
 git clone https://github.com/Schrei01/heroclix-simulator-trainer.git
 cd heroclix-simulator-trainer
-git switch codex/editor-terrain-gestures
+git switch codex/movement-destruction
 ```
 
 ## Qué existe
@@ -52,6 +80,16 @@ Transición (dos vecinos de alturas distintas). Seleccionar permite confirmar
 borrado con dos toques en la misma casilla; Borrar también retira alturas y
 transiciones. No se permite crear o mover figuras sobre bloqueado ni pintarlo
 bajo ellas. La ficha agrupa Improved Targeting y Movement en listas desplegables.
+
+Desde rc.6 Elevado permite trazar: cada casilla sube un nivel desde el valor que
+tenía al empezar, una sola vez aunque el trazo vuelva sobre ella. Borrar empieza
+en Borrar todo y limpia todas las capas de las casillas recorridas; tocar una base
+retira la figura completa. Un Deshacer recupera el trazo. En Personajes, dos toques
+sobre una figura pasan al equipo siguiente y el último vuelve al primero. Los
+avisos de herramienta aparecen verticalmente a la derecha del mapa durante 4 s.
+
+En rc.7 el aviso se lee con el texto derecho, en una columna de arriba hacia abajo,
+sin girar el teléfono. Mantiene su posición lateral y los cuatro segundos.
 
 ## Analizar y comparar posiciones
 
@@ -122,8 +160,9 @@ libre del Editor sirve para montar escenarios y no valida una ruta reglamentaria
 
 ## Alturas, bases y capacidades
 
-1. En Editor elige **Terrenos → Elevado**. Un toque en suelo coloca E2; cada toque
-   siguiente sube un nivel hasta E40. **Coordenadas** abre el formulario avanzado:
+1. En Editor elige **Terrenos → Elevado**. Toca o traza para subir un nivel por
+   casilla desde su valor inicial: suelo a E2, E2 a E3, hasta E40. Volver sobre una
+   casilla sin soltar no vuelve a elevarla. **Coordenadas** abre el formulario avanzado:
    Indica una casilla o región y un nivel de 1 a 40. Sobre suelo el formulario
    propone nivel 2; al editar una elevación conserva su nivel actual. El suelo es nivel 1; las
    alturas muestran E2, E3… y bordes rojos. Las transiciones usan un triángulo blanco
@@ -265,6 +304,8 @@ exporta JSON para conservar una copia externa. Detalles en [ESCENARIOS](docs/ESC
    Para cambiarla, selecciónala y pulsa el lápiz inferior; la lista superior también
    abre fichas. Nombre, equipo, posición, base, velocidad y alcance siguen editables.
    Cada colocación permite Deshacer/Rehacer y se conserva en la sesión abierta.
+   En Personajes, dos toques sobre la misma figura cambian de equipo: T1, T2, T3…
+   según los disponibles y volviendo al primero al terminar. No modifica su ficha.
 4. Mantener pulsada una figura y arrastrar muestra destino ✓/×. Solo al soltar un
    destino válido se mueve. La ficha permite editar la coordenada como alternativa.
 5. **Terrenos** muestra cinco iconos centrados al pie del mapa: Bloqueado,
@@ -278,7 +319,10 @@ exporta JSON para conservar una copia externa. Detalles en [ESCENARIOS](docs/ESC
 7. **Muros** permite Añadir/Borrar muro. Toca o traza cerca de un borde interno;
    cada trazo conserva la orientación del primer borde. No se admiten bordes externos.
    **Coordenadas** recibe dos casillas vecinas ortogonales que comparten el muro.
-8. **Borrar elemento** permite elegir figura, terreno, elevación, transición o muro.
+8. **Borrar elemento** comienza en **Borrar todo**: trazar limpia terreno, altura,
+   figuras, muros y transiciones de las casillas recorridas, sin pedir confirmación.
+   Una figura se retira completa al tocar su base. Un Deshacer recupera todo el
+   trazo. También permite elegir figura, terreno, elevación, transición o muro.
    Borrar figura pide confirmación. Borrar terreno conserva altura; borrar elevación
    devuelve al suelo y retira las transiciones que dejan de unir niveles distintos.
    Borrar transición se aplica sobre su borde compartido y conserva la altura.
@@ -323,16 +367,22 @@ dart format --output=none --set-exit-if-changed lib test tool
 flutter --no-version-check analyze
 flutter --no-version-check test
 flutter --no-version-check test tool/preview_test.dart
-flutter --no-version-check build apk --debug
+./tool/build_apk.ps1 | Format-List
 ```
 
 `--no-version-check` evita una consulta de actualización del SDK; no cambia su
 versión ni omite análisis o pruebas. Los renders se escriben en
-`build/previews/editor-increments/`; son capturas Flutter, no de un dispositivo.
+`build/previews/teamfight-brand/`; son capturas Flutter, no de un dispositivo.
 
 Preparación Android y firma release en [ANDROID.md](docs/ANDROID.md).
 El APK debug y sus resultados/hash se registran en [ESTADO.md](docs/ESTADO.md).
 No se incluyen binarios, credenciales ni claves en Git.
+
+La generación con `tool/build_apk.ps1` conserva solo el APK entregable más reciente
+en `build/releases/`. Primero compila, comprueba paquete/versión/firma y verifica
+la copia; después elimina los APK anteriores. Si falla la compilación o la
+validación, conserva los anteriores.
+Las salidas técnicas actuales de Flutter/Gradle permanecen en `build/app/`.
 
 ## Organización y límites
 

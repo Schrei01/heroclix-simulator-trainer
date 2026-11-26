@@ -224,6 +224,7 @@ void main() {
       await tester.pump();
       final before = controller.value;
       await press(tester, 'tool-erase');
+      await menu(tester, 'erase-layer', 'Borrar figura');
       await tester.tapAt(cellPosition(tester, controller, 'A1'));
       await tester.pumpAndSettle();
       await press(tester, 'confirm-erase-figure');

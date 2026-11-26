@@ -1,17 +1,29 @@
-# HeroClix Simulator & Trainer — 1.0.0-rc.5+18
+# TeamFight: GridLab — 1.0.0-rc.12+25
 
 Aplicación Android offline, en español, para construir escenarios, consultar reglas
 implementadas y practicar. **Versión candidata, APK debug**: faltan las comprobaciones
 nativas de aceptación y rendimiento descritas abajo. No se congela 1.0.0 estable.
 Repositorio privado: [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer),
-rama `codex/editor-terrain-gestures`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
+rama `codex/movement-destruction`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
+
+Nombre e iconos de Android, Inicio y Acerca de actualizados a TeamFight: GridLab.
+La identidad técnica y firma se conservan para actualizar la instalación anterior.
+Archivos de Google Play preparados en distribution/google-play/; [detalles de identidad](docs/IDENTIDAD.md).
+
+Esta beta rc.12 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
+(2026-12-30T05:00:00Z). Desde ese instante muestra «Versión de prueba finalizada»
+y bloquea todas las pantallas, también al reanudar o si permanece abierta. Acerca de
+muestra la fecha. No elimina biblioteca ni progreso. Usa el reloj del dispositivo:
+no es una licencia validada por servidor y puede eludirse al alterar el reloj.
+La futura edición de Play debe retirar expresamente este corte. Instalar una beta
+anterior sin caducidad también queda fuera de este control local.
 
 ## Instalar y actualizar
 
 El archivo generado se conserva en:
 
 ```text
-build/releases/heroclix-1.0.0-rc.5-debug.apk
+build/releases/teamfight-gridlab-1.0.0-rc.12-debug.apk
 ```
 
 1. Android 7.0/API 24 o superior. Copiar el APK al teléfono, abrirlo en Archivos
@@ -23,7 +35,7 @@ build/releases/heroclix-1.0.0-rc.5-debug.apk
 
 ```powershell
 adb devices -l
-adb -s ID install -r build/releases/heroclix-1.0.0-rc.5-debug.apk
+adb -s ID install -r build/releases/teamfight-gridlab-1.0.0-rc.12-debug.apk
 adb -s ID shell am start -n com.valinor.heroclixtrainer/com.valinor.heroclix_simulator_trainer.MainActivity
 ```
 
@@ -33,6 +45,43 @@ desinstalación elimina progreso y ejercicios personales; su exportación todav�
 no está implementada. PNG sirve para compartir una imagen, no para recuperar datos.
 
 ## Uso básico
+
+En la ficha, **IM Destruir bloqueado y muros** permite destruir lo que atraviesa.
+El ensayo conserva el mapa original y muestra el plan; Confirmar aplica posición,
+destrucción y escombros como una sola operación. B recorrido se convierte en debris
+obstaculizado; el muro cruzado desaparece y deja debris en sus lados no bloqueados.
+Se incluyen origen/destino según §10.4; el destino puede ser la casilla B que acaba
+de destruirse, porque ahora es H. La elevación e Indoor se conservan.
+
+**IM Bloqueado** y **Bloqueado exterior** no destruyen. Deshacer recupera posición,
+terreno y muros. Borrar escombros retira solo el marcador y descubre el terreno
+subyacente (por ejemplo, agua); B destruido queda despejado y el muro no reaparece.
+Los debris se conservan en biblioteca/JSON/PNG. Las diagonales escogen el lado menos
+restrictivo, prefiriendo menos destrucción y un desempate canónico visible en el
+plan; no se destruyen automáticamente los cuatro lados de un vértice.
+
+El selector **Indoor/Outdoor** sustituye el botón de estado del escenario en la
+barra de herramientas. Cambiarlo aplica el tipo al mapa completo y reinicia las
+marcas Indoor locales; Deshacer recupera el estado anterior. Indoor completo lleva
+borde amarillo; en Outdoor puedes pintar zonas con **Terrenos → Indoor**. La marca
+amarilla/I es independiente del terreno y la altura. Despejado los conserva;
+Borrar Indoor retira solo la marca local y Borrar todo limpia la casilla.
+
+Movimiento entra sin abrir el informe: primero toca una figura; después toca pasos
+vecinos o arrastra desde ella (también puedes continuar desde el último paso).
+El trazo rellena sus pasos intermedios y no cambia la posición original hasta
+**Confirmar** en la barra. Dos dedos navegan y cancelan el trazo actual. Elegir otra
+figura reinicia el ensayo; el dictamen abre el informe y sus opciones avanzadas.
+
+Indoor por sí solo no cambia visión o costo de movimiento: el amarillo no es un
+muro. Un muro que coincide con ese límite es Indoor. IM Bloqueado exterior ahora
+distingue ambos ámbitos; IM Bloqueado conserva su alcance y nunca permite terminar
+sobre bloqueado. Fuente: §15.1/27.5c en [REGLAS](docs/REGLAS.md).
+
+Se escribe JSON de escenario versión 5 (capas 4), leyendo versiones 1–4. Los formatos
+1–3 se interpretan como Outdoor, y 1–4 no tienen debris. Guardar una versión anterior
+crea primero una copia schema1/schema2/schema3/schema4,
+también con archivos reales. Los archivos nuevos no se pueden abrir con apps viejas.
 
 | Entrada | Para qué sirve |
 | --- | --- |
@@ -46,9 +95,13 @@ tocar. En horizontal las herramientas se desplazan para conservar el tablero.
 
 En Editor, Personajes coloca al tocar una casilla vacía con valores predeterminados
 (Figura, primer equipo, base 1×1, velocidad 6/alcance 4); seleccionar y pulsar el
-lápiz permite editarlos después. Terrenos muestra cinco iconos centrados bajo el
-mapa: Bloqueado, Obstaculizado, Elevado, Transición y Despejado. Elevado coloca E2
-al tocar suelo y sube un nivel con cada toque siguiente. Despejado conserva altura.
+lápiz permite editarlos después. Terrenos muestra siete iconos centrados bajo el
+mapa: Bloqueado, Obstaculizado, Agua, Indoor, Elevado, Transición y Despejado. Agua se pinta
+por trazo o rectángulo; muestra azul, ondas y letra A, conserva altura y permite
+figuras. Se trata como despejado para visión y movimiento salvo efectos específicos
+(§16.6). Borrar, Deshacer/Rehacer, biblioteca y JSON/PNG incluyen Agua. Elevado permite
+trazar: suelo pasa a E2 y E2 a E3; cada casilla sube una vez por trazo desde su
+altura inicial. Despejado conserva altura.
 Transición espera dos vecinos ortogonales de niveles distintos y sin muro; anuncia
 los errores. El suelo es nivel 1; Borrar permite retirar elevaciones y transiciones.
 El Editor permite montar escenas con arrastre libre y validar rutas con Movimiento.
@@ -65,6 +118,13 @@ borrar personaje, terreno o elevación, en ese orden. La ficha ya no permite pos
 sobre bloqueado, y también se rechaza pintarlo bajo figuras. Improved Targeting se
 despliega como Movement; se retira la opción Otra excepción de ambas listas.
 El dictamen aparece solo arriba del mapa. Origen y destino iguales limpian la visión.
+
+Desde rc.6, dos toques sobre una figura con Personajes pasan al siguiente equipo
+disponible y vuelven al primero al completar el ciclo. Los avisos de herramienta
+aparecen verticalmente a la derecha del mapa durante cuatro segundos.
+En rc.7 el texto queda derecho, distribuido en líneas de arriba hacia abajo.
+Borrar empieza en Borrar todo: un trazo limpia todas las capas de las casillas
+recorridas y retira las figuras completas que toca. Deshacer recupera todo el trazo.
 
 H permite visión obstaculizada; B/muros pueden bloquear. «No evaluado» indica una
 condición sin soporte o datos insuficientes, nunca permiso ni error automático.
@@ -98,7 +158,7 @@ usa etiquetas genéricas. Exportar la escena completa sí conserva sus nombres.
 | Instalación, nueva sesión tras cierre y selectores nativos | Pendiente de Android; equivalentes de archivos/controladores sí verificados |
 | Offline con radios desactivadas y rendimiento Android/FPS | Pendiente de dispositivo/emulador funcional |
 | APK release con firma del propietario | Preparado; sin claves suministradas, no generado |
-| Congelar 1.0.0 estable | Pendiente de cerrar aceptación nativa; esta entrega es 1.0.0-rc.5 |
+| Congelar 1.0.0 estable | Pendiente de cerrar aceptación nativa; esta entrega es 1.0.0-rc.12 |
 | Partida completa, dados, diales, daño y victoria | Fuera del alcance del proyecto |
 
 ## Dependencias y recompilación
@@ -109,19 +169,22 @@ No se añaden dependencias para 12. Las licencias empaquetadas se consultan sin
 conexión en Acerca de → Licencias de dependencias.
 
 ```powershell
-git switch codex/editor-terrain-gestures
+git switch codex/movement-destruction
 $env:Path = "$env:USERPROFILE\develop\flutter\bin;$env:Path"
 flutter --no-version-check pub get
 dart format --output=none --set-exit-if-changed lib test tool
 flutter --no-version-check analyze --no-pub
 flutter --no-version-check test --no-pub --reporter expanded
 flutter --no-version-check test tool/preview_test.dart --no-pub --reporter expanded
-flutter --no-version-check build apk --debug --no-pub
+./tool/build_apk.ps1 | Format-List
 ```
 
-El build escribe `build/app/outputs/flutter-apk/app-debug.apk`; copiarlo al nombre
-de entrega después de comprobar versión/firma/hash. No ejecutar `flutter clean`
-si se necesitan conservar los APK/evidencias ignorados de entregas anteriores.
+El script compila y valida el APK, comprueba su copia en `build/releases/` y elimina
+los APK entregables anteriores de esa carpeta. **Solo queda el más reciente**.
+Una compilación fallida o un APK inválido conserva los anteriores. Las salidas
+técnicas actuales de Flutter/Gradle quedan en `build/app/`; no se usa `flutter clean`.
+Para generar release: `./tool/build_apk.ps1 -Mode release`, con firma configurada.
+Para validar/publicar un APK ya compilado: `./tool/build_apk.ps1 -SkipBuild`.
 Compilar puede requerir internet para herramientas; la app instalada no lo necesita.
 No tiene permiso INTERNET, por lo que el servicio VM/hot reload remoto no está
 disponible: probar instalando el APK y abriéndolo normalmente.
@@ -145,7 +208,7 @@ añadir regresiones con expectativas explicadas; actualizar cobertura y versione
 de contexto/ejercicios; ejecutar contratos puros y toda la batería. Nunca dar por
 aprobada una condición sin soporte. No recalificar silenciosamente intentos antiguos.
 
-Escenarios exportan esquema 3 y leen 1/2/3; capas siguen 2. Entrenamiento exporta 3
+Escenarios exportan esquema 5 y leen 1/2/3/4/5; capas escriben 4 y leen 1/2/3/4. Entrenamiento exporta 3
 y lee 1/2/3. Las migraciones conservan copia exacta del legado antes del primer
 reemplazo y protegen el original si falla el respaldo. No cambian rutas privadas.
 Antes de migrar, conservar proyecto, copia externa JSON y datos privados disponibles.

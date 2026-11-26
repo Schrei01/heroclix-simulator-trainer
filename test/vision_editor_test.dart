@@ -1,3 +1,5 @@
+import 'support/test_clock.dart';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:heroclix_simulator_trainer/app.dart';
@@ -22,7 +24,9 @@ Future<EditorController> openRules(
   final controller = EditorController();
   controller.loadScenario(visionSession(data));
   chooseVision(controller);
-  await tester.pumpWidget(HeroClixApp(controller: controller));
+  await tester.pumpWidget(
+    HeroClixApp(clock: testClock, controller: controller),
+  );
   const label = 'Abrir editor';
   await tester.ensureVisible(find.text(label));
   await tester.pumpAndSettle();

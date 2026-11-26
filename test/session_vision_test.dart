@@ -1,3 +1,5 @@
+import 'support/test_clock.dart';
+
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -51,7 +53,7 @@ Future<EditorController> traceFromUi(
   String last = 'D1',
 }) async {
   final c = EditorController()..loadScenario(visionSession(world ?? vs()));
-  await tester.pumpWidget(HeroClixApp(controller: c));
+  await tester.pumpWidget(HeroClixApp(clock: testClock, controller: c));
   const label = 'Abrir editor';
   await tester.ensureVisible(find.text(label));
   await tester.pumpAndSettle();
@@ -163,7 +165,7 @@ void main() {
     (tester) async {
       final store = MemoryStore();
       final live = await temporaryController(ScenarioRepository(store));
-      await tester.pumpWidget(HeroClixApp(controller: live));
+      await tester.pumpWidget(HeroClixApp(clock: testClock, controller: live));
       await press(tester, 'mode-editor');
       await press(tester, 'tool-characters');
       for (final at in ['A1', 'D1']) {

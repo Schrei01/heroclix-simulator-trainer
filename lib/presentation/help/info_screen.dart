@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:material_ui/material_ui.dart';
 
 import '../../domain/app_info.dart';
+import '../../domain/beta_expiration.dart';
 
 class InformationScreen extends StatelessWidget {
   const InformationScreen({
@@ -60,6 +61,18 @@ class QuickGuideScreen extends StatelessWidget {
         'Entrenador: responde ejercicios con una copia independiente; Comprobar muestra explicación y registra el intento.',
       ),
       Text(
+        'IM Bloqueado permite atravesar sin destruir. Para dejar escombros usa IM Destruir bloqueado y muros en la ficha. El ensayo muestra los cambios previstos; al confirmar aplica posición y destrucción juntas. B recorrido se convierte en debris obstaculizado; un muro destruido desaparece y deja debris a sus dos lados salvo casillas aún bloqueadas. Deshacer recupera todo. Borrar escombros retira solo el marcador y descubre el terreno que había debajo (§27.5d/16.9/17.14d).',
+      ),
+      Text(
+        'Mapa: el desplegable Indoor/Outdoor aplica el tipo a todo el mapa y reinicia las marcas Indoor locales. Indoor completo lleva borde amarillo. En Outdoor, Terrenos → Indoor permite pintar zonas con límite amarillo y letra I sin cambiar agua, obstáculos o elevación. Despejado conserva Indoor; Borrar todo retira las marcas locales y Borrar Indoor solo esa capa. El tipo global se cambia en el desplegable.',
+      ),
+      Text(
+        'Indoor no bloquea visión ni movimiento por sí solo. El amarillo no es un muro. Un muro sobre un límite Indoor se considera interior. Improved Movement: Bloqueado exterior permite atravesar bloqueado y muros Outdoor, pero no Indoor; no permite terminar sobre bloqueado (§15.1/27.5c).',
+      ),
+      Text(
+        'Movimiento: activa la herramienta, elige una figura en el mapa y toca los pasos o arrastra desde la figura. Puedes continuar el trazo desde el último paso; se cuentan todas las casillas recorridas. Dos dedos navegan y cancelan el trazo en curso. La figura permanece en origen hasta pulsar Confirmar. Usa Elegir otra figura para cambiarla y el dictamen para abrir el informe detallado.',
+      ),
+      Text(
         'D · Despejado: sin ese obstáculo. H · Obstaculizado: permite visión con restricción. B · Bloqueado y muros: pueden impedir visión y movimiento según el perfil y las capacidades declaradas.',
       ),
       Text(
@@ -69,10 +82,13 @@ class QuickGuideScreen extends StatelessWidget {
         'Elevación: E2/E3… y borde rojo. Transición: dos triángulos numerados conectados, uno dentro de cada casilla, con su nivel. Una casilla elevada sin transición conserva la marca E2/E3….',
       ),
       Text(
-        'Terrenos reúne Bloqueado, Obstaculizado, Elevado, Transición y Despejado. Con Elevado, tocar suelo coloca E2 y volver a tocar sube a E3. Despejado conserva la altura. Para una transición toca dos vecinos ortogonales de niveles distintos, sin muro entre ellos; una selección inválida muestra el motivo.',
+        'Terrenos reúne Bloqueado, Obstaculizado, Agua, Elevado, Transición y Despejado. Agua se pinta por trazo y se reconoce por azul, ondas y letra A. Se considera despejado para visión y movimiento salvo efectos específicos (§16.6). Con Elevado, traza para subir cada casilla un nivel: suelo a E2, E2 a E3. Cada casilla sube una vez por trazo aunque vuelvas sobre ella. Despejado conserva la altura. Para una transición toca dos vecinos ortogonales de niveles distintos, sin muro entre ellos; una selección inválida muestra el motivo.',
       ),
       Text(
-        'En Seleccionar, toca dos veces la misma casilla para preguntar si quieres borrar: primero personaje, después terreno y luego elevación. Borrar elemento permite elegir también elevaciones y transiciones. Puedes recuperar los cambios con Deshacer.',
+        'En Seleccionar, toca dos veces la misma casilla para preguntar si quieres borrar: primero personaje, después terreno y luego elevación. Borrar empieza en Borrar todo: un trazo limpia figuras, terreno, alturas, muros y transiciones. Si toca una base grande, retira la figura completa. Puedes recuperar todo el trazo con Deshacer o elegir una capa específica.',
+      ),
+      Text(
+        'En Personajes, dos toques sobre una figura cambian al siguiente equipo disponible; después del último vuelves al primero. Los avisos de herramienta aparecen verticales al lado derecho del mapa durante cuatro segundos y dejan pasar los gestos.',
       ),
       Text(
         'No se permite colocar personajes sobre bloqueado ni pintar bloqueado bajo ellos. Improved Targeting e Improved Movement se abren desde sus listas en la ficha. En Visión, elegir el mismo origen y destino limpia la línea y las marcas; el dictamen se consulta sobre el mapa.',
@@ -102,11 +118,18 @@ class AboutScreen extends StatelessWidget {
   Widget build(BuildContext context) => InformationScreen(
     title: 'Acerca de',
     children: [
+      Align(
+        alignment: Alignment.centerLeft,
+        child: ExcludeSemantics(
+          child: Image.asset(AppInfo.iconAsset, width: 64, height: 64),
+        ),
+      ),
       const Text(
-        'HeroClix Simulator & Trainer',
+        AppInfo.name,
         style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
       ),
       const Text('Versión ${AppInfo.version} · compilación ${AppInfo.build}'),
+      const Text('Versión de prueba. Vence el ${BetaExpiration.label}.'),
       const Text(
         'Edición reglamentaria implementada: ${AppInfo.rules}. Perfil parcial; no se actualiza automáticamente.',
       ),
@@ -131,7 +154,7 @@ class AboutScreen extends StatelessWidget {
         key: const ValueKey('open-licenses'),
         onPressed: () => showLicensePage(
           context: context,
-          applicationName: 'HeroClix Simulator & Trainer',
+          applicationName: AppInfo.name,
           applicationVersion: '${AppInfo.version}+${AppInfo.build}',
         ),
         icon: const Icon(Icons.description_outlined),

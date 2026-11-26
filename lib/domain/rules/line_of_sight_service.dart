@@ -331,6 +331,8 @@ final class LineOfSightService implements VisionEvaluator {
           : VisionEffect.none;
       final reasons = <String>[
         'nivel $level',
+        if (snapshot.terrain.isIndoor(cell))
+          'Indoor: el límite amarillo no es un muro',
         if (elevationBlocks) 'terreno elevado bloquea',
         if (rawElevation && !elevationBlocks)
           'elevación ignorada por IT Elevación',
@@ -339,6 +341,9 @@ final class LineOfSightService implements VisionEvaluator {
           'bloqueado ignorado por IT Bloqueado',
         if (rawHinder && !hinder) 'obstaculizado ignorado por IT Obstaculizado',
         if (hinder) 'terreno obstaculizado',
+        if (snapshot.terrain.debrisCells.contains(cell))
+          'escombros (debris): obstaculizado',
+        if (terrain.type == TerrainType.water) 'agua: se considera despejado',
         if (terrain.type == TerrainType.hindering && atSource)
           'obstaculizado de origen excluido',
         if (blocksFigure)
@@ -356,13 +361,16 @@ final class LineOfSightService implements VisionEvaluator {
             '${side ? 'Lado' : 'Casilla'} ${cell.label}: ${reasons.isEmpty ? 'sin restricción' : reasons.join('; ')}.',
         rules: [
           VisionRule.center,
+          if (snapshot.terrain.isIndoor(cell)) VisionRule.environment,
           VisionRule.elevation,
           if (rawElevation && !elevationBlocks) VisionRule.improvedElevated,
           if (rawBlocking && !terrainBlocks) VisionRule.improvedBlocking,
           if (rawHinder && !hinder) VisionRule.improvedHindering,
           if (rawFigure && !blocksFigure) VisionRule.improvedCharacters,
           if (terrain.type == TerrainType.hindering) VisionRule.hindering,
+          if (snapshot.terrain.debrisCells.contains(cell)) VisionRule.debris,
           if (terrain.type == TerrainType.blocking) VisionRule.blocking,
+          if (terrain.type == TerrainType.water) VisionRule.water,
           if (figure != null) VisionRule.character,
         ],
         cells: [cell],

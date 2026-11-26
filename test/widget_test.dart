@@ -1,3 +1,5 @@
+import 'support/test_clock.dart';
+
 import 'dart:ui' show Tristate;
 
 import 'package:flutter/semantics.dart';
@@ -11,9 +13,15 @@ void main() {
   ) async {
     final semantics = tester.ensureSemantics();
     try {
-      await tester.pumpWidget(const HeroClixApp());
+      await tester.pumpWidget(const HeroClixApp(clock: testClock));
 
-      expect(find.text('HeroClix Simulator & Trainer'), findsOneWidget);
+      expect(find.text('TeamFight: GridLab'), findsOneWidget);
+      expect(
+        tester.widget<MaterialApp>(find.byType(MaterialApp)).title,
+        'TeamFight: GridLab',
+      );
+      expect(find.byKey(const ValueKey('app-brand-icon')), findsOneWidget);
+      expect(find.text('HeroClix Simulator & Trainer'), findsNothing);
       expect(find.text('Próximamente'), findsNothing);
       expect(
         Localizations.localeOf(tester.element(find.byType(Scaffold))),
@@ -56,7 +64,7 @@ void main() {
         addTearDown(tester.view.resetPhysicalSize);
         addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
 
-        await tester.pumpWidget(const HeroClixApp());
+        await tester.pumpWidget(const HeroClixApp(clock: testClock));
         for (final id in ['editor', 'trainer']) {
           final card = find.byKey(ValueKey('mode-$id'));
           await tester.ensureVisible(card);
