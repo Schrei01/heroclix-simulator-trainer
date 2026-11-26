@@ -62,6 +62,7 @@ final class PrioritySnapshotCodec {
           'spent': p.spentTime.inMicroseconds,
         },
     ],
+    'order': m.turnOrder,
     'phase': m.underlyingPhase.name,
     'paused': m.isPaused,
     'pauseReason': m.pauseReason?.name,
@@ -113,9 +114,12 @@ final class PrioritySnapshotCodec {
     final turn = integer(m['turn']), round = integer(m['round']);
     final revision = integer(m['revision'], max: 0x1fffffffffffff);
     final ids = players.map((p) => p.id).toSet();
+    final order = strings(m['order']);
     bool validIds(List<String> list) =>
         list.toSet().length == list.length && list.every(ids.contains);
-    if (!validIds(pending) ||
+    if (order.length != players.length ||
+        !validIds(order) ||
+        !validIds(pending) ||
         !validIds(roundPending) ||
         (active != null && !ids.contains(active)) ||
         (priority != null && !ids.contains(priority)) ||
@@ -173,20 +177,24 @@ final class PrioritySnapshotCodec {
             !pending.every(alive.contains)) {
           invalid();
         }
-        final cycle = [
-          for (var n = 1; n < players.length; n++)
-            players[(players.indexWhere((p) => p.id == active) + n) %
-                    players.length]
-                .id,
-        ].where(alive.contains).toList();
+        final start = order.indexOf(priority!);
+        final activeIndex = order.indexOf(active);
+        final roundOrder = [
+          for (var n = 0; n < order.length; n++)
+            order[(activeIndex + n) % order.length],
+        ].where(roundPending.contains).toList();
+        if (!_same(roundPending, roundOrder)) invalid();
+        final responderOrder = [
+          for (var n = 0; n < order.length; n++)
+            order[(start + n) % order.length],
+        ].where(pending.contains).toList();
         if (phase == PriorityPhase.activeTurn) {
           if (priority != active || pending.isNotEmpty) invalid();
         } else {
           if (pending.isEmpty ||
               pending.first != priority ||
               pending.contains(active) ||
-              pending.length > cycle.length ||
-              !_same(pending, cycle.sublist(cycle.length - pending.length))) {
+              !_same(pending, responderOrder)) {
             invalid();
           }
           if (phase == PriorityPhase.actionResponse &&
@@ -212,6 +220,7 @@ final class PrioritySnapshotCodec {
       priorityPlayerId: priority,
       pendingResponders: pending,
       roundPending: roundPending,
+      turnOrder: order,
       turn: turn,
       round: round,
       revision: revision,

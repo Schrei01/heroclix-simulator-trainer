@@ -131,7 +131,7 @@ class PriorityHistoryScreen extends StatelessWidget {
                   ),
                   PriorityLogKind.automatic => 'Acontecimiento automático',
                   PriorityLogKind.seats =>
-                    'Asientos: ${_name(data, e.playerId)} ↔ ${_name(data, e.otherPlayerId)}',
+                    'Asientos y orden horario: ${_name(data, e.playerId)} ↔ ${_name(data, e.otherPlayerId)}',
                   PriorityLogKind.undo => 'Deshacer operación #${e.undoOf}',
                   PriorityLogKind.recovered =>
                     data.match.configuration.clockEnabled

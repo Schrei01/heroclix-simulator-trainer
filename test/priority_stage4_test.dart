@@ -220,6 +220,11 @@ void main() {
           final random = Random(count * 31 + (clock ? 1 : 0));
           var m = priorityGame(count, clock: clock);
           for (var i = 0; i < 400; i++) {
+            if (i % 3 == 0) {
+              m = priorityEngine
+                  .reseat(m, m.turnOrder.toList()..shuffle(random))
+                  .match;
+            }
             final c = snapshots.readConfiguration(
               jsonDecode(jsonEncode(snapshots.configuration(m.configuration))),
             );

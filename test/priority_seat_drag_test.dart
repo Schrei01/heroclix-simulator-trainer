@@ -23,7 +23,7 @@ void main() {
 
   for (var count = 2; count <= 6; count++) {
     test(
-      '$count: todos los intercambios conservan partida, inicial y eventos',
+      '$count: intercambios cambian el orden conservando jugadores, turno e inicial',
       () {
         final c = PriorityController(inputCooldown: Duration.zero)
           ..start(priorityConfig(count, clock: false, first: 'J2'));
@@ -45,7 +45,10 @@ void main() {
             seats[a] = target;
             seats[b] = source;
             expect(c.visualSeatOrder, seats);
-            expect(c.value, same(before));
+            expect(c.value!.players, orderedEquals(before.players));
+            expect(c.value!.priorityPlayerId, before.priorityPlayerId);
+            expect(c.value!.turnOrder, seats);
+            expect(c.value!.revision, greaterThan(before.revision));
             expect(c.events, same(events));
             expect(c.value!.configuration.startingPlayerId, 'J2');
             expect(c.value!.activePlayerId, 'J2');
@@ -78,33 +81,31 @@ void main() {
     expect(c.visualSeatOrder, ['J1', 'J2']);
   });
 
-  test(
-    'ejemplo de tres continúa con la misma cola y orden tras mover asientos',
-    () {
-      final c = PriorityController(inputCooldown: Duration.zero)
-        ..start(priorityConfig(3, clock: false));
-      addTearDown(c.dispose);
-      void act(PriorityCommand command) => expect(
-        c.dispatch(command, expectedRevision: c.value!.revision),
-        isTrue,
-      );
-      act(const PriorityCommand.action('J1'));
-      final window = c.value!;
-      expect(
-        c.swapVisualSeats('J1', 'J3', configuration: window.configuration),
-        isTrue,
-      );
-      expect(c.value, same(window));
-      act(const PriorityCommand.responseAction('J2'));
-      act(const PriorityCommand.pass('J3'));
-      act(const PriorityCommand.endTurn('J1'));
-      expect(c.value!.activePlayerId, 'J2');
-      expect(c.value!.players.map((p) => p.availableActions), [3, 3, 3]);
-      act(const PriorityCommand.action('J2'));
-      expect(c.value!.pendingResponders, ['J3', 'J1']);
-      expect(c.visualSeatOrder, ['J3', 'J2', 'J1']);
-    },
-  );
+  test('tres: conserva la respuesta en curso y pasa turno según las nuevas posiciones', () {
+    final c = PriorityController(inputCooldown: Duration.zero)
+      ..start(priorityConfig(3, clock: false));
+    addTearDown(c.dispose);
+    void act(PriorityCommand command) => expect(
+      c.dispatch(command, expectedRevision: c.value!.revision),
+      isTrue,
+    );
+    act(const PriorityCommand.action('J1'));
+    final window = c.value!;
+    expect(
+      c.swapVisualSeats('J1', 'J3', configuration: window.configuration),
+      isTrue,
+    );
+    expect(c.value!.activePlayerId, window.activePlayerId);
+    expect(c.value!.priorityPlayerId, window.priorityPlayerId);
+    act(const PriorityCommand.responseAction('J2'));
+    act(const PriorityCommand.pass('J3'));
+    act(const PriorityCommand.endTurn('J1'));
+    expect(c.value!.activePlayerId, 'J3');
+    expect(c.value!.players.map((p) => p.availableActions), [3, 3, 3]);
+    act(const PriorityCommand.action('J3'));
+    expect(c.value!.pendingResponders, ['J2', 'J1']);
+    expect(c.visualSeatOrder, ['J3', 'J2', 'J1']);
+  });
 
   test('mover asiento no reinicia ni transfiere el reloj con prioridad', () {
     final clock = PriorityFakeClock();
@@ -154,7 +155,10 @@ void main() {
             t.widget<Text>(key('priority-player-name-J2')).style!.color,
             color,
           );
-          expect(c.value, same(match));
+          expect(c.value!.players, orderedEquals(match.players));
+          expect(c.value!.activePlayerId, match.activePlayerId);
+          expect(c.value!.priorityPlayerId, match.priorityPlayerId);
+          expect(c.value!.turnOrder, c.visualSeatOrder);
           expect(c.value!.configuration.startingPlayerId, 'J2');
           expect(key('priority-score-apply'), findsNothing);
           expect(t.takeException(), isNull);

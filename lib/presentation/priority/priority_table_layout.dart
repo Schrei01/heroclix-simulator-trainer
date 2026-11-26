@@ -1,6 +1,6 @@
 import 'package:flutter/painting.dart';
 
-/// Presentation geometry only. List index is the engine's seating order, never
+/// Presentation geometry only. List index follows clockwise seating, never
 /// the turn order sorted by active/priority status. RotatedBox also rotates hit
 /// testing and semantics, unlike rotating text alone.
 final class PrioritySeatLayout {
@@ -31,19 +31,28 @@ List<PrioritySeatLayout> priorityTableSeats(
         ? [seat(0, 0, .5, 1, 1), seat(.5, 0, .5, 1, 3)]
         : [seat(0, .5, 1, .5, 0), seat(0, 0, 1, .5, 2)];
   }
+  if (count == 3) {
+    // Phone viewed from the front: left/right face those sides; the full-width
+    // bottom panel faces the viewer. Same arrangement in both orientations.
+    return [
+      seat(0, 0, .5, .5, 1),
+      seat(.5, 0, .5, .5, 3),
+      seat(0, .5, 1, .5, 0),
+    ];
+  }
   final near = (count + 1) ~/ 2;
   final far = count - near;
   if (wide) {
     return [
-      for (var i = 0; i < near; i++) seat(i / near, .5, 1 / near, .5, 0),
-      for (var i = 0; i < far; i++) seat(1 - (i + 1) / far, 0, 1 / far, .5, 2),
+      seat(0, .5, 1 / near, .5, 0),
+      for (var i = 0; i < far; i++) seat(i / far, 0, 1 / far, .5, 2),
+      for (var i = near - 1; i >= 1; i--) seat(i / near, .5, 1 / near, .5, 0),
     ];
   }
   return [
     seat(0, 1 - 1 / far, .5, 1 / far, 1),
-    for (var i = 0; i < near; i++)
-      seat(.5, 1 - (i + 1) / near, .5, 1 / near, 3),
-    for (var i = 0; i < far - 1; i++) seat(0, i / far, .5, 1 / far, 1),
+    for (var i = far - 2; i >= 0; i--) seat(0, i / far, .5, 1 / far, 1),
+    for (var i = 0; i < near; i++) seat(.5, i / near, .5, 1 / near, 3),
   ];
 }
 

@@ -283,6 +283,7 @@ class PriorityController extends ValueNotifier<PriorityMatch?> {
     return true;
   }
 
+  /// Exchanges panels and updates the engine's clockwise cycle in one undo step.
   bool swapVisualSeats(
     String source,
     String destination, {
@@ -303,16 +304,19 @@ class PriorityController extends ValueNotifier<PriorityMatch?> {
     final seats = before.toList();
     seats[from] = destination;
     seats[to] = source;
+    final oldMatch = value!;
+    final transition = _engine.reseat(oldMatch, seats);
     _visualSeatOrder = List.unmodifiable(seats);
     _append(
-      value!,
+      transition.match,
       PriorityLogKind.seats,
-      before: value,
+      before: oldMatch,
       seatsBefore: before,
       player: source,
       other: destination,
     );
-    _notify();
+    value = transition.match;
+    _refreshTicker();
     return true;
   }
 

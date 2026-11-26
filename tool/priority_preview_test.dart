@@ -33,6 +33,7 @@ void main() {
     ('setup', 6, const Size(360, 800), true),
     ('two', 2, const Size(360, 800), false),
     ('three', 3, const Size(360, 800), false),
+    ('three-setup', 3, const Size(360, 800), true),
     ('four', 4, const Size(360, 800), false),
     ('three-landscape', 3, const Size(800, 360), false),
     ('four-landscape', 4, const Size(800, 360), false),
@@ -157,6 +158,16 @@ void main() {
         await t.pumpAndSettle();
       }
       TestGesture? seatGesture;
+      if (name == 'three-setup') {
+        await t.tap(find.byKey(const ValueKey('priority-player-count')));
+        await t.pumpAndSettle();
+        await t.tap(find.text('3 jugadores').last);
+        await t.pumpAndSettle();
+        await t.ensureVisible(
+          find.byKey(const ValueKey('priority-setup-seats')),
+        );
+        await t.pumpAndSettle();
+      }
       if (name == 'history') {
         controller.dispatch(
           const PriorityCommand.responseAction('J2'),
@@ -245,7 +256,7 @@ void main() {
         final image = await boundary.toImage();
         final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
         final directory = Directory(
-          'build/verification/priority-stage4/previews',
+          'build/verification/priority-clockwise-layout/previews',
         );
         await directory.create(recursive: true);
         await File('${directory.path}/$name.png')

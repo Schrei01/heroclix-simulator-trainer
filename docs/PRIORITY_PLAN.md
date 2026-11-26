@@ -554,3 +554,51 @@ inyectados solo para Priority, preservando los predeterminados de los otros mód
 Contrato, límites y recuperación de copia anterior: [PRIORITY_STAGE4.md](PRIORITY_STAGE4.md).
 Resultados definitivos de pruebas/APK y aceptación Android: [ESTADO.md](ESTADO.md).
 No se inicia ninguna función posterior a etapa 4.
+
+## Tres jugadores, circulación horaria y arrastre rc.23 — 2026-11-26
+
+Rama `codex/priority-clockwise-layout`, base `6d924e5` (rc.22).
+Solicitud: reproducir los giros del dibujo mirando el celular de frente. Se aplica
+arriba izquierda (1, 90° horario), arriba derecha (2, 270° horario) y mitad inferior
+completa (3, sin giro). Se gira el panel completo con controles, gestión y semántica.
+Configuración y mesa comparten geometría en ambas orientaciones. Para 4–6 se mantienen
+rectángulos y giros hacia cada lado, enumerados ahora en sentido horario.
+
+El usuario confirmó que arrastrar durante la partida debe cambiar el orden de juego.
+`PriorityMatch.turnOrder` guarda el ciclo actual; `PriorityEngine.reseat` valida cada
+permutación, mantiene al activo y a quien ya tiene prioridad, y reorganiza los
+pendientes desde ese jugador sin repetir respuestas completadas. El siguiente turno
+busca al vecino no eliminado en el nuevo orden. La ronda mantiene quiénes aún deben
+jugar; puede repetirse un jugador que ya actuó si las nuevas posiciones lo colocan
+antes de otros pendientes. El inicial elegido, los datos individuales y los relojes
+se conservan; no se reinicia la partida al mover paneles.
+
+El movimiento de asientos se guarda como una operación deshacible con revisión.
+Formato Priority 2 incluye el orden actual en cada snapshot; migra formato 1 y
+los checkpoints de undo adoptando sus posiciones guardadas sin perder activo,
+prioridad, consumos, puntos ni tiempos. La ubicación privada de archivos se conserva.
+No se implementan funciones de una etapa posterior.
+
+- [x] Distribución y giros específicos de tres en configuración/mesa.
+- [x] Enumeración horaria en ambas orientaciones y texto de ayuda actualizado.
+- [x] Motor, colas de respuesta y rondas adaptados al orden dinámico.
+- [x] Guardado, recuperación, Deshacer y migración del formato 1 al 2.
+- [x] 27 pruebas nuevas: 10 de geometría/motor para 2–6 y todos los iniciales;
+  2 de UI con dibujo, giros y arrastre seguido de turno; 10 con todos los pares
+  de asientos en ACTION/FREE; ronda parcial/eliminación, órdenes inválidos,
+  reinicio/undo y dos casos de migración. Se actualizan las pruebas previas de
+  arrastre al nuevo contrato y se añaden permutaciones a los 4000 roundtrips.
+- [x] Verificación focalizada de orden dinámico: **91/91 aprobadas**, 17 s.
+- [x] Regresión general final: **1074/1074 aprobadas**, 6 min 43 s (1046 pruebas
+  y 28 renders), sobre el alcance completo incluido el orden dinámico. Revisión
+  visual de tres en ambas orientaciones, configuración y mesas de seis.
+- [x] Análisis completo sin incidencias y 202 archivos Dart con formato correcto.
+- [x] APK definitivo rc.23/código 36 generado con `./tool/build_apk.ps1`, Gradle
+  31,8 s; copia/hash, paquete, SDK y firma v2 verificados, mismo certificado y sin
+  INTERNET. Solo queda rc.23, sin cambios del flujo de APK ni flutter clean.
+
+Incremento completado. Se detiene el trabajo sin iniciar funciones posteriores.
+
+Evidencia en `build/verification/priority-clockwise-layout/`; resultados definitivos
+sobre el alcance completo y APK en [ESTADO.md](ESTADO.md). La aceptación Android
+sigue pendiente conforme a la decisión de continuar sin teléfono.

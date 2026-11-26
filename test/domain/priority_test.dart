@@ -356,7 +356,7 @@ void main() {
       });
 
       for (var start = 0; start < count; start++) {
-        test('Ciclos antihorarios de turno/prioridad desde asiento $start', () {
+        test('Ciclos horarios de turno/prioridad desde asiento $start', () {
           final order = List.generate(count, (i) => 'asiento-${count - i}');
           var match = engine
               .apply(

@@ -4,7 +4,7 @@ part 'priority_engine.dart';
 part 'priority_clock.dart';
 part 'priority_snapshot.dart';
 
-/// The list order in [PriorityConfiguration] is the physical anticlockwise
+/// The list order in [PriorityConfiguration] is the physical clockwise
 /// seating order. IDs identify players; names need not be unique.
 final class PriorityPlayerConfiguration {
   PriorityPlayerConfiguration({
@@ -243,14 +243,19 @@ final class PriorityMatch {
     required this.round,
     required this.revision,
     required Iterable<String> roundPending,
+    required Iterable<String> turnOrder,
     this.pauseReason,
     this.timedOutPlayerId,
   }) : players = List.unmodifiable(players),
        pendingResponders = List.unmodifiable(pendingResponders),
-       roundPending = List.unmodifiable(roundPending);
+       roundPending = List.unmodifiable(roundPending),
+       turnOrder = List.unmodifiable(turnOrder);
 
   final PriorityConfiguration configuration;
   final List<PriorityPlayer> players;
+
+  /// Current clockwise positions; player identity and the selected starter stay stable.
+  final List<String> turnOrder;
   final PriorityPhase underlyingPhase;
   final bool isPaused;
   final PriorityPauseReason? pauseReason;

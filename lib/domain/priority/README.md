@@ -8,7 +8,9 @@ Solo se importa `dart:math`; no hay Flutter, archivos ni acceso al reloj del sis
 
 ## Contrato
 
-- `PriorityConfiguration.players` define los asientos en sentido antihorario.
+- `PriorityConfiguration.players` define los asientos iniciales en sentido horario.
+  `PriorityMatch.turnOrder` conserva el orden actual, que se actualiza al arrastrar.
+  Desde rc.23, tres asientos son arriba izquierda → arriba derecha → abajo.
   No se ordenan por nombre ni por ID. Se requieren 2–6 IDs únicos y nombres no
   vacíos; pueden coincidir los nombres. Se recortan espacios en nombre e ID.
 - Cada jugador configura puntos y acciones adicionales enteros no negativos.
@@ -87,6 +89,15 @@ Solo se importa `dart:math`; no hay Flutter, archivos ni acceso al reloj del sis
   con Deshacer junto con el estado completo de la partida.
 
 ## Snapshots y etapa 4
+
+Desde rc.23, `PriorityEngine.reseat` valida una permutación de IDs y cambia el ciclo
+horario conservando activo, prioridad, jugadores y configuración inicial. Ordena
+los pendientes desde quien ya responde, sin repetir respuestas completadas. Las
+próximas ventanas y turnos siguen las posiciones nuevas, saltando eliminados.
+La ronda conserva a quienes deben jugar; si el nuevo vecino ya había actuado,
+puede repetir turno antes de que todos los pendientes completen esa ronda.
+El arrastre es una operación deshacible con revisión; se guardan orden y posiciones.
+Formato Priority 2 migra los snapshots/checkpoints de formato 1 conservando estado.
 
 `PrioritySnapshotCodec` es una frontera pura, sin Flutter ni archivos. Codifica y
 valida configuración/estado/eventos, incluidos fase subyacente, ambos órdenes

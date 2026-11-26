@@ -28,7 +28,50 @@ final class PriorityEngine {
         round: 0,
         revision: 0,
         roundPending: const [],
+        turnOrder: configuration.players.map((p) => p.id),
       );
+
+  /// Move seats without replacing the active player or interrupting their responder.
+  /// Already completed responses stay completed; the remaining queue follows the
+  /// new clockwise order starting at its current priority holder.
+  PriorityTransition reseat(PriorityMatch match, Iterable<String> seats) {
+    final order = seats.toList();
+    if (order.length != match.players.length ||
+        order.toSet().length != order.length ||
+        !order.every((id) => match.players.any((p) => p.id == id))) {
+      throw ArgumentError(
+        'Los asientos deben contener a cada jugador una sola vez.',
+      );
+    }
+    if (match.underlyingPhase == PriorityPhase.configuration) {
+      throw const PriorityException(
+        PriorityError.invalidPhase,
+        'Configura los asientos antes de empezar.',
+      );
+    }
+    if (Iterable<int>.generate(order.length)
+        .every((i) => order[i] == match.turnOrder[i])) {
+      return PriorityTransition._(match, const []);
+    }
+    final draft = _PriorityDraft(match);
+    draft.order
+      ..clear()
+      ..addAll(order);
+    if (draft.pending.isNotEmpty) {
+      final remaining = draft.pending.toSet();
+      final reordered = draft
+          .seatingFrom(draft.priority!)
+          .where(remaining.contains)
+          .toList();
+      draft.pending
+        ..clear()
+        ..addAll(reordered);
+    }
+    if (match.phase != PriorityPhase.finished) {
+      draft.alignRound();
+    }
+    return PriorityTransition._(draft.build(), const []);
+  }
 
   /// Explicit elapsed duration from an external monotonic source. Regular clock
   /// updates do not change the command revision or create per-tick events.
@@ -286,6 +329,7 @@ final class _PriorityDraft {
       priority = original.priorityPlayerId,
       pending = original.pendingResponders.toList(),
       roundPending = original.roundPending.toList(),
+      order = original.turnOrder.toList(),
       turn = original.turn,
       round = original.round;
 
@@ -293,6 +337,7 @@ final class _PriorityDraft {
   final List<PriorityPlayer> players;
   final List<String> pending;
   final List<String> roundPending;
+  final List<String> order;
   final events = <PriorityEvent>[];
   PriorityPhase phase;
   bool paused;
@@ -332,12 +377,7 @@ final class _PriorityDraft {
 
   void openWindow(PriorityPhase responsePhase) {
     phase = responsePhase;
-    final index = players.indexWhere((p) => p.id == active);
-    pending.addAll([
-      for (var offset = 1; offset < players.length; offset++)
-        if (!players[(index + offset) % players.length].eliminated)
-          players[(index + offset) % players.length].id,
-    ]);
+    pending.addAll([...seatingFrom(active!).skip(1)]);
     advanceResponse();
   }
 
@@ -359,11 +399,21 @@ final class _PriorityDraft {
   }
 
   Iterable<String> seatingFrom(String first) sync* {
-    final index = players.indexWhere((p) => p.id == first);
-    for (var offset = 0; offset < players.length; offset++) {
-      final p = players[(index + offset) % players.length];
+    final index = order.indexOf(first);
+    for (var offset = 0; offset < order.length; offset++) {
+      final p = players.firstWhere(
+        (p) => p.id == order[(index + offset) % order.length],
+      );
       if (!p.eliminated) yield p.id;
     }
+  }
+
+  void alignRound() {
+    final remaining = roundPending.toSet()..add(active!);
+    final sorted = seatingFrom(active!).where(remaining.contains).toList();
+    roundPending
+      ..clear()
+      ..addAll(sorted);
   }
 
   void endTurn() {
@@ -377,16 +427,16 @@ final class _PriorityDraft {
         players[i] = players[i]._copy(consumedActions: 0);
       }
     }
-    final index = players.indexWhere((p) => p.id == previous);
-    active = [
-      for (var n = 1; n <= players.length; n++)
-        if (!players[(index + n) % players.length].eliminated)
-          players[(index + n) % players.length].id,
-    ].first;
+    // If the previous active was just eliminated, seatingFrom omits it already.
+    active = seatingFrom(previous).firstWhere((id) => id != previous);
     turn++;
     if (roundPending.isEmpty) {
       round++;
       roundPending.addAll(seatingFrom(active!));
+    } else {
+      // Reseating may put a player who already acted before a still-due player.
+      // Keep the physical next seat and remember everyone still due this round.
+      alignRound();
     }
     emit(PriorityEventType.turnStarted);
     grantPriority(active!);
@@ -444,6 +494,7 @@ final class _PriorityDraft {
     priorityPlayerId: priority,
     pendingResponders: pending,
     roundPending: roundPending,
+    turnOrder: order,
     turn: turn,
     round: round,
     revision: revision ?? original.revision + 1,

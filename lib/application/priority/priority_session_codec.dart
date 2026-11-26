@@ -12,7 +12,7 @@ final class PriorityVersionException implements Exception {
 
 final class PrioritySessionCodec {
   const PrioritySessionCodec();
-  static const schemaVersion = 1;
+  static const schemaVersion = 2;
   static const maxBytes = 32 * 1024 * 1024;
   static const snapshot = PrioritySnapshotCodec();
 
@@ -53,13 +53,16 @@ final class PrioritySessionCodec {
             ],
           };
     if (session != null &&
-        (session.history.length > 100000 ||
+        (!_sameOrder(session.match.turnOrder, session.seats) ||
+            session.history.length > 100000 ||
             session.undo.length > 100000 ||
             session.undo.any(
-              (u) => !identical(
-                u.match.configuration,
-                session.match.configuration,
-              ),
+              (u) =>
+                  !_sameOrder(u.match.turnOrder, u.seats) ||
+                  !identical(
+                    u.match.configuration,
+                    session.match.configuration,
+                  ),
             ))) {
       throw const FormatException(
         'La partida excede la capacidad local o contiene estados ajenos.',
@@ -79,13 +82,60 @@ final class PrioritySessionCodec {
   Object? _payload(String raw) {
     if (utf8.encode(raw).length > maxBytes) PrioritySnapshotCodec.invalid();
     final root = PrioritySnapshotCodec.object(jsonDecode(raw));
-    if (root['prioritySchema'] != schemaVersion) {
+    if (root['prioritySchema'] != schemaVersion &&
+        root['prioritySchema'] != 1) {
       throw const PriorityVersionException();
     }
     if (root['checksum'] != checksum(jsonEncode(root['payload']))) {
       throw const FormatException('La copia de Priority está dañada.');
     }
-    return root['payload'];
+    return root['prioritySchema'] == 1 && root['payload'] != null
+        ? _upgrade(PrioritySnapshotCodec.object(root['payload']))
+        : root['payload'];
+  }
+
+  /// Version 1 kept visual seats apart from the turn cycle. Adopt those saved
+  /// positions as the live order, including every undo checkpoint, without
+  /// changing the active player or making completed responders repeat.
+  Map<String, dynamic> _upgrade(Map<String, dynamic> old) {
+    final result = Map<String, dynamic>.from(old);
+    final c = snapshot.readConfiguration(old['configuration']);
+    final initial = c.players.map((p) => p.id).toList();
+    PriorityMatch read(Object? raw, Object? seats) {
+      final m = {...PrioritySnapshotCodec.object(raw), 'order': initial};
+      final state = snapshot.readState(m, c);
+      if (state.underlyingPhase == PriorityPhase.configuration) {
+        PrioritySnapshotCodec.invalid();
+      }
+      return const PriorityEngine().reseat(state, _seats(seats, c)).match;
+    }
+
+    var current = read(old['state'], old['seats']);
+    final oldRevision = PrioritySnapshotCodec.integer(
+      PrioritySnapshotCodec.object(old['state'])['revision'],
+    );
+    var revision = current.revision;
+    result['undo'] = [
+      for (final raw in PrioritySnapshotCodec.array(old['undo']))
+        (() {
+          final row = Map<String, dynamic>.from(
+            PrioritySnapshotCodec.object(raw),
+          );
+          if (PrioritySnapshotCodec.integer(
+                PrioritySnapshotCodec.object(row['state'])['revision'],
+              ) >
+              oldRevision) {
+            PrioritySnapshotCodec.invalid();
+          }
+          final before = read(row['state'], row['seats']);
+          if (before.revision > revision) revision = before.revision;
+          row['state'] = snapshot.state(before);
+          return row;
+        })(),
+    ];
+    current = snapshot.restorePaused(current, afterRevision: revision);
+    result['state'] = snapshot.state(current);
+    return result;
   }
 
   PrioritySession? decode(String raw) {
@@ -178,15 +228,17 @@ final class PrioritySessionCodec {
         max: history.length,
       );
       final before = snapshot.readState(u['state'], c);
+      final beforeSeats = _seats(u['seats'], c);
       if (id <= lastId ||
           undone.contains(id) ||
           !history[id - 1].undoable ||
           before.underlyingPhase == PriorityPhase.configuration ||
-          before.revision > header.match.revision) {
+          before.revision > header.match.revision ||
+          !_sameOrder(before.turnOrder, beforeSeats)) {
         PrioritySnapshotCodec.invalid();
       }
       lastId = id;
-      undo.add(PriorityCheckpoint(before, _seats(u['seats'], c), id));
+      undo.add(PriorityCheckpoint(before, beforeSeats, id));
     }
     final expected = history
         .where((e) => e.undoable && !undone.contains(e.id))
@@ -221,7 +273,8 @@ final class PrioritySessionCodec {
     }
     final c = snapshot.readConfiguration(m['configuration']);
     final state = snapshot.readState(m['state'], c);
-    if (state.underlyingPhase == PriorityPhase.configuration) {
+    if (state.underlyingPhase == PriorityPhase.configuration ||
+        !_sameOrder(state.turnOrder, _seats(m['seats'], c))) {
       PrioritySnapshotCodec.invalid();
     }
     return PrioritySavedMatch(id, created, modified, state);
@@ -242,6 +295,10 @@ final class PrioritySessionCodec {
     }
     return seats;
   }
+
+  static bool _sameOrder(List<String> a, List<String> b) =>
+      a.length == b.length &&
+      Iterable<int>.generate(a.length).every((i) => a[i] == b[i]);
 
   /// Detects accidental corruption; this is not an authentication signature.
   static String checksum(String raw) {

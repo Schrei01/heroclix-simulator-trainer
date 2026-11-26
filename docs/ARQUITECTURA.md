@@ -67,6 +67,28 @@ de widgets/colores por jugador. El arrastre de configuración intercambia borrad
 sin cambiar el ID del inicial; la disposición resultante se usa al crear la partida.
 Los datos de arrastre incluyen la identidad de su grupo para rechazar otras sesiones.
 
+En rc.23 la geometría enumera los asientos en sentido horario para que el avance
+por la lista del motor recorra físicamente la mesa en ese sentido, tanto en turnos
+como en ventanas de respuesta. Para tres: mitad superior izquierda girada 90°,
+superior derecha 270° e inferior completa 0°, mirando el dispositivo de frente.
+Se usa el mismo esquema en ambas orientaciones y en la vista de configuración.
+Con 4–6 se conservan rectángulos/giros hacia cada lado y se cambia su enumeración.
+No se invierte la lista del motor: 1 → 2 → 3 es precisamente el orden horario del
+nuevo dibujo. `PriorityMatch.turnOrder` guarda el orden horario actual separado de
+la identidad de los jugadores y su configuración inicial. `PriorityEngine.reseat`
+valida la permutación y reorganiza respuestas/ronda, conservando activo/prioridad
+actuales y quiénes todavía deben responder o jugar. El siguiente turno busca el
+vecino no eliminado en las posiciones nuevas. Moverse puede hacer que alguien que
+ya jugó reciba turno antes de un pendiente; la ronda termina cuando todos los
+pendientes anteriores han tenido su oportunidad.
+
+El controlador cambia vistas y orden en una sola operación con revisión propia,
+historial y checkpoint de undo. El formato Priority 2 añade `order` a cada estado,
+valida su correspondencia con los asientos y migra formato 1, incluyendo toda la
+pila de undo. La migración adopta las posiciones guardadas como orden actual sin
+reiniciar partida, jugador inicial ni respuestas completadas. La carpeta privada
+`priority_v1/` conserva su ubicación, sin mover ni borrar archivos.
+
 La etapa 4 añade `application/priority`: sesión inmutable, historial cronológico,
 checkpoints completos y repositorio sobre `LocalDocumentStore`. El codec puro de
 dominio restaura snapshots validados, sin reconstruir turnos a partir de la vista.
@@ -77,7 +99,7 @@ callbacks antiguos. La UI ofrece historial, biblioteca y resumen; el motor sigue
 siendo el único responsable de las reglas del juego.
 
 Producción usa `priority_v1/` en almacenamiento privado Android, con formato
-Priority 1, checksum de corrupción, archivo activo y copia válida anterior.
+Priority 2 (compatible con 1), checksum de corrupción, archivo activo y copia válida anterior.
 Cada partida archivada tiene ID propio. Nueva partida o cambiar de partida
 archiva la actual antes de sustituirla; un fallo de escritura bloquea ese cambio.
 No se modifican los formatos/archivos de escenario ni progreso. El límite de

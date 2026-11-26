@@ -1,80 +1,67 @@
 # Estado actual — TeamFight: GridLab
 
-2026-11-26 (America/Bogota). **1.0.0-rc.22+35**, beta candidata debug.
-Rama `codex/priority-stage4`, base `d739a8e` (rc.21).
-Informe anterior: [ENTREGA_RC21.md](ENTREGA_RC21.md).
+2026-11-26 (America/Bogota). **1.0.0-rc.23+36**, beta candidata debug.
+Rama `codex/priority-clockwise-layout`, base `6d924e5` (rc.22).
+Informe anterior: [ENTREGA_RC22.md](ENTREGA_RC22.md).
 
-## Priority etapa 4
+## Tres jugadores, giros del dibujo y turnos horarios
 
-- Historial cronológico de operaciones y consecuencias automáticas, con jugador,
-  fecha/hora, ronda/turno y cambios de prioridad. No hay registros por segundo.
-- Deshacer consecutivo restaura ventana, activo/prioridad, acciones, PV, eliminados,
-  tiempos, pendientes de turno/ronda y posiciones visuales. Conserva auditoría de
-  anulaciones y excluye operaciones deshechas del resumen.
-- Guardado automático local y recuperación al abrir. Recuperar o deshacer deja
-  relojes pausados hasta reanudación manual y no cobra tiempo de ausencia.
-- Biblioteca de partidas en curso/finalizadas, consulta de resultados e historial,
-  continuación y descarte confirmado. Crear otra partida conserva la actual;
-  un fallo de guardado impide sustituirla.
-- Finalización manual confirmada y resumen con clasificación/empates, estado,
-  seis tipos de operación, tiempos, ronda/turno e historial.
+- Mirando el celular de frente: 1 arriba izquierda orientado hacia la izquierda;
+  2 arriba derecha orientado hacia la derecha; 3 abajo, de frente y a todo el ancho.
+  Se gira cada panel completo; configuración y mesa usan los mismos giros/posiciones.
+- Turnos y prioridad recorren los asientos en sentido horario. En 4–6 se conservan
+  superficies y giros hacia cada lado, con la numeración horaria correspondiente.
+- Arrastrar un jugador cambia también el ciclo de juego según las posiciones nuevas.
+  Conserva inicial, activo/prioridad actuales y datos individuales. Reorganiza solo
+  pendientes; no hace responder de nuevo a quien ya completó su oportunidad.
+- Guardado y Deshacer incluyen el orden actual. Formato Priority 2 migra formato 1,
+  incluyendo los checkpoints, sin reiniciar la partida ni perder PV/acciones/tiempos.
+  Recuperar o deshacer mantiene los relojes pausados hasta reanudación manual.
 
-Alcance y decisiones: [PRIORITY_PLAN.md](PRIORITY_PLAN.md) y
-[PRIORITY_STAGE4.md](PRIORITY_STAGE4.md). No se inicia ninguna etapa posterior.
-Sin dependencias/permisos nuevos ni cambios de reglas del motor o formatos del
-Editor/Entrenador. Los límites ampliados del almacén se inyectan solo a Priority.
-La beta vence el 30/12/2026 a las 00:00 Colombia, según el reloj del dispositivo.
+Detalles: [PRIORITY_PLAN.md](PRIORITY_PLAN.md), [ARQUITECTURA.md](ARQUITECTURA.md)
+y contrato de dominio. El Editor y Entrenador mantienen formatos y comportamiento.
+Sin paquetes/permisos nuevos ni cambios del flujo de APK. La beta conserva el corte
+30/12/2026 00:00 Colombia según el reloj del dispositivo. No se inicia otra etapa.
 
 ## Verificación
 
 | Comprobación | Resultado |
 | --- | --- |
-| Motor/controladores antes del incremento | **201/201 aprobadas** |
-| Regresión general de la app | **1018/1018 aprobadas**, 6 min 13 s |
-| Verificación final de Priority | **263/263 aprobadas**, 29 s; motor etapas 1/3 y toda etapa 4 |
-| Pruebas nuevas | **81**: 64 unitarias/aplicación, 3 archivos reales, 14 UI/ciclo de vida |
-| UI y renders | **41/41 aprobadas**, 28 s; 14 pruebas UI y 27 renders |
+| Pruebas nuevas | 27: geometría/motor, UI/arrastre, respuestas, rondas, persistencia/undo y migración |
+| Focalizadas de orden dinámico | **91/91 aprobadas**, 17 s |
+| Suite general + renders finales | **1074/1074 aprobadas**, 6 min 43 s: 1046 pruebas y 28 renders |
 | Análisis completo | Sin incidencias |
-| Formato lib/test/tool | 200 archivos, 0 cambios pendientes |
-| ./tool/build_apk.ps1 | Correcto, Gradle 77,9 s; copia/hash válidos; 1 APK anterior eliminado |
-| aapt / apksigner | Paquete/versión/SDK/firma v2 válidos; mismo certificado; sin INTERNET |
+| Formato lib/test/tool | 202 archivos Dart, 0 cambios pendientes |
+| ./tool/build_apk.ps1 | Correcto, Gradle 31,8 s; copia/hash verificados, solo rc.23 |
+| aapt / apksigner | Paquete/versión/SDK/firma v2 válidos; certificado conservado; sin INTERNET |
 
-La regresión cubre las 938 pruebas anteriores más las 80 iniciales de etapa 4.
-La revisión final añade un caso para nombres/IDs largos admitidos por el motor:
-se retira un límite de lectura arbitrario para conservar el roundtrip, manteniendo
-el límite global de tamaño. Se verifica de nuevo motor y toda la etapa 4 tras ese
-cambio, sin volver a ejecutar widgets ajenos al codec.
+Las pruebas existentes de arrastre se adaptan a la petición de cambiar el ciclo
+al mover paneles. Los 4000 roundtrips de snapshots ahora incluyen permutaciones.
+La nueva cobertura prueba todos los pares de asientos en 2–6 y ambas ventanas;
+conserva datos, prioridad en curso, respuestas completadas, rondas parciales,
+eliminados, reinicio, reversión y migración de formato 1 con uno/dos intercambios.
+Los renders incluyen la nueva distribución de tres en vertical/horizontal y la
+vista de configuración. Las pruebas anteriores de dimensiones/texto ampliado se
+reutilizan para todos los participantes.
 
-Incluye recuperación para 2–6 jugadores, ACTION/FREE, con/sin reloj, 4000 roundtrips,
-undo mixto consecutivo, eliminaciones/finalización, colas y rondas, fallos de E/S,
-archivos reales/reinicio, corrupción/copia anterior/esquema futuro, callbacks
-obsoletos, biblioteca/resultados, ciclo de vida y texto 300 %. Revisión visual de
-historial con reversión, mesa pausada, biblioteca y resumen guardado.
-
-Evidencia local: `build/verification/priority-stage4/`: `baseline.log`,
-`full-final.log`, `priority-final.log`, `ui-renders-final.log`, `analyze-final.log`,
-`format-check-final.log`, `apk-build.log`, `apk-identity.log` y `previews/`.
+Evidencia local: `build/verification/priority-clockwise-layout/`, con
+`full-final.log`, `reseat-final.log`, `analyze-final.log`, `format-check-final.log`,
+`apk-build.log`, `apk-identity.log` y `previews/`.
 
 ## APK entregable único
 
-- `build/releases/teamfight-gridlab-1.0.0-rc.22-debug.apk`, **159133899** bytes.
-- SHA-256: `C829FEA77921EAF57506DFFE8A964DA8B68092F7F82491FE19CEE6977367611F`.
-- Paquete `com.valinor.heroclixtrainer`, nombre TeamFight: GridLab, código 35;
+- `build/releases/teamfight-gridlab-1.0.0-rc.23-debug.apk`, **159133671** bytes.
+- SHA-256: `834A477E55BE6AB616B3ABB5545AA1E1444BD6D5132CF3FE13C0FEB1B11095E2`.
+- Paquete `com.valinor.heroclixtrainer`, nombre TeamFight: GridLab, código 36;
   SDK mínimo 24 y objetivo/compilación 36.
 - Certificado SHA-256 conservado:
   `57081ee91137c216eff437a7c75ac5bb6f552bc29167e63370d85628fc82ac54`.
-- El script retiró rc.21 solo después de validar la compilación y la copia. No
-  cambió el flujo de APK y no se utilizó flutter clean. Informes/código históricos en Git.
+- Solo queda rc.23. El script retiró rc.22 tras validar la primera copia; la
+  compilación definitiva reemplazó esa copia de rc.23 después de verificarla.
+  No se cambió el flujo de APK ni se usó flutter clean.
 
-## Aceptación Android y datos locales
+## Aceptación Android
 
-Se mantiene la decisión de continuar sin teléfono. Queda pendiente instalar y
-verificar físicamente, incluyendo cierre forzado, almacenamiento Android, TalkBack
-y rendimiento. Recorrido: [ANDROID.md](ANDROID.md). Las pruebas de widgets y archivos
-no sustituyen la validación nativa.
-
-Instalar encima con la misma firma conserva datos privados. Desinstalar/borrar
-los datos elimina las partidas Priority; esta etapa no incorpora exportación.
-La copia anterior puede recuperar un estado previo si el principal queda dañado;
-se avisa al usuario para revisarlo. No se garantiza salvar una escritura que Android
-no completó antes de un corte abrupto. Límites explícitos en PRIORITY_STAGE4.md.
+Se mantiene la decisión de continuar sin teléfono. Instalación/validación física,
+TalkBack y rendimiento siguen pendientes. Recorrido en [ANDROID.md](ANDROID.md).
+Instalar encima con la misma firma conserva biblioteca, progreso y partidas Priority.

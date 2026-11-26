@@ -10,39 +10,43 @@ import 'support/priority_stage3_fixtures.dart';
 void main() {
   for (final count in [3, 4]) {
     for (final landscape in [false, true]) {
-      test('$count participantes: lados opuestos, horizontal $landscape', () {
-        final seats = priorityTableSeats(
-          landscape ? const Size(800, 360) : const Size(360, 800),
-          count,
-        );
-        expect(
-          seats.map((s) => s.quarterTurns),
-          landscape
-              ? (count == 3 ? [0, 0, 2] : [0, 0, 2, 2])
-              : (count == 3 ? [1, 3, 3] : [1, 3, 3, 1]),
-        );
-      });
+      test(
+        '$count participantes: orientación por asiento, horizontal $landscape',
+        () {
+          final seats = priorityTableSeats(
+            landscape ? const Size(800, 360) : const Size(360, 800),
+            count,
+          );
+          expect(
+            seats.map((s) => s.quarterTurns),
+            count == 3 ? [1, 3, 0] : (landscape ? [0, 2, 2, 0] : [1, 1, 3, 3]),
+          );
+        },
+      );
     }
   }
 
-  test('5 y 6 participantes conservan las orientaciones anteriores', () {
-    for (final count in [5, 6]) {
-      expect(
-        priorityTableSeats(
-          const Size(360, 800),
-          count,
-        ).map((s) => s.quarterTurns),
-        count == 5 ? [1, 3, 3, 3, 1] : [1, 3, 3, 3, 1, 1],
-      );
-      expect(
-        priorityTableSeats(
-          const Size(800, 360),
-          count,
-        ).map((s) => s.quarterTurns),
-        count == 5 ? [0, 0, 0, 2, 2] : [0, 0, 0, 2, 2, 2],
-      );
-    }
-  });
+  test(
+    '5 y 6 mantienen los lados y orientaciones, enumerados en sentido horario',
+    () {
+      for (final count in [5, 6]) {
+        expect(
+          priorityTableSeats(
+            const Size(360, 800),
+            count,
+          ).map((s) => s.quarterTurns),
+          count == 5 ? [1, 1, 3, 3, 3] : [1, 1, 1, 3, 3, 3],
+        );
+        expect(
+          priorityTableSeats(
+            const Size(800, 360),
+            count,
+          ).map((s) => s.quarterTurns),
+          count == 5 ? [0, 2, 2, 0, 0] : [0, 2, 2, 2, 0, 0],
+        );
+      }
+    },
+  );
 
   testWidgets('aviso flotante accesible con texto 300 % en pantalla pequeña', (
     t,

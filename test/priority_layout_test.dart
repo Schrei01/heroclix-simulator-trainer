@@ -14,7 +14,7 @@ void main() {
   ]) {
     for (var count = 2; count <= 6; count++) {
       test(
-        '$count asientos en $size: cubren mesa, sin solaparse, orden antihorario',
+        '$count asientos en $size: cubren mesa, sin solaparse, orden horario',
         () {
           final seats = priorityTableSeats(size, count);
           expect(seats.length, count);
@@ -22,7 +22,7 @@ void main() {
           var totalAngle = 0.0;
           final center = Offset(size.width / 2, size.height / 2);
           double angle(int index) => math.atan2(
-            center.dy - seats[index].bounds.center.dy,
+            seats[index].bounds.center.dy - center.dy,
             seats[index].bounds.center.dx - center.dx,
           );
           for (var i = 0; i < count; i++) {

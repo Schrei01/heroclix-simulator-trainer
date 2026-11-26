@@ -469,7 +469,7 @@ class _PriorityScreenState extends State<PriorityScreen> {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Ordena los asientos en sentido antihorario. '
+                'Ordena los asientos en sentido horario. '
                 'Los números y colores te ayudarán a ubicar a cada jugador.',
               ),
               const SizedBox(height: 16),
@@ -542,7 +542,7 @@ class _PriorityScreenState extends State<PriorityScreen> {
               ),
               const Text(
                 'Mantén pulsado un asiento y arrástralo sobre otro para intercambiarlos. '
-                'El jugador inicial se conserva.',
+                'El jugador inicial se conserva y el orden horario sigue las posiciones.',
               ),
               SizedBox(
                 key: const ValueKey('priority-setup-seats'),

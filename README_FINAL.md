@@ -1,16 +1,16 @@
-# TeamFight: GridLab — 1.0.0-rc.22+35
+# TeamFight: GridLab — 1.0.0-rc.23+36
 
 Aplicación Android offline, en español, para construir escenarios, consultar reglas
 implementadas y practicar. **Versión candidata, APK debug**: faltan las comprobaciones
 nativas de aceptación y rendimiento descritas abajo. No se congela 1.0.0 estable.
 Repositorio privado: [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer),
-rama `codex/priority-stage4`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
+rama `codex/priority-clockwise-layout`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
 
 Nombre e iconos de Android, Inicio y Acerca de actualizados a TeamFight: GridLab.
 La identidad técnica y firma se conservan para actualizar la instalación anterior.
 Archivos de Google Play preparados en distribution/google-play/; [detalles de identidad](docs/IDENTIDAD.md).
 
-Esta beta rc.22 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
+Esta beta rc.23 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
 (2026-12-30T05:00:00Z). Desde ese instante muestra «Versión de prueba finalizada»
 y bloquea todas las pantallas, también al reanudar o si permanece abierta. Acerca de
 muestra la fecha. No elimina biblioteca ni progreso. Usa el reloj del dispositivo:
@@ -23,7 +23,7 @@ anterior sin caducidad también queda fuera de este control local.
 El archivo generado se conserva en:
 
 ```text
-build/releases/teamfight-gridlab-1.0.0-rc.22-debug.apk
+build/releases/teamfight-gridlab-1.0.0-rc.23-debug.apk
 ```
 
 1. Android 7.0/API 24 o superior. Copiar el APK al teléfono, abrirlo en Archivos
@@ -35,7 +35,7 @@ build/releases/teamfight-gridlab-1.0.0-rc.22-debug.apk
 
 ```powershell
 adb devices -l
-adb -s ID install -r build/releases/teamfight-gridlab-1.0.0-rc.22-debug.apk
+adb -s ID install -r build/releases/teamfight-gridlab-1.0.0-rc.23-debug.apk
 adb -s ID shell am start -n com.valinor.heroclixtrainer/com.valinor.heroclix_simulator_trainer.MainActivity
 ```
 
@@ -50,8 +50,12 @@ Desde inicio, abre **Priority** para asistir una partida física del formato de
 Valinor. Configura 2–6 jugadores, nombres, puntos de construcción comunes y
 adicionales individuales; organiza asientos
 con las flechas anterior/siguiente y elige o sortea al inicial. **Listo** abre la
-mesa con paneles orientados hacia sus respectivos jugadores. Para 3 y 4 se usa
-el mismo esquema de lados opuestos de 5 y 6. Los botones son rectangulares, con
+mesa con paneles orientados hacia sus respectivos jugadores. Desde rc.23, tres
+jugadores se distribuyen, mirando el celular de frente: 1 arriba izquierda girado
+hacia la izquierda, 2 arriba derecha girado hacia la derecha y 3 abajo ocupando
+todo el ancho, de frente. El esquema se conserva al girar el dispositivo. Turnos y
+prioridad recorren los asientos en sentido horario; para 4–6 se mantiene la forma
+de los paneles y se enumera también en sentido horario. Los botones son rectangulares, con
 esquinas de 6 píxeles. El borde dorado identifica quién puede intervenir;
 ACTIVO y REACTIVO indican el papel de cada jugador. Se retiraron el rótulo
 PRIORIDAD y la franja superior de ronda/turno para dar más espacio a la mesa.
@@ -85,9 +89,11 @@ actualiza con cada ajuste y comparte posición en empates; conserva eliminados.
 En rc.20 los botones −/+ quedan próximos al total. Para cambiar asientos, mantén
 pulsado un asiento en la vista de configuración y suéltalo sobre otro: la marca
 INICIA sigue al seleccionado y ese jugador empieza aunque cambie de lugar.
-Durante la partida, hazlo desde el nombre hacia otro panel. Este intercambio
-mueve las vistas y conserva el inicial y el orden de juego ya establecido,
-incluidas respuestas pendientes, colores, PV, acciones y relojes. Soltar fuera
+Durante la partida, hazlo desde el nombre hacia otro panel. Desde rc.23 el intercambio
+actualiza el orden horario según las nuevas posiciones, conservando el inicial,
+activo, prioridad, colores, PV, acciones y relojes. Los pendientes se reorganizan
+desde quien ya tiene prioridad, sin repetir respuestas completadas. Deshacer
+restaura las posiciones y el orden; ambos sobreviven al guardado. Soltar fuera
 cancela. Las posiciones también se conservan al recuperar una partida.
 Rc.21 corrige la alineación: −, total de PV y + comparten centro vertical;
 el cambio temporal queda debajo sin mover el total ni superponerse.
@@ -232,7 +238,7 @@ usa etiquetas genéricas. Exportar la escena completa sí conserva sus nombres.
 | Instalación, nueva sesión tras cierre y selectores nativos | Pendiente de Android; equivalentes de archivos/controladores sí verificados |
 | Offline con radios desactivadas y rendimiento Android/FPS | Pendiente de dispositivo/emulador funcional |
 | APK release con firma del propietario | Preparado; sin claves suministradas, no generado |
-| Congelar 1.0.0 estable | Pendiente de cerrar aceptación nativa; esta entrega es 1.0.0-rc.22 |
+| Congelar 1.0.0 estable | Pendiente de cerrar aceptación nativa; esta entrega es 1.0.0-rc.23 |
 | Simular combates, dados, diales, daño y poderes de figuras | Fuera del alcance del proyecto |
 
 ## Dependencias y recompilación

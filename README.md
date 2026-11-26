@@ -1,9 +1,9 @@
 # TeamFight: GridLab
 
-Aplicación Android Flutter/Dart, offline y en español. Versión **1.0.0-rc.22+35**.
+Aplicación Android Flutter/Dart, offline y en español. Versión **1.0.0-rc.23+36**.
 
 **Priority** está disponible desde inicio: configura de 2 a 6 jugadores, organiza
-los asientos en sentido antihorario y coloca el teléfono en el centro de la mesa.
+los asientos en sentido horario y coloca el teléfono en el centro de la mesa.
 Los paneles administran turnos, prioridad y acciones mediante el motor del formato
 personalizado de Valinor. Toca el contador de acciones para cambiar adicionales;
 la partida se guarda automáticamente en este dispositivo.
@@ -36,15 +36,22 @@ Comparte posición en empates y sigue la clasificación del motor, incluidos eli
 Rc.20 acerca −/+ al total de PV. Mantén pulsado un asiento de la vista de configuración
 y suéltalo sobre otro para intercambiarlos; INICIA sigue al jugador inicial elegido.
 Durante la partida, arrastra el nombre sobre otro panel: intercambia ubicación
-sin cambiar inicial, orden de juego, prioridad, colores, PV, acciones ni relojes.
+y actualiza el orden horario de los siguientes turnos y respuestas, conservando
+inicial, turno y prioridad actuales, colores, PV, acciones y relojes. Quienes ya
+respondieron en la ventana actual no repiten; los pendientes siguen las nuevas
+posiciones a partir de quien ya tiene prioridad. Deshacer restaura ambos órdenes.
 Rc.21 alinea −/+ con el centro del total de PV. El acumulado temporal queda
 debajo sin desplazar el total al aparecer ni desaparecer.
 Alcance y pruebas en [docs/PRIORITY_PLAN.md](docs/PRIORITY_PLAN.md).
 Desde rc.15, Priority usa botones rectangulares con esquinas de 6 píxeles.
-Los paneles de 3 y 4 jugadores siguen la distribución de lados opuestos de 5 y 6.
+Desde rc.23, mirando el celular de frente, tres jugadores ocupan arriba izquierda
+(1, orientado hacia el lado izquierdo), arriba derecha (2, hacia el lado derecho)
+y la mitad inferior completa (3, de frente). Turnos y prioridad siguen el orden
+horario 1 → 2 → 3 → 1. Para 4–6, los asientos también se enumeran en sentido horario;
+conservan sus superficies y orientación hacia los lados correspondientes.
 La mesa ocupa todo el espacio bajo la barra: se retiró la franja de ronda/turno.
 El borde dorado identifica la prioridad; se mantienen ACTIVO y REACTIVO.
-La versión actual está en la rama `codex/priority-stage4` del repositorio privado
+La versión actual está en la rama `codex/priority-clockwise-layout` del repositorio privado
 [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer).
 
 Desde rc.8 la marca visible es **TeamFight: GridLab**, con los iconos Android y el
@@ -67,7 +74,7 @@ azul con ondas y letra A. Conserva alturas, admite figuras y se guarda en biblio
 JSON y PNG. La paleta reúne seis pinceles. Según §16.6 de la edición implementada,
 agua se considera despejado para visión/movimiento salvo efectos específicos.
 
-Esta beta rc.22 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
+Esta beta rc.23 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
 (2026-12-30T05:00:00Z). Desde ese instante muestra «Versión de prueba finalizada»
 y bloquea todas las pantallas, también al reanudar o si permanece abierta. Acerca de
 muestra la fecha. No elimina biblioteca ni progreso. Usa el reloj del dispositivo:

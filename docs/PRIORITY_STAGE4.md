@@ -1,6 +1,7 @@
 # Priority: historial, Deshacer y partidas locales
 
-2026-11-26. Etapa 4, rc.22+35. Se conserva el motor de las etapas 1–3 y la mesa
+2026-11-26. Etapa 4, rc.22+35, ampliada en rc.23 con orden dinámico de asientos.
+Se conserva el motor de las etapas 1–3 y la mesa
 existente. No se implementan sonidos, vibración, mantener pantalla encendida,
 exportación, sincronización ni otras funciones de etapas posteriores.
 
@@ -39,9 +40,12 @@ consumidos, rondas, turnos e historial. No inventa un ganador por supervivencia.
 - `main.dart` inyecta `PriorityRepository` sobre `FileDocumentStore`, dentro de
   `priority_v1/` del directorio privado Android ya existente. Sin dependencias,
   permisos ni comunicaciones de red nuevos. Editor y Entrenador mantienen sus datos.
-- Formato Priority 1: configuración única, snapshot, asientos, historial y pila
+- Formato Priority 2, compatible con 1: configuración única, snapshot, asientos, historial y pila
   completa de checkpoints. El codec de dominio es Dart puro y valida transiciones
   estructurales antes de aceptar un archivo; no permite reconstruir estados arbitrarios.
+  `order` conserva el ciclo horario actual en cada snapshot. La migración de formato
+  1 adopta las posiciones guardadas para el orden actual y todos los checkpoints,
+  conservando activo/prioridad, los pendientes y la pausa tras recuperar o deshacer.
 - Se solicita guardado tras cada operación aceptada. Una cola serializada combina
   escrituras pendientes sin perder operaciones del estado más reciente. Ticks de
   reloj solicitan checkpoint cada segundo, sin llenar el historial por segundo.

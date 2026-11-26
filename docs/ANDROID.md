@@ -1,6 +1,6 @@
 # Preparar, compilar e instalar en Android
 
-Candidata actual: **TeamFight: GridLab 1.0.0-rc.22+35**. Inicio contiene Editor, Entrenador y Priority; las consultas
+Candidata actual: **TeamFight: GridLab 1.0.0-rc.23+36**. Inicio contiene Editor, Entrenador y Priority; las consultas
 y ensayos están en las herramientas del Editor. El recorrido vigente del Editor
 está al final de este documento. Los apartados identificados por etapa describen
 sus versiones históricas. Resultados efectivamente ejecutados: [ESTADO](ESTADO.md).
@@ -548,3 +548,17 @@ se mantiene. Las pruebas Flutter/archivos y renders se registran en ESTADO.md.
 
 Instalar encima con la misma firma preserva los archivos privados. Desinstalar o
 borrar datos elimina las partidas Priority; no se incluye su exportación en etapa 4.
+
+## Tres jugadores: giros del dibujo y sentido horario (rc.23)
+
+Mirando el celular de frente: panel 1 arriba izquierda y orientado hacia quien se
+sienta a la izquierda; panel 2 arriba derecha y orientado hacia quien se sienta a
+la derecha; panel 3 ocupa todo el ancho inferior y se lee de frente. Comprobar los
+giros de los controles completos y la gestión, tanto en configuración como mesa,
+en vertical/horizontal. Verificar 1 ACTION → 2 RESPONSE ACTION → 3 PASS → prioridad
+1 → END TURN → turno 2, y repetir desde un inicial distinto. Para 4–6, comprobar que
+los números recorren los mismos paneles en sentido horario y que los relojes siguen
+la prioridad. Abrir una partida guardada, deshacer y verificar estado conservado.
+Al arrastrar durante la partida, los próximos turnos y respuestas siguen las nuevas posiciones; el jugador inicial se conserva. Comprobar Deshacer y recuperación también de ese orden.
+
+Este recorrido nativo sigue pendiente. Pruebas Flutter, renders y APK en ESTADO.md.
