@@ -1,16 +1,16 @@
-# TeamFight: GridLab — 1.0.0-rc.25+38
+# TeamFight: GridLab — 1.0.0-rc.26+39
 
 Aplicación Android offline, en español, para construir escenarios, consultar reglas
 implementadas y practicar. **Versión candidata, APK debug**: faltan las comprobaciones
 nativas de aceptación y rendimiento descritas abajo. No se congela 1.0.0 estable.
 Repositorio privado: [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer),
-rama `codex/priority-setup-selector`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
+rama `codex/priority-finish-setup`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
 
 Nombre e iconos de Android, Inicio y Acerca de actualizados a TeamFight: GridLab.
 La identidad técnica y firma se conservan para actualizar la instalación anterior.
 Archivos de Google Play preparados en distribution/google-play/; [detalles de identidad](docs/IDENTIDAD.md).
 
-Esta beta rc.25 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
+Esta beta rc.26 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
 (2026-12-30T05:00:00Z). Desde ese instante muestra «Versión de prueba finalizada»
 y bloquea todas las pantallas, también al reanudar o si permanece abierta. Acerca de
 muestra la fecha. No elimina biblioteca ni progreso. Usa el reloj del dispositivo:
@@ -23,7 +23,7 @@ anterior sin caducidad también queda fuera de este control local.
 El archivo generado se conserva en:
 
 ```text
-build/releases/teamfight-gridlab-1.0.0-rc.25-debug.apk
+build/releases/teamfight-gridlab-1.0.0-rc.26-debug.apk
 ```
 
 1. Android 7.0/API 24 o superior. Copiar el APK al teléfono, abrirlo en Archivos
@@ -35,7 +35,7 @@ build/releases/teamfight-gridlab-1.0.0-rc.25-debug.apk
 
 ```powershell
 adb devices -l
-adb -s ID install -r build/releases/teamfight-gridlab-1.0.0-rc.25-debug.apk
+adb -s ID install -r build/releases/teamfight-gridlab-1.0.0-rc.26-debug.apk
 adb -s ID shell am start -n com.valinor.heroclixtrainer/com.valinor.heroclix_simulator_trainer.MainActivity
 ```
 
@@ -133,6 +133,10 @@ consultar resultados/historial y continuar partidas interrumpidas; cambiar de
 partida conserva la actual. Descartar una guardada exige confirmación y la abierta
 no se puede borrar. **Finalizar partida** pide confirmación y guarda clasificación,
 estado individual, seis tipos de operación, tiempo consumido, rondas e historial.
+Desde rc.26, al confirmar vuelve directamente a **Preparar mesa**, sin mostrar
+el resumen. Se consulta después desde **⋮ → Partidas guardadas → Consultar**.
+La partida se archiva antes de volver; si falla, permanece abierta con
+**Reintentar y volver** para completar el guardado y regresar.
 Un error de lectura no sobrescribe archivos; un error de escritura conserva la
 partida abierta y ofrece Reintentar. No hay sincronización ni exportación de Priority.
 [Plan y pruebas](docs/PRIORITY_PLAN.md).
@@ -251,7 +255,7 @@ usa etiquetas genéricas. Exportar la escena completa sí conserva sus nombres.
 | Instalación, nueva sesión tras cierre y selectores nativos | Pendiente de Android; equivalentes de archivos/controladores sí verificados |
 | Offline con radios desactivadas y rendimiento Android/FPS | Pendiente de dispositivo/emulador funcional |
 | APK release con firma del propietario | Preparado; sin claves suministradas, no generado |
-| Congelar 1.0.0 estable | Pendiente de cerrar aceptación nativa; esta entrega es 1.0.0-rc.25 |
+| Congelar 1.0.0 estable | Pendiente de cerrar aceptación nativa; esta entrega es 1.0.0-rc.26 |
 | Simular combates, dados, diales, daño y poderes de figuras | Fuera del alcance del proyecto |
 
 ## Dependencias y recompilación

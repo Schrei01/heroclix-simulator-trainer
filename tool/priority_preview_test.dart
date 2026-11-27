@@ -39,6 +39,8 @@ void main() {
     ('three-help', 3, const Size(360, 800), true),
     ('three-draw', 3, const Size(360, 800), true),
     ('three-picked', 3, const Size(360, 800), true),
+    ('manual-finish-setup', 3, const Size(360, 800), true),
+    ('manual-finish-results', 3, const Size(360, 800), true),
     ('four', 4, const Size(360, 800), false),
     ('three-landscape', 3, const Size(800, 360), false),
     ('four-landscape', 4, const Size(800, 360), false),
@@ -164,6 +166,45 @@ void main() {
         await t.pumpAndSettle();
       }
       TestGesture? seatGesture;
+      if (name.startsWith('manual-finish-')) {
+        await t.tap(find.byKey(const ValueKey('priority-player-count')));
+        await t.pumpAndSettle();
+        await t.tap(find.text('3 jugadores').last);
+        await t.pumpAndSettle();
+        final start = find.byKey(const ValueKey('priority-start'));
+        await t.ensureVisible(start);
+        await t.tap(start);
+        await t.pumpAndSettle();
+        controller.dispatch(
+          const PriorityCommand.setVictoryPoints('J2', 150),
+          expectedRevision: controller.value!.revision,
+        );
+        controller.dispatch(
+          const PriorityCommand.action('J1'),
+          expectedRevision: controller.value!.revision,
+        );
+        await t.pumpAndSettle();
+        final id = controller.session!.id;
+        await t.tap(find.byKey(const ValueKey('priority-toolbar-finish')));
+        await t.pumpAndSettle();
+        await t.tap(find.byKey(const ValueKey('priority-finish-confirm')));
+        await t.pumpAndSettle();
+        expect(controller.value, isNull);
+        expect(
+          find.byKey(const ValueKey('priority-ranking-title')),
+          findsNothing,
+        );
+        expect(find.byKey(const ValueKey('priority-setup')), findsOneWidget);
+        if (name == 'manual-finish-results') {
+          openPriorityLibrary(
+            t.element(find.byType(PriorityScreen)),
+            controller,
+          );
+          await t.pumpAndSettle();
+          await t.tap(find.byKey(ValueKey('priority-consult-$id')));
+          await t.pumpAndSettle();
+        }
+      }
       if (name == 'toolbar-back') {
         Navigator.push<void>(
           t.element(find.byType(PriorityScreen)),
@@ -289,7 +330,7 @@ void main() {
         final image = await boundary.toImage();
         final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
         final directory = Directory(
-          'build/verification/priority-setup-selector/previews',
+          'build/verification/priority-finish-setup/previews',
         );
         await directory.create(recursive: true);
         await File('${directory.path}/$name.png')

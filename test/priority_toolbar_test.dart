@@ -42,14 +42,11 @@ void main() {
     expect(c.value!.underlyingPhase, PriorityPhase.activeTurn);
     await press(t, 'priority-toolbar-finish');
     await press(t, 'priority-finish-confirm');
-    expect(c.value!.phase, PriorityPhase.finished);
-    expect(key('priority-ranking-title'), findsOneWidget);
-    await press(t, 'priority-ranking-close');
-    expect(button('finish').onPressed, isNull);
-    await press(t, 'priority-toolbar-undo');
-    expect(c.value!.underlyingPhase, PriorityPhase.activeTurn);
-    expect(c.value!.isPaused, isTrue);
-    expect(button('finish').onPressed, isNotNull);
+    expect(c.value, isNull);
+    expect(c.savedMatches.single.finished, isTrue);
+    expect(key('priority-ranking-title'), findsNothing);
+    expect(key('priority-setup'), findsOneWidget);
+    expect(key('priority-toolbar-finish'), findsNothing);
     expect(t.takeException(), isNull);
     await t.pumpWidget(const SizedBox.shrink());
   });
@@ -152,7 +149,10 @@ void main() {
           expect(c.value!.isPaused, isTrue);
           await press(t, 'priority-toolbar-finish');
           await press(t, 'priority-finish-confirm');
-          expect(c.value!.phase, PriorityPhase.finished);
+          expect(c.value, isNull);
+          expect(c.savedMatches.single.finished, isTrue);
+          expect(key('priority-ranking-title'), findsNothing);
+          expect(key('priority-setup'), findsOneWidget);
           expect(t.takeException(), isNull);
           await t.pumpWidget(const SizedBox.shrink());
         },

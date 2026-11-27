@@ -2,8 +2,8 @@
 abstract final class AppInfo {
   static const name = 'TeamFight: GridLab';
   static const iconAsset = 'assets/branding/gridlab_icon.png';
-  static const version = '1.0.0-rc.25';
-  static const build = 38;
+  static const version = '1.0.0-rc.26';
+  static const build = 39;
   static const rules = '2026-07-01';
   static const source = 'https://wizkids.com/heroclix/gameplay/rules-format/';
   static const disclaimer =

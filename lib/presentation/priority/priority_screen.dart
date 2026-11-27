@@ -41,6 +41,12 @@ class _PriorityScreenState extends State<PriorityScreen>
   final _minutes = TextEditingController(text: '30');
   final _points = TextEditingController(text: '300');
   bool _resultsShown = false;
+  String? _manualFinishId;
+  bool _finishingToSetup = false;
+  bool get _pendingManualFinish =>
+      _manualFinishId != null &&
+      _manualFinishId == widget.controller.session?.id &&
+      widget.controller.value?.phase == PriorityPhase.finished;
   String? _notifiedExpired;
   ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? _expiryNotice;
 
@@ -65,6 +71,10 @@ class _PriorityScreenState extends State<PriorityScreen>
   void _checkFinished() {
     if (!mounted) return;
     final match = widget.controller.value;
+    if (match == null ||
+        (!_finishingToSetup && match.phase != PriorityPhase.finished)) {
+      _manualFinishId = null;
+    }
     if (match != null) _cancelDraw();
     _syncExpiryNotice(match);
     if (match?.phase != PriorityPhase.finished) _resultsShown = false;
@@ -85,10 +95,15 @@ class _PriorityScreenState extends State<PriorityScreen>
       });
       WidgetsBinding.instance.ensureVisualUpdate();
     }
-    if (match?.phase == PriorityPhase.finished && !_resultsShown) {
+    if (match?.phase == PriorityPhase.finished &&
+        !_resultsShown &&
+        !_pendingManualFinish) {
       _resultsShown = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && (ModalRoute.of(context)?.isCurrent ?? true)) {
+        if (mounted &&
+            !_pendingManualFinish &&
+            widget.controller.value?.phase == PriorityPhase.finished &&
+            (ModalRoute.of(context)?.isCurrent ?? true)) {
           showPriorityStandings(context, widget.controller);
         }
       });
@@ -349,6 +364,29 @@ class _PriorityScreenState extends State<PriorityScreen>
     if (confirmed == true && mounted) await widget.controller.parkAndReset();
   }
 
+  Future<void> _finishAndPrepare() async {
+    final controller = widget.controller;
+    if (_finishingToSetup || controller.value == null) return;
+    _finishingToSetup = true;
+    _manualFinishId = controller.session!.id;
+    try {
+      controller.synchronizeClock();
+      final current = controller.value!;
+      if (current.phase != PriorityPhase.finished &&
+          !controller.dispatch(
+            const PriorityCommand.finish(),
+            expectedRevision: current.revision,
+          )) {
+        _manualFinishId = null;
+        return;
+      }
+      await controller.parkAndReset();
+    } finally {
+      _finishingToSetup = false;
+      if (mounted) setState(() {});
+    }
+  }
+
   Future<void> _more(_PriorityMenu choice) async {
     _cancelDraw();
     switch (choice) {
@@ -387,7 +425,7 @@ class _PriorityScreenState extends State<PriorityScreen>
                 ),
                 const SizedBox(height: 12),
                 const Text(
-                  'Se detendrán los relojes y se guardará el resumen de resultados.',
+                  'Se detendrán los relojes, se guardarán los resultados y volverás a Preparar mesa.',
                 ),
                 const SizedBox(height: 12),
                 Wrap(
@@ -410,14 +448,7 @@ class _PriorityScreenState extends State<PriorityScreen>
           ),
         );
         if (confirmed == true && mounted) {
-          widget.controller.synchronizeClock();
-          final current = widget.controller.value;
-          if (current != null) {
-            widget.controller.dispatch(
-              const PriorityCommand.finish(),
-              expectedRevision: current.revision,
-            );
-          }
+          await _finishAndPrepare();
         }
     }
   }
@@ -460,8 +491,14 @@ class _PriorityScreenState extends State<PriorityScreen>
                     ),
                     TextButton(
                       key: const ValueKey('priority-retry-save'),
-                      onPressed: controller.flush,
-                      child: const Text('Reintentar guardado'),
+                      onPressed: _pendingManualFinish
+                          ? _finishAndPrepare
+                          : controller.flush,
+                      child: Text(
+                        _pendingManualFinish
+                            ? 'Reintentar y volver'
+                            : 'Reintentar guardado',
+                      ),
                     ),
                   ],
                 ),

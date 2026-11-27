@@ -1,6 +1,6 @@
 # Preparar, compilar e instalar en Android
 
-Candidata actual: **TeamFight: GridLab 1.0.0-rc.25+38**. Inicio contiene Editor, Entrenador y Priority; las consultas
+Candidata actual: **TeamFight: GridLab 1.0.0-rc.26+39**. Inicio contiene Editor, Entrenador y Priority; las consultas
 y ensayos están en las herramientas del Editor. El recorrido vigente del Editor
 está al final de este documento. Los apartados identificados por etapa describen
 sus versiones históricas. Resultados efectivamente ejecutados: [ESTADO](ESTADO.md).
@@ -588,3 +588,16 @@ segundo plano y navegación: el efecto se cancela y no cambia el inicial despué
 Con animaciones reducidas no debe animar, conservando una elección aleatoria.
 Repetir ayuda, toque y dado en ambas orientaciones, texto ampliado y TalkBack.
 Este recorrido físico sigue pendiente; resultados Flutter/renders en ESTADO.md.
+
+## Finalizar y volver a Preparar mesa (rc.26)
+
+Desde X roja o ⋮ → Finalizar partida, Cancelar debe conservar el juego. Confirmar
+debe guardar la partida y volver a Preparar mesa sin abrir resumen. Consultar los
+resultados y el historial desde ⋮ → Partidas guardadas → Consultar, también después
+de cerrar/abrir la app. No iniciar automáticamente la nueva partida.
+
+Si falla el guardado, comprobar que la terminada sigue abierta con sus puntos/tiempos
+y sin resumen automático. Reintentar y volver debe completar el archivo y regresar a
+preparación; Deshacer antes de salir debe restaurar el juego pausado. El cierre
+automático por último superviviente conserva el comportamiento anterior.
+Recorrido físico pendiente; pruebas Flutter/renders en ESTADO.md.

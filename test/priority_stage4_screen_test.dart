@@ -146,7 +146,7 @@ void main() {
   );
 
   testWidgets(
-    'finalización manual confirma, resume operaciones y abre historial',
+    'finalización manual vuelve a preparar y permite consultar resultados e historial guardados',
     (t) async {
       final c = PriorityController(inputCooldown: Duration.zero)
         ..start(priorityConfig(3, clock: false));
@@ -155,19 +155,24 @@ void main() {
       act(c, const PriorityCommand.responseAction('J2'));
       act(c, const PriorityCommand.pass('J3'));
       await mount(t, c);
+      final id = c.session!.id;
       await menu(t, 'finish');
       await t.tap(find.text('Cancelar'));
       await t.pumpAndSettle();
       expect(c.value!.phase, PriorityPhase.activeTurn);
       await menu(t, 'finish');
       await press(t, 'priority-finish-confirm');
-      expect(c.value!.phase, PriorityPhase.finished);
-      expect(key('priority-ranking-title'), findsOneWidget);
+      expect(c.value, isNull);
+      expect(key('priority-setup'), findsOneWidget);
+      expect(key('priority-ranking-title'), findsNothing);
+      await menu(t, 'saved');
+      await press(t, 'priority-consult-$id');
       expect(key('priority-result-stats-J1'), findsOneWidget);
       expect(find.text('ACTION 1 · FREE 0'), findsOneWidget);
-      await press(t, 'priority-result-history');
+      await t.scrollUntilVisible(key('priority-saved-history'), 200);
+      await press(t, 'priority-saved-history');
       expect(key('priority-history-title'), findsOneWidget);
-      expect(c.value!.phase, PriorityPhase.finished);
+      expect(c.value, isNull);
       expect(t.takeException(), isNull);
     },
   );

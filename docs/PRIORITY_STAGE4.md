@@ -35,6 +35,11 @@ confirmación global y conserva clasificación por PV con empates, estado indivi
 ACTION/RESPONSE ACTION/FREE/RESPONSE FREE/PASS voluntario y automático, tiempos
 consumidos, rondas, turnos e historial. No inventa un ganador por supervivencia.
 
+Desde rc.26, finalizar manualmente archiva la partida y vuelve a Preparar mesa
+sin abrir el resumen. Se consulta después desde Partidas guardadas. Deshacer en
+la mesa actúa mientras una partida permanezca abierta. Si falla el guardado, se
+conserva abierta con Reintentar y volver; no se descarta el estado para navegar.
+
 ## Persistencia y errores
 
 - `main.dart` inyecta `PriorityRepository` sobre `FileDocumentStore`, dentro de

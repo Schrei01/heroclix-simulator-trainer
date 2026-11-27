@@ -119,6 +119,14 @@ Se libera el ticker al disponer la pantalla y se respeta movimiento reducido tan
 inicial como activado durante el sorteo. La selección final se anuncia mediante
 semántica liveRegion, sin anunciar cada fotograma. No cambia dominio ni archivos.
 
+Rc.26 cambia el cierre manual: la confirmación marca el ID de la sesión para evitar
+la clasificación automática durante los ticks/avisos de reloj, envía `finish` al
+motor y espera `parkAndReset` antes de mostrar configuración. Reutiliza archivo y
+limpieza del actual; no cambia repositorio ni formato. La marca se conserva si
+falla E/S para ofrecer Reintentar y volver sin abrir resumen ni borrar datos, y se
+limpia al volver a configuración o al deshacer el cierre. El cierre automático
+por eliminación conserva su comportamiento. Los resultados siguen en la biblioteca.
+
 Producción usa `priority_v1/` en almacenamiento privado Android, con formato
 Priority 2 (compatible con 1), checksum de corrupción, archivo activo y copia válida anterior.
 Cada partida archivada tiene ID propio. Nueva partida o cambiar de partida

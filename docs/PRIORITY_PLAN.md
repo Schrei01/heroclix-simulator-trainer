@@ -670,3 +670,37 @@ El resto de Priority, Editor y Entrenador mantiene su comportamiento. Sin paquet
 permisos ni cambios del formato de partida o del flujo de APK. La aceptación Android
 sigue pendiente según la decisión de continuar sin teléfono. Evidencia local en
 `build/verification/priority-setup-selector/`; resultados y APK en [ESTADO.md](ESTADO.md).
+
+## Finalizar manualmente vuelve a Preparar mesa rc.26 — 2026-11-27
+
+Rama `codex/priority-finish-setup`, base `9ecd325` (rc.25).
+Al confirmar Finalizar desde la X roja o el menú, se finaliza con el motor, se
+archiva la partida y se limpia la actual antes de volver a Preparar mesa, sin
+abrir la clasificación. El resumen e historial permanecen en Partidas guardadas.
+Se conserva la confirmación; Cancelar mantiene la partida. Los campos de preparación
+siguen reutilizando sus valores como al configurar Nueva partida.
+
+El retorno espera el guardado correcto. Si falla, la partida terminada sigue abierta
+con Reintentar y volver; no abre resumen ni borra datos. Deshacer mientras sigue
+abierta cancela el retorno pendiente y restaura la partida pausada. Se evita la
+clasificación automática incluso si liquidar el reloj notifica cambios de estado.
+El cierre automático por eliminación conserva su comportamiento; motor, repositorio
+y formato no cambian.
+
+- [x] Cierre manual confirmado → archivo → Preparar mesa, sin resumen automático.
+- [x] Resultados e historial accesibles desde Partidas guardadas tras el cierre.
+- [x] Protección de guardado, reintento y reversión durante un fallo.
+- [x] Cinco pruebas nuevas: reloj con notificaciones y reinicio, fallo de escritura
+  general/archivo/working y Deshacer después de un fallo. Se adaptan las pruebas
+  de toolbar y cierre manual del historial al nuevo destino.
+- [x] Primera ejecución: **25/25 aprobadas**, 33 s, incluidos cierre, consulta e historial.
+- [x] Regresión final de interfaz, cierres automáticos y renders: **265/265 aprobadas**,
+  3 min 2 s (231 pruebas y 34 renders). Análisis completo sin incidencias; 206 archivos
+  Dart con formato correcto. Revisión visual del retorno y consulta posterior.
+- [x] APK rc.26/código 39 generado mediante `./tool/build_apk.ps1`, Gradle 86,2 s;
+  paquete/versión/SDK, firma v2, certificado anterior y copia/hash verificados,
+  sin INTERNET. Solo queda rc.26 tras retirar rc.25 con el script habitual.
+
+Sin nuevas dependencias/permisos ni cambios de flujo de APK. La aceptación Android
+sigue pendiente conforme a la decisión de continuar sin teléfono. Evidencia en
+`build/verification/priority-finish-setup/`; resultados y APK en [ESTADO.md](ESTADO.md).
