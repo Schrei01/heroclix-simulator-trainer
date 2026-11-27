@@ -48,33 +48,35 @@ void main() {
     },
   );
 
-  testWidgets('aviso flotante accesible con texto 300 % en pantalla pequeña', (
-    t,
-  ) async {
-    t.view.devicePixelRatio = 1;
-    t.view.physicalSize = const Size(320, 320);
-    t.platformDispatcher.textScaleFactorTestValue = 3;
-    addTearDown(t.view.resetDevicePixelRatio);
-    addTearDown(t.view.resetPhysicalSize);
-    addTearDown(t.platformDispatcher.clearTextScaleFactorTestValue);
-    final clock = PriorityFakeClock();
-    final c = PriorityController(
-      inputCooldown: Duration.zero,
-      elapsedClock: clock.read,
-    )..start(priorityConfig(6, time: const Duration(seconds: 1)));
-    addTearDown(c.dispose);
-    await mount(t, c);
-    clock.advance(const Duration(seconds: 2));
-    c.synchronizeClock();
-    await t.pumpAndSettle();
-    expect(key('priority-time-expired'), findsOneWidget);
-    expect(t.takeException(), isNull);
-    await t.tap(find.text('Ver'));
-    await t.pumpAndSettle();
-    expect(key('priority-correct-time'), findsOneWidget);
-    await t.pumpWidget(const SizedBox.shrink());
-    c.reset();
-  });
+  testWidgets(
+    'reloj a cero sin aviso flotante con texto 300 % en pantalla pequeña',
+    (t) async {
+      t.view.devicePixelRatio = 1;
+      t.view.physicalSize = const Size(320, 320);
+      t.platformDispatcher.textScaleFactorTestValue = 3;
+      addTearDown(t.view.resetDevicePixelRatio);
+      addTearDown(t.view.resetPhysicalSize);
+      addTearDown(t.platformDispatcher.clearTextScaleFactorTestValue);
+      final clock = PriorityFakeClock();
+      final c = PriorityController(
+        inputCooldown: Duration.zero,
+        elapsedClock: clock.read,
+      )..start(priorityConfig(6, time: const Duration(seconds: 1)));
+      addTearDown(c.dispose);
+      await mount(t, c);
+      clock.advance(const Duration(seconds: 2));
+      c.synchronizeClock();
+      await t.pumpAndSettle();
+      expect(find.byType(SnackBar), findsNothing);
+      expect(c.value!.isPaused, isTrue);
+      expect(t.widget<Text>(key('priority-clock-J1')).data, '00:00');
+      expect(t.takeException(), isNull);
+      await press(t, 'priority-player-menu-J1');
+      expect(key('priority-correct-time'), findsOneWidget);
+      await t.pumpWidget(const SizedBox.shrink());
+      c.reset();
+    },
+  );
 
   testWidgets(
     'mesa sin franja ni rótulo de prioridad; borde y roles accesibles',
@@ -132,47 +134,45 @@ void main() {
     expect(t.takeException(), isNull);
   });
 
-  testWidgets(
-    'agotamiento avisa sin reducir mesa ni repetir avisos por refresco',
-    (t) async {
-      final clock = PriorityFakeClock();
-      final c = PriorityController(
-        inputCooldown: Duration.zero,
-        elapsedClock: clock.read,
-      )..start(priorityConfig(2, time: const Duration(seconds: 1)));
-      addTearDown(c.dispose);
-      await mount(t, c);
-      final bounds = t.getRect(key('priority-table'));
-      clock.advance(const Duration(seconds: 2));
-      c.synchronizeClock();
-      await t.pumpAndSettle();
-      expect(key('priority-time-expired'), findsOneWidget);
-      expect(t.getRect(key('priority-table')), bounds);
-      c.setForeground(false);
-      c.setForeground(true);
-      await t.pumpAndSettle();
-      await t.pump(const Duration(seconds: 9));
-      await t.pumpAndSettle();
-      expect(key('priority-time-expired'), findsNothing);
-      expect(c.value!.isPaused, isTrue);
-      expect(c.value!.player('J1').eliminated, isFalse);
-      c.dispatch(
-        const PriorityCommand.setRemainingTime('J1', Duration(seconds: 1)),
-        expectedRevision: c.value!.revision,
-      );
-      c.dispatch(
-        const PriorityCommand.resume(),
-        expectedRevision: c.value!.revision,
-      );
-      clock.advance(const Duration(seconds: 2));
-      c.synchronizeClock();
-      await t.pumpAndSettle();
-      expect(key('priority-time-expired'), findsOneWidget);
-      await t.tap(find.text('Ver'));
-      await t.pumpAndSettle();
-      expect(key('priority-correct-time'), findsOneWidget);
-      await t.pumpWidget(const SizedBox.shrink());
-      c.reset();
-    },
-  );
+  testWidgets('agotamiento pausa sin avisos emergentes ni reducir la mesa', (
+    t,
+  ) async {
+    final clock = PriorityFakeClock();
+    final c = PriorityController(
+      inputCooldown: Duration.zero,
+      elapsedClock: clock.read,
+    )..start(priorityConfig(2, time: const Duration(seconds: 1)));
+    addTearDown(c.dispose);
+    await mount(t, c);
+    final bounds = t.getRect(key('priority-table'));
+    clock.advance(const Duration(seconds: 2));
+    c.synchronizeClock();
+    await t.pumpAndSettle();
+    expect(find.byType(SnackBar), findsNothing);
+    expect(t.getRect(key('priority-table')), bounds);
+    c.setForeground(false);
+    c.setForeground(true);
+    await t.pumpAndSettle();
+    await t.pump(const Duration(seconds: 9));
+    await t.pumpAndSettle();
+    expect(find.byType(SnackBar), findsNothing);
+    expect(c.value!.isPaused, isTrue);
+    expect(c.value!.player('J1').eliminated, isFalse);
+    c.dispatch(
+      const PriorityCommand.setRemainingTime('J1', Duration(seconds: 1)),
+      expectedRevision: c.value!.revision,
+    );
+    c.dispatch(
+      const PriorityCommand.resume(),
+      expectedRevision: c.value!.revision,
+    );
+    clock.advance(const Duration(seconds: 2));
+    c.synchronizeClock();
+    await t.pumpAndSettle();
+    expect(find.byType(SnackBar), findsNothing);
+    await press(t, 'priority-player-menu-J1');
+    expect(key('priority-correct-time'), findsOneWidget);
+    await t.pumpWidget(const SizedBox.shrink());
+    c.reset();
+  });
 }

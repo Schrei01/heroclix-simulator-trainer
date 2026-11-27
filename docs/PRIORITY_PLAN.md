@@ -704,3 +704,32 @@ y formato no cambian.
 Sin nuevas dependencias/permisos ni cambios de flujo de APK. La aceptación Android
 sigue pendiente conforme a la decisión de continuar sin teléfono. Evidencia en
 `build/verification/priority-finish-setup/`; resultados y APK en [ESTADO.md](ESTADO.md).
+
+## Mesa sin letreros temporales rc.27 — 2026-11-27
+
+Rama `codex/priority-quiet-table`, base `3a89c8d` (rc.26).
+Se retiran los avisos inferiores de Deshacer, recuperación y agotamiento del reloj.
+Se ocultan las etiquetas visuales de controles mientras hay una partida abierta,
+incluidas pulsación larga y hover. Se conservan los nombres accesibles con semántica
+explícita y la acción del menú agrupada. La preparación conserva sus ayudas.
+
+El reloj a cero sigue rojo/pausado y se corrige desde el nombre; no elimina jugadores.
+La información de recuperación, incluida copia anterior válida, queda consultable
+al abrir Historial. Los errores de biblioteca pasan a su lista; los de guardado
+mantienen su panel y reintento. No se ocultan errores ni se cambian confirmaciones.
+El acumulado temporal de PV permanece junto a su contador, según el requisito previo.
+
+- [x] Sin SnackBars generados por Priority.
+- [x] Sin tooltips visuales de la mesa, manteniendo semántica de controles.
+- [x] Información y errores dentro de Historial/biblioteca/panel correspondiente.
+- [x] Seis pruebas nuevas: acciones/PV/undo, pulsación larga/hover, recuperación
+  normal y desde copia válida, nombres accesibles incluyendo Atrás y menú, y error
+  de consulta visible/reintento. Se adaptan cuatro pruebas previas de agotamiento
+  y orientación para abrir la gestión desde el nombre sin usar un aviso flotante.
+- [x] Regresión focalizada: 272/272 (237 pruebas y 35 renders), 3 min 12 s; análisis sin incidencias y formato de 207 archivos correcto.
+- [x] APK rc.27 generado/validado con firma y paquete conservados; solo queda el entregable reciente.
+
+Motor, reglas, cronómetros, acciones y persistencia conservados. Sin nuevas
+dependencias/permisos ni cambios del flujo de APK. Aceptación física pendiente
+según la decisión de continuar sin teléfono. Evidencia en
+`build/verification/priority-quiet-table/`; resultados y APK en [ESTADO.md](ESTADO.md).

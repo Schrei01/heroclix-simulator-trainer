@@ -56,7 +56,7 @@ conserva abierta con Reintentar y volver; no se descarta el estado para navegar.
   reloj solicitan checkpoint cada segundo, sin llenar el historial por segundo.
 - Cada archivo usa temporal, flush y rename. Antes de sustituir `working.json` se
   conserva una copia anterior conocida válida. Ante truncamiento/corrupción del
-  principal, se recupera esa copia y se avisa que debe revisarse: puede faltar la
+  principal, se recupera esa copia y se indica en Historial que debe revisarse: puede faltar la
   última operación. No es una transacción multiarchivo ni garantiza recuperar datos
   que Android no alcanzó a escribir antes de un corte abrupto.
 - Checksum FNV-1a para detectar corrupción accidental, sin finalidad criptográfica.

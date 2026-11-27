@@ -46,8 +46,8 @@ botones rectangulares de radio 6 al módulo y sus diálogos; `priorityTableSeats
 usa lados opuestos para 3–6 participantes y conserva la disposición de 2, 5 y 6.
 La mesa no reserva espacio a un estado superior. Ronda/turno permanecen como
 semántica accesible y en clasificación; prioridad se indica con borde y semántica,
-sin rótulo visible. El agotamiento genera un SnackBar temporal deduplicado por
-episodio y reloj rojo, sin alterar la pausa ni la lógica del motor/controlador.
+sin rótulo visible. El agotamiento mantiene reloj rojo y pausa; desde rc.27 se
+retira el SnackBar temporal que acompañaba a ese estado.
 
 En rc.16 el formulario aplica puntos de construcción comunes a cada configuración
 de jugador y recoge tiempos en minutos completos, conservando la precisión del
@@ -126,6 +126,17 @@ limpieza del actual; no cambia repositorio ni formato. La marca se conserva si
 falla E/S para ofrecer Reintentar y volver sin abrir resumen ni borrar datos, y se
 limpia al volver a configuración o al deshacer el cierre. El cierre automático
 por eliminación conserva su comportamiento. Los resultados siguen en la biblioteca.
+
+Rc.27 retira los SnackBars de Priority (undo, recuperación, agotamiento y error de
+biblioteca) y oculta tooltips visuales con `TooltipVisibility` solo mientras hay
+partida abierta. Las etiquetas de controles se conservan mediante semántica explícita
+en iconos, contador, PV, volver y menú; se agrupa la semántica del menú para mantener
+su nombre y acción. Se verifica el árbol semántico porque la versión instalada de
+material_ui no conserva por sí sola todos los nombres al ocultar tooltips.
+`recoveryNotice` permite leer la información de recuperación en Historial sin
+consumirla como popup. Los errores de operaciones de biblioteca son estado local
+visible en su lista y se limpian al reintentar; los de guardado siguen en el panel
+existente. No se modifica reloj, consumo, estado de partida ni formato persistente.
 
 Producción usa `priority_v1/` en almacenamiento privado Android, con formato
 Priority 2 (compatible con 1), checksum de corrupción, archivo activo y copia válida anterior.

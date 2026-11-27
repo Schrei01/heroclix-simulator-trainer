@@ -51,6 +51,7 @@ class PriorityController extends ValueNotifier<PriorityMatch?> {
   bool get dirty => _dirty;
   String? get storageError => _storageError;
   String? get libraryError => _libraryError;
+  String? get recoveryNotice => _notice;
   bool get canUndo =>
       _ready &&
       !_busy &&

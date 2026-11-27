@@ -52,6 +52,7 @@ void main() {
     ('clock-six', 6, const Size(360, 800), false),
     ('clock-landscape', 6, const Size(800, 360), false),
     ('clock-expired', 3, const Size(360, 800), false),
+    ('undo-quiet', 3, const Size(360, 800), false),
     ('player-management', 3, const Size(360, 800), false),
     ('eliminated', 6, const Size(360, 800), false),
     ('final-standings', 3, const Size(360, 800), false),
@@ -85,6 +86,7 @@ void main() {
                 name == 'toolbar-back' ||
                 name == 'player-management' ||
                 name == 'undo-paused' ||
+                name == 'undo-quiet' ||
                 name == 'eliminated' ||
                 name == 'final-standings',
             players: [
@@ -166,6 +168,12 @@ void main() {
         await t.pumpAndSettle();
       }
       TestGesture? seatGesture;
+      if (name == 'undo-quiet') {
+        await t.tap(find.byKey(const ValueKey('priority-toolbar-undo')));
+        await t.pumpAndSettle();
+        expect(find.byType(SnackBar), findsNothing);
+        expect(controller.value!.isPaused, isTrue);
+      }
       if (name.startsWith('manual-finish-')) {
         await t.tap(find.byKey(const ValueKey('priority-player-count')));
         await t.pumpAndSettle();
@@ -330,7 +338,7 @@ void main() {
         final image = await boundary.toImage();
         final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
         final directory = Directory(
-          'build/verification/priority-finish-setup/previews',
+          'build/verification/priority-quiet-table/previews',
         );
         await directory.create(recursive: true);
         await File('${directory.path}/$name.png')

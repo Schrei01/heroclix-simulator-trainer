@@ -47,8 +47,6 @@ class _PriorityScreenState extends State<PriorityScreen>
       _manualFinishId != null &&
       _manualFinishId == widget.controller.session?.id &&
       widget.controller.value?.phase == PriorityPhase.finished;
-  String? _notifiedExpired;
-  ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? _expiryNotice;
 
   @override
   void initState() {
@@ -76,25 +74,7 @@ class _PriorityScreenState extends State<PriorityScreen>
       _manualFinishId = null;
     }
     if (match != null) _cancelDraw();
-    _syncExpiryNotice(match);
     if (match?.phase != PriorityPhase.finished) _resultsShown = false;
-    final notice = widget.controller.takeNotice();
-    if (notice != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                notice,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          );
-        }
-      });
-      WidgetsBinding.instance.ensureVisualUpdate();
-    }
     if (match?.phase == PriorityPhase.finished &&
         !_resultsShown &&
         !_pendingManualFinish) {
@@ -109,80 +89,6 @@ class _PriorityScreenState extends State<PriorityScreen>
       });
       WidgetsBinding.instance.ensureVisualUpdate();
     }
-  }
-
-  void _closeExpiryNotice() {
-    final notice = _expiryNotice;
-    _expiryNotice = null;
-    notice?.close();
-  }
-
-  void _syncExpiryNotice(PriorityMatch? match) {
-    final id =
-        match != null &&
-            match.isPaused &&
-            match.configuration.clockEnabled &&
-            match.priorityPlayerId != null &&
-            match.player(match.priorityPlayerId!).remainingTime == Duration.zero
-        ? match.priorityPlayerId
-        : null;
-    if (id == null) {
-      _notifiedExpired = null;
-      _closeExpiryNotice();
-      return;
-    }
-    if (_notifiedExpired == id) return;
-    _notifiedExpired = id;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || !(ModalRoute.of(context)?.isActive ?? true)) return;
-      final current = widget.controller.value;
-      if (current == null ||
-          current.priorityPlayerId != id ||
-          !current.isPaused ||
-          current.player(id).remainingTime != Duration.zero) {
-        return;
-      }
-      _expiryNotice = ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 8),
-          persist: false,
-          shape: PriorityTheme.shape,
-          content: Text(
-            'Tiempo agotado: ${current.player(id).name}',
-            key: const ValueKey('priority-time-expired'),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          action: SnackBarAction(
-            label: 'Ver',
-            onPressed: () {
-              _closeExpiryNotice();
-              final latest = widget.controller.value;
-              if (latest == null) return;
-              final seats = priorityTableSeats(
-                MediaQuery.sizeOf(context),
-                latest.players.length,
-                landscape:
-                    MediaQuery.orientationOf(context) == Orientation.landscape,
-              );
-              final index = widget.controller.visualSeatOrder.indexOf(id);
-              showPriorityPlayer(
-                context,
-                widget.controller,
-                id,
-                seats[index].quarterTurns,
-              );
-            },
-          ),
-        ),
-      );
-      final notice = _expiryNotice;
-      notice?.closed.then((_) {
-        if (identical(_expiryNotice, notice)) _expiryNotice = null;
-      });
-    });
-    WidgetsBinding.instance.ensureVisualUpdate();
   }
 
   @override
@@ -397,17 +303,7 @@ class _PriorityScreenState extends State<PriorityScreen>
       case _PriorityMenu.history:
         await openPriorityHistory(context, controller: widget.controller);
       case _PriorityMenu.undo:
-        if (widget.controller.undo()) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Operación deshecha. Los relojes quedan pausados.',
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          );
-        }
+        widget.controller.undo();
       case _PriorityMenu.saved:
         await openPriorityLibrary(context, widget.controller);
       case _PriorityMenu.finish:
@@ -519,120 +415,149 @@ class _PriorityScreenState extends State<PriorityScreen>
   Widget build(BuildContext context) => PriorityTheme(
     child: ValueListenableBuilder<PriorityMatch?>(
       valueListenable: widget.controller,
-      builder: (context, match, _) => PopScope(
-        onPopInvokedWithResult: (didPop, _) {
-          if (didPop) {
-            _cancelDraw();
-            _closeExpiryNotice();
-            widget.controller.pauseForNavigation();
-          }
-        },
-        child: Scaffold(
-          // Only the form uses the page keyboard. Modal editors manage their own
-          // insets; keep the table stable behind them instead of shrinking panels.
-          resizeToAvoidBottomInset: match == null,
-          appBar: AppBar(
-            title: const Text('Priority'),
-            actions: [
-              if (match == null && widget.controller.ready)
-                IconButton(
-                  key: const ValueKey('priority-setup-help'),
-                  tooltip: 'Cómo preparar la mesa',
-                  onPressed: _setupHelp,
-                  icon: const Icon(Icons.info_outline),
-                ),
-              if (match != null) ...[
-                IconButton(
-                  key: const ValueKey('priority-toolbar-undo'),
-                  tooltip: 'Deshacer última operación',
-                  color: const Color(0xFF69DB8C),
-                  disabledColor: const Color(0xFF69DB8C).withValues(alpha: .35),
-                  icon: const Icon(Icons.undo_rounded),
-                  onPressed: widget.controller.canUndo
-                      ? () => _more(_PriorityMenu.undo)
-                      : null,
-                ),
-                if (match.isPaused ||
-                    (match.configuration.clockEnabled &&
-                        match.phase != PriorityPhase.finished))
+      builder: (context, match, _) => TooltipVisibility(
+        visible: match == null,
+        child: PopScope(
+          onPopInvokedWithResult: (didPop, _) {
+            if (didPop) {
+              _cancelDraw();
+              widget.controller.pauseForNavigation();
+            }
+          },
+          child: Scaffold(
+            // Only the form uses the page keyboard. Modal editors manage their own
+            // insets; keep the table stable behind them instead of shrinking panels.
+            resizeToAvoidBottomInset: match == null,
+            appBar: AppBar(
+              leading:
+                  match != null && (ModalRoute.of(context)?.canPop ?? false)
+                  ? Semantics(
+                      label: MaterialLocalizations.of(context)
+                          .backButtonTooltip,
+                      child: const BackButton(),
+                    )
+                  : null,
+              title: const Text('Priority'),
+              actions: [
+                if (match == null && widget.controller.ready)
                   IconButton(
-                    key: const ValueKey('priority-pause-resume'),
-                    tooltip: match.isPaused ? 'Reanudar' : 'Pausar',
-                    icon: Icon(match.isPaused ? Icons.play_arrow : Icons.pause),
-                    onPressed:
-                        widget.controller.can(
-                          match.isPaused
-                              ? const PriorityCommand.resume()
-                              : const PriorityCommand.pause(),
-                        )
-                        ? () => widget.controller.dispatch(
+                    key: const ValueKey('priority-setup-help'),
+                    tooltip: 'Cómo preparar la mesa',
+                    onPressed: _setupHelp,
+                    icon: const Icon(Icons.info_outline),
+                  ),
+                if (match != null) ...[
+                  IconButton(
+                    key: const ValueKey('priority-toolbar-undo'),
+                    tooltip: 'Deshacer última operación',
+                    color: const Color(0xFF69DB8C),
+                    disabledColor: const Color(0xFF69DB8C)
+                        .withValues(alpha: .35),
+                    icon: const Icon(
+                      Icons.undo_rounded,
+                      semanticLabel: 'Deshacer última operación',
+                    ),
+                    onPressed: widget.controller.canUndo
+                        ? () => _more(_PriorityMenu.undo)
+                        : null,
+                  ),
+                  if (match.isPaused ||
+                      (match.configuration.clockEnabled &&
+                          match.phase != PriorityPhase.finished))
+                    IconButton(
+                      key: const ValueKey('priority-pause-resume'),
+                      tooltip: match.isPaused ? 'Reanudar' : 'Pausar',
+                      icon: Icon(
+                        match.isPaused ? Icons.play_arrow : Icons.pause,
+                        semanticLabel: match.isPaused ? 'Reanudar' : 'Pausar',
+                      ),
+                      onPressed:
+                          widget.controller.can(
                             match.isPaused
                                 ? const PriorityCommand.resume()
                                 : const PriorityCommand.pause(),
-                            expectedRevision: match.revision,
                           )
+                          ? () => widget.controller.dispatch(
+                              match.isPaused
+                                  ? const PriorityCommand.resume()
+                                  : const PriorityCommand.pause(),
+                              expectedRevision: match.revision,
+                            )
+                          : null,
+                    ),
+                  IconButton(
+                    key: const ValueKey('priority-toolbar-finish'),
+                    tooltip: 'Finalizar partida',
+                    color: const Color(0xFFFF7070),
+                    disabledColor: const Color(0xFFFF7070)
+                        .withValues(alpha: .35),
+                    icon: const Icon(
+                      Icons.cancel_outlined,
+                      semanticLabel: 'Finalizar partida',
+                    ),
+                    onPressed:
+                        widget.controller.can(const PriorityCommand.finish())
+                        ? () => _more(_PriorityMenu.finish)
                         : null,
                   ),
-                IconButton(
-                  key: const ValueKey('priority-toolbar-finish'),
-                  tooltip: 'Finalizar partida',
-                  color: const Color(0xFFFF7070),
-                  disabledColor: const Color(0xFFFF7070).withValues(alpha: .35),
-                  icon: const Icon(Icons.cancel_outlined),
-                  onPressed:
-                      widget.controller.can(const PriorityCommand.finish())
-                      ? () => _more(_PriorityMenu.finish)
-                      : null,
+                ],
+                MergeSemantics(
+                  child: Semantics(
+                    label: match == null ? null : 'Más opciones',
+                    child: PopupMenuButton<_PriorityMenu>(
+                      key: const ValueKey('priority-more'),
+                      tooltip: 'Más opciones',
+                      icon: const Icon(Icons.more_vert),
+                      onOpened: _cancelDraw,
+                      onSelected: _more,
+                      itemBuilder: (context) => [
+                        if (match != null) ...[
+                          const PopupMenuItem(
+                            value: _PriorityMenu.standings,
+                            key: ValueKey('priority-standings'),
+                            child: Text('Clasificación general'),
+                          ),
+                          PopupMenuItem(
+                            value: _PriorityMenu.newGame,
+                            key: const ValueKey('priority-new-game'),
+                            enabled: !widget.controller.busy,
+                            child: const Text('Nueva partida'),
+                          ),
+                          const PopupMenuItem(
+                            value: _PriorityMenu.history,
+                            key: ValueKey('priority-menu-history'),
+                            child: Text('Historial'),
+                          ),
+                          PopupMenuItem(
+                            value: _PriorityMenu.undo,
+                            enabled: widget.controller.canUndo,
+                            key: const ValueKey('priority-menu-undo'),
+                            child: const Text('Deshacer'),
+                          ),
+                          if (match.phase != PriorityPhase.finished)
+                            PopupMenuItem(
+                              value: _PriorityMenu.finish,
+                              enabled: !widget.controller.busy,
+                              key: const ValueKey('priority-menu-finish'),
+                              child: const Text('Finalizar partida'),
+                            ),
+                        ],
+                        PopupMenuItem(
+                          value: _PriorityMenu.saved,
+                          enabled:
+                              widget.controller.ready &&
+                              !widget.controller.busy,
+                          key: const ValueKey('priority-menu-saved'),
+                          child: const Text('Partidas guardadas'),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ],
-              PopupMenuButton<_PriorityMenu>(
-                key: const ValueKey('priority-more'),
-                tooltip: 'Más opciones',
-                onOpened: _cancelDraw,
-                onSelected: _more,
-                itemBuilder: (context) => [
-                  if (match != null) ...[
-                    const PopupMenuItem(
-                      value: _PriorityMenu.standings,
-                      key: ValueKey('priority-standings'),
-                      child: Text('Clasificación general'),
-                    ),
-                    PopupMenuItem(
-                      value: _PriorityMenu.newGame,
-                      key: const ValueKey('priority-new-game'),
-                      enabled: !widget.controller.busy,
-                      child: const Text('Nueva partida'),
-                    ),
-                    const PopupMenuItem(
-                      value: _PriorityMenu.history,
-                      key: ValueKey('priority-menu-history'),
-                      child: Text('Historial'),
-                    ),
-                    PopupMenuItem(
-                      value: _PriorityMenu.undo,
-                      enabled: widget.controller.canUndo,
-                      key: const ValueKey('priority-menu-undo'),
-                      child: const Text('Deshacer'),
-                    ),
-                    if (match.phase != PriorityPhase.finished)
-                      PopupMenuItem(
-                        value: _PriorityMenu.finish,
-                        enabled: !widget.controller.busy,
-                        key: const ValueKey('priority-menu-finish'),
-                        child: const Text('Finalizar partida'),
-                      ),
-                  ],
-                  PopupMenuItem(
-                    value: _PriorityMenu.saved,
-                    enabled: widget.controller.ready && !widget.controller.busy,
-                    key: const ValueKey('priority-menu-saved'),
-                    child: const Text('Partidas guardadas'),
-                  ),
-                ],
-              ),
-            ],
+            ),
+            body: SafeArea(top: false, child: _body(match)),
           ),
-          body: SafeArea(top: false, child: _body(match)),
         ),
       ),
     ),

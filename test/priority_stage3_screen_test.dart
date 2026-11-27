@@ -80,7 +80,9 @@ void main() {
       clock.advance(const Duration(seconds: 59));
       c.synchronizeClock();
       await t.pumpAndSettle();
-      expect(key('priority-time-expired'), findsOneWidget);
+      expect(find.byType(SnackBar), findsNothing);
+      expect(t.widget<Text>(key('priority-clock-J1')).data, '00:00');
+      expect(c.value!.isPaused, isTrue);
       expect(c.value!.players.every((p) => !p.eliminated), isTrue);
       expect(
         t.widget<IconButton>(key('priority-pause-resume')).onPressed,

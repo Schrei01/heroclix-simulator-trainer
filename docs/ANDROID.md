@@ -1,6 +1,6 @@
 # Preparar, compilar e instalar en Android
 
-Candidata actual: **TeamFight: GridLab 1.0.0-rc.26+39**. Inicio contiene Editor, Entrenador y Priority; las consultas
+Candidata actual: **TeamFight: GridLab 1.0.0-rc.27+40**. Inicio contiene Editor, Entrenador y Priority; las consultas
 y ensayos están en las herramientas del Editor. El recorrido vigente del Editor
 está al final de este documento. Los apartados identificados por etapa describen
 sus versiones históricas. Resultados efectivamente ejecutados: [ESTADO](ESTADO.md).
@@ -86,16 +86,16 @@ configuración/mesa/diálogos. Para 3 y 4, verificar el esquema de lados opuesto
 como 5 y 6, en ambas orientaciones; 2, 5 y 6 conservan su distribución.
 La mesa empieza justo debajo de la barra, sin franja de ronda/turno ni texto
 PRIORIDAD. Borde dorado identifica prioridad y ACTIVO/REACTIVO siguen visibles.
-Agotar tiempo muestra un aviso flotante durante 8 s; **Ver** abre gestión.
-Comprobar que se oculta sin repetirse en cada refresco y que corregir a positivo
-y volver a agotar sí genera un aviso nuevo. Repetir con texto ampliado.
+Desde rc.27, agotar tiempo deja el reloj rojo a cero y la partida pausada,
+sin aviso flotante; el nombre abre gestión. Comprobar que corregir a positivo
+y volver a agotar mantiene este comportamiento. Repetir con texto ampliado.
 
 Priority actual: elegir puntos de construcción una sola vez y comprobar que se
 aplican a todos, manteniendo adicionales individuales. Activar relojes a 1 minuto
 y comprobar que solo descuenta el
 jugador con prioridad; ACTION/respuestas/PASS/END TURN transfieren sin reiniciar
 tiempos. Salir a inicio, abrir otra app/bloquear y volver: debe quedar pausada
-hasta reanudar. A cero, verificar aviso y pausa sin eliminación automática.
+hasta reanudar. A cero, verificar reloj rojo y pausa sin eliminación automática.
 Corregir tiempo desde el nombre del panel, confirmar y reanudar manualmente.
 Configuración y corrección solo ofrecen minutos completos. Corregir sustituye el
 restante; el campo propone redondear hacia arriba. La cuenta sigue mostrando segundos.
@@ -601,3 +601,16 @@ y sin resumen automático. Reintentar y volver debe completar el archivo y regre
 preparación; Deshacer antes de salir debe restaurar el juego pausado. El cierre
 automático por último superviviente conserva el comportamiento anterior.
 Recorrido físico pendiente; pruebas Flutter/renders en ESTADO.md.
+
+## Mesa sin letreros temporales (rc.27)
+
+Comprobar que ACTION/FREE/respuestas/PASS, PV y Deshacer no generan avisos inferiores.
+Mantener pulsados los controles o pasar el ratón no debe abrir etiquetas en la mesa.
+Se conservan los nombres para TalkBack, las confirmaciones y el cambio de PV junto
+al total. Al agotarse el reloj, verificar rojo/cero, pausa y ausencia de letrero;
+tocar el nombre permite corregir y reanudar. No buscar el antiguo botón flotante Ver.
+
+Recuperar una partida debe dejarla pausada sin popup; la información está en Historial,
+incluida la recuperación de una copia anterior válida. Errores de biblioteca/guardado
+siguen visibles dentro de sus pantallas con reintento. La preparación conserva las
+ayudas de ⓘ y del dado. Este recorrido físico sigue pendiente; pruebas en ESTADO.md.

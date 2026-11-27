@@ -1,16 +1,16 @@
-# TeamFight: GridLab — 1.0.0-rc.26+39
+# TeamFight: GridLab — 1.0.0-rc.27+40
 
 Aplicación Android offline, en español, para construir escenarios, consultar reglas
 implementadas y practicar. **Versión candidata, APK debug**: faltan las comprobaciones
 nativas de aceptación y rendimiento descritas abajo. No se congela 1.0.0 estable.
 Repositorio privado: [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer),
-rama `codex/priority-finish-setup`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
+rama `codex/priority-quiet-table`. Evidencia exacta y SHA-256 en [ESTADO](docs/ESTADO.md).
 
 Nombre e iconos de Android, Inicio y Acerca de actualizados a TeamFight: GridLab.
 La identidad técnica y firma se conservan para actualizar la instalación anterior.
 Archivos de Google Play preparados en distribution/google-play/; [detalles de identidad](docs/IDENTIDAD.md).
 
-Esta beta rc.26 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
+Esta beta rc.27 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
 (2026-12-30T05:00:00Z). Desde ese instante muestra «Versión de prueba finalizada»
 y bloquea todas las pantallas, también al reanudar o si permanece abierta. Acerca de
 muestra la fecha. No elimina biblioteca ni progreso. Usa el reloj del dispositivo:
@@ -23,7 +23,7 @@ anterior sin caducidad también queda fuera de este control local.
 El archivo generado se conserva en:
 
 ```text
-build/releases/teamfight-gridlab-1.0.0-rc.26-debug.apk
+build/releases/teamfight-gridlab-1.0.0-rc.27-debug.apk
 ```
 
 1. Android 7.0/API 24 o superior. Copiar el APK al teléfono, abrirlo en Archivos
@@ -35,7 +35,7 @@ build/releases/teamfight-gridlab-1.0.0-rc.26-debug.apk
 
 ```powershell
 adb devices -l
-adb -s ID install -r build/releases/teamfight-gridlab-1.0.0-rc.26-debug.apk
+adb -s ID install -r build/releases/teamfight-gridlab-1.0.0-rc.27-debug.apk
 adb -s ID shell am start -n com.valinor.heroclixtrainer/com.valinor.heroclix_simulator_trainer.MainActivity
 ```
 
@@ -79,9 +79,12 @@ cerrar el proceso. Nueva partida pide confirmación y guarda la anterior.
 Activa **Cronómetros individuales** en la
 configuración y elige minutos completos. Solo corre el reloj de quien tiene prioridad.
 Pausa/reanuda desde la barra; salir del módulo o volver de segundo plano exige
-reanudar manualmente. Agotar tiempo pausa y muestra un aviso flotante temporal,
-sin eliminar automáticamente; el reloj queda rojo a cero. **Ver** abre la gestión
-del jugador. El aviso no reduce la mesa y desaparece a los 8 segundos.
+reanudar manualmente. Agotar tiempo pausa sin eliminar automáticamente; el reloj
+queda rojo a cero, sin aviso flotante. Toca el nombre para abrir la gestión y
+corregir su tiempo. Desde rc.27, la mesa tampoco muestra letreros de Deshacer o
+recuperación ni etiquetas al mantener pulsados los controles. Los nombres accesibles
+y las confirmaciones se conservan; la información de recuperación está en Historial.
+Los errores de guardado y biblioteca se muestran dentro de sus pantallas.
 
 La barra de cada jugador tiene **−/+** para restar/sumar 5 PV por toque y una
 **calavera** para eliminar con confirmación. Cada toque muestra el cambio y
@@ -255,7 +258,7 @@ usa etiquetas genéricas. Exportar la escena completa sí conserva sus nombres.
 | Instalación, nueva sesión tras cierre y selectores nativos | Pendiente de Android; equivalentes de archivos/controladores sí verificados |
 | Offline con radios desactivadas y rendimiento Android/FPS | Pendiente de dispositivo/emulador funcional |
 | APK release con firma del propietario | Preparado; sin claves suministradas, no generado |
-| Congelar 1.0.0 estable | Pendiente de cerrar aceptación nativa; esta entrega es 1.0.0-rc.26 |
+| Congelar 1.0.0 estable | Pendiente de cerrar aceptación nativa; esta entrega es 1.0.0-rc.27 |
 | Simular combates, dados, diales, daño y poderes de figuras | Fuera del alcance del proyecto |
 
 ## Dependencias y recompilación

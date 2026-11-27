@@ -1,6 +1,6 @@
 # TeamFight: GridLab
 
-Aplicación Android Flutter/Dart, offline y en español. Versión **1.0.0-rc.26+39**.
+Aplicación Android Flutter/Dart, offline y en español. Versión **1.0.0-rc.27+40**.
 
 **Priority** está disponible desde inicio: configura de 2 a 6 jugadores, organiza
 los asientos en sentido horario y coloca el teléfono en el centro de la mesa.
@@ -30,6 +30,11 @@ Desde rc.26, confirmar **Finalizar partida** guarda la partida y vuelve a
 **Preparar mesa**, sin abrir el resumen. Consulta resultados e historial desde
 **⋮ → Partidas guardadas → Consultar**. Si falla el guardado, conserva la partida
 abierta y ofrece **Reintentar y volver**.
+Desde rc.27 la mesa no muestra letreros inferiores ni etiquetas emergentes al
+mantener pulsados los controles. Deshacer y recuperar no muestran avisos flotantes;
+el reloj agotado permanece rojo y pausado. La información de recuperación se
+consulta en Historial y los errores se muestran dentro de su pantalla. Los controles
+conservan sus nombres accesibles y las confirmaciones de eliminar/finalizar.
 Todo funciona sin Internet. Si falla el guardado se conserva la partida en memoria
 y se impide sustituirla hasta reintentar. Desinstalar elimina estos datos locales.
 Desde rc.16 los puntos de construcción se eligen una sola vez para todos y el
@@ -63,7 +68,7 @@ horario 1 → 2 → 3 → 1. Para 4–6, los asientos también se enumeran en se
 conservan sus superficies y orientación hacia los lados correspondientes.
 La mesa ocupa todo el espacio bajo la barra: se retiró la franja de ronda/turno.
 El borde dorado identifica la prioridad; se mantienen ACTIVO y REACTIVO.
-La versión actual está en la rama `codex/priority-finish-setup` del repositorio privado
+La versión actual está en la rama `codex/priority-quiet-table` del repositorio privado
 [Schrei01/heroclix-simulator-trainer](https://github.com/Schrei01/heroclix-simulator-trainer).
 
 Desde rc.8 la marca visible es **TeamFight: GridLab**, con los iconos Android y el
@@ -86,7 +91,7 @@ azul con ondas y letra A. Conserva alturas, admite figuras y se guarda en biblio
 JSON y PNG. La paleta reúne seis pinceles. Según §16.6 de la edición implementada,
 agua se considera despejado para visión/movimiento salvo efectos específicos.
 
-Esta beta rc.26 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
+Esta beta rc.27 vence el **30 de diciembre de 2026 a las 00:00, hora de Colombia**
 (2026-12-30T05:00:00Z). Desde ese instante muestra «Versión de prueba finalizada»
 y bloquea todas las pantallas, también al reanudar o si permanece abierta. Acerca de
 muestra la fecha. No elimina biblioteca ni progreso. Usa el reloj del dispositivo:

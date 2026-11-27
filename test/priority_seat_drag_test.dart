@@ -229,7 +229,7 @@ void main() {
   });
 
   testWidgets(
-    'aviso de reloj abre gestión con la orientación nueva tras arrastrar',
+    'reloj agotado sin aviso permite abrir gestión con orientación nueva tras arrastrar',
     (t) async {
       t.view.devicePixelRatio = 1;
       t.view.physicalSize = const Size(360, 800);
@@ -247,8 +247,8 @@ void main() {
       await t.pumpAndSettle();
       c.swapVisualSeats('J1', 'J2', configuration: c.value!.configuration);
       await t.pumpAndSettle();
-      await t.tap(find.text('Ver'));
-      await t.pumpAndSettle();
+      expect(find.byType(SnackBar), findsNothing);
+      await press(t, 'priority-player-menu-J1');
       final rotation = find.ancestor(
         of: key('priority-score-apply'),
         matching: find.byType(RotatedBox),

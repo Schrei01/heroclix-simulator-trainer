@@ -115,10 +115,22 @@ class PriorityHistoryScreen extends StatelessWidget {
               itemCount: data.history.length + (controller == null ? 0 : 1),
               itemBuilder: (context, rawIndex) {
                 if (controller != null && rawIndex == 0) {
-                  return const Padding(
-                    padding: EdgeInsets.only(bottom: 12),
-                    child: Text(
-                      'Deshacer restaura la operación completa. Los relojes quedan pausados.',
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (controller!.recoveryNotice != null)
+                          Text(
+                            'Recuperación: ${controller!.recoveryNotice}',
+                            key: const ValueKey(
+                              'priority-history-recovery-notice',
+                            ),
+                          ),
+                        const Text(
+                          'Deshacer restaura la operación completa. Los relojes quedan pausados.',
+                        ),
+                      ],
                     ),
                   );
                 }
@@ -280,6 +292,7 @@ class PriorityLibraryScreen extends StatefulWidget {
 
 class _PriorityLibraryScreenState extends State<PriorityLibraryScreen> {
   bool _loading = true;
+  String? _operationError;
   @override
   void initState() {
     super.initState();
@@ -287,6 +300,7 @@ class _PriorityLibraryScreenState extends State<PriorityLibraryScreen> {
   }
 
   Future<void> _load() async {
+    _clearError();
     await widget.controller.flush();
     await widget.controller.refreshLibrary();
     if (mounted) setState(() => _loading = false);
@@ -321,19 +335,21 @@ class _PriorityLibraryScreenState extends State<PriorityLibraryScreen> {
       false;
   void _error() {
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
+      setState(
+        () => _operationError =
             'No se pudo completar la operación. La partida actual se conserva.',
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
       );
     }
   }
 
+  void _clearError() {
+    if (mounted && _operationError != null) {
+      setState(() => _operationError = null);
+    }
+  }
+
   Future<void> _consult(String id) async {
+    _clearError();
     try {
       final saved = await widget.controller.readSaved(id);
       if (mounted) {
@@ -350,6 +366,7 @@ class _PriorityLibraryScreenState extends State<PriorityLibraryScreen> {
   }
 
   Future<void> _continue(String id) async {
+    _clearError();
     if (widget.controller.session != null &&
         widget.controller.session!.id != id &&
         !await _confirm(
@@ -369,6 +386,7 @@ class _PriorityLibraryScreenState extends State<PriorityLibraryScreen> {
   }
 
   Future<void> _delete(String id) async {
+    _clearError();
     if (!await _confirm(
       '¿Descartar partida guardada?',
       'Se eliminarán su resumen e historial local.',
@@ -407,6 +425,11 @@ class _PriorityLibraryScreenState extends State<PriorityLibraryScreen> {
                   key: const ValueKey('priority-library-list'),
                   padding: const EdgeInsets.all(12),
                   children: [
+                    if (_operationError != null)
+                      Text(
+                        _operationError!,
+                        key: const ValueKey('priority-library-operation-error'),
+                      ),
                     if (widget.controller.libraryError != null)
                       Text(widget.controller.libraryError!),
                     if (widget.controller.storageError != null)

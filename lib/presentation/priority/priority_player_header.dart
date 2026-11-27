@@ -168,8 +168,8 @@ class _PriorityPlayerHeaderState extends State<PriorityPlayerHeader>
         minimumSize: const Size(48, 48),
         padding: const EdgeInsets.symmetric(horizontal: 2),
       ),
-      child: Tooltip(
-        message:
+      child: Semantics(
+        label:
             'Editar acciones de ${player.name}. ${player.availableActions} disponibles '
             'de ${player.totalActions}. ${player.victoryPoints} puntos de victoria. Toca el nombre para más opciones.',
         child: Column(
@@ -215,8 +215,8 @@ class _PriorityPlayerHeaderState extends State<PriorityPlayerHeader>
         children: [
           SizedBox(
             height: 24,
-            child: Tooltip(
-              message: '${player.victoryPoints} puntos de victoria',
+            child: Semantics(
+              label: '${player.victoryPoints} puntos de victoria',
               child: FittedBox(
                 fit: BoxFit.scaleDown,
                 child: Text(
@@ -272,7 +272,11 @@ class _PriorityPlayerHeaderState extends State<PriorityPlayerHeader>
           controller.can(PriorityCommand.adjustVictoryPoints(player.id, amount))
           ? () => _adjust(amount)
           : null,
-      icon: Icon(amount > 0 ? Icons.add : Icons.remove),
+      icon: Icon(
+        amount > 0 ? Icons.add : Icons.remove,
+        semanticLabel:
+            '${amount > 0 ? 'Sumar' : 'Restar'} 5 PV a ${player.name}',
+      ),
     );
     final skull = IconButton(
       key: ValueKey('priority-skull-${player.id}'),
@@ -289,7 +293,10 @@ class _PriorityPlayerHeaderState extends State<PriorityPlayerHeader>
               quarterTurns,
             )
           : null,
-      icon: const PrioritySkullIcon(),
+      icon: Semantics(
+        label: 'Eliminar a ${player.name}',
+        child: const PrioritySkullIcon(),
+      ),
     );
     return LayoutBuilder(
       builder: (context, space) => SingleChildScrollView(
